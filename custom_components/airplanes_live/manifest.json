@@ -1,12 +1,14 @@
 {
   "domain": "airplanes_live",
   "name": "Airplanes.Live Tracker",
-  "codeowners": ["@DonTranQuiL"],
+  "codeowners": [
+    "@DonTranQuiL"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/DonTranQuiL/airplanes_live",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/DonTranQuiL/airplanes_live/issues",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
