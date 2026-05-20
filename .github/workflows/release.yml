@@ -24,6 +24,7 @@ jobs:
           INTEGRATION=$(find custom_components -mindepth 1 -maxdepth 1 -type d | head -n 1 | xargs basename)
 
           echo "integration=$INTEGRATION" >> $GITHUB_OUTPUT
+
           echo "Detected integration: $INTEGRATION"
 
       - name: Update manifest version
