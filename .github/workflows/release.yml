@@ -16,14 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: BETA-TEST
+          ref: ${{ github.event.release.target_commitish }}
           fetch-depth: 0
 
       - name: Detect integration
         id: integration
         run: |
           INTEGRATION=$(find custom_components -mindepth 1 -maxdepth 1 -type d | head -n 1 | xargs basename)
-
           echo "integration=$INTEGRATION" >> $GITHUB_OUTPUT
           echo "Detected integration: $INTEGRATION"
 
@@ -36,7 +35,6 @@ jobs:
           sudo apt-get install -y jq
 
           MANIFEST="custom_components/$INTEGRATION/manifest.json"
-
           tmp=$(mktemp)
 
           jq --arg version "$VERSION" \
@@ -50,11 +48,11 @@ jobs:
         with:
           commit_message: "Bump manifest version to ${{ github.ref_name }} [skip ci]"
           file_pattern: "custom_components/**/manifest.json"
+          branch: ${{ github.event.release.target_commitish }}
 
       - name: Create ZIP
         run: |
           INTEGRATION=${{ steps.integration.outputs.integration }}
-
           cd custom_components/$INTEGRATION
           zip -r "$INTEGRATION.zip" ./*
 
