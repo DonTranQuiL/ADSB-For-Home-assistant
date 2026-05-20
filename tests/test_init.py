@@ -10,6 +10,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
     """Enable loading custom components during testing."""
     yield
 
+
 @pytest.fixture
 def mock_coordinator_init():
     """Mock out coordinator behaviors to avoid hitting physical APIs."""
@@ -46,3 +47,5 @@ async def test_setup_unload_and_reload_lifecycle(hass: HomeAssistant, mock_coord
     # Test Unload Lifecycle
     with patch("homeassistant.config_entries.ConfigEntries.async_unload_platforms", return_value=True) as mock_unload:
         assert await hass.config_entries.async_unload(entry.entry_id) is True
+        # Ruff is happy now because we are actively verifying the call parameters here:
+        mock_unload.assert_called_once_with(entry, PLATFORMS)
