@@ -16,33 +16,50 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
+
+      - name: Detect integration
+        id: integration
+        run: |
+          INTEGRATION=$(find custom_components -mindepth 1 -maxdepth 1 -type d | head -n 1 | xargs basename)
+
+          echo "integration=$INTEGRATION" >> $GITHUB_OUTPUT
+          echo "Detected integration: $INTEGRATION"
 
       - name: Update manifest version
         run: |
           VERSION=${GITHUB_REF_NAME#v}
+          INTEGRATION=${{ steps.integration.outputs.integration }}
+
           sudo apt-get update
           sudo apt-get install -y jq
 
+          MANIFEST="custom_components/$INTEGRATION/manifest.json"
+
           tmp=$(mktemp)
-          jq --arg version "$VERSION" '.version = $version' \
-            custom_components/nova_conversation/manifest.json > "$tmp"
 
-          mv "$tmp" custom_components/nova_conversation/manifest.json
+          jq --arg version "$VERSION" \
+            '.version = $version' \
+            "$MANIFEST" > "$tmp"
 
-      - name: Commit and Push Changes
+          mv "$tmp" "$MANIFEST"
+
+      - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Bump manifest version to ${{ github.ref_name }} [skip ci]"
-          file_pattern: "custom_components/nova_conversation/manifest.json"
-          branch: main 
+          file_pattern: "custom_components/**/manifest.json"
+          branch: main
 
       - name: Create ZIP
         run: |
-          cd custom_components/nova_conversation
-          zip -r nova_conversation.zip ./
+          INTEGRATION=${{ steps.integration.outputs.integration }}
+
+          cd custom_components/$INTEGRATION
+
+          zip -r "$INTEGRATION.zip" ./*
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v3
         with:
-          files: custom_components/nova_conversation/nova_conversation.zip
+          files: custom_components/${{ steps.integration.outputs.integration }}/${{ steps.integration.outputs.integration }}.zip
