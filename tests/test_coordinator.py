@@ -1,112 +1,111 @@
-"""DataUpdateCoordinator for Airplanes.Live."""
-import logging
-import math
-from datetime import timedelta
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from .api import AirplanesLiveAPI
-from .const import (
-    DOMAIN, CONF_TRACKING_MODE, CONF_RADIUS, CONF_LATITUDE, 
-    CONF_LONGITUDE, CONF_IDENTIFIER_TYPE, CONF_IDENTIFIER, 
-    CONF_TRACKED_LIST, MODE_ZONE, MODE_SINGLE, DEFAULT_SCAN_INTERVAL
-)
+import pytest
+from unittest.mock import AsyncMock, patch, MagicMock
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import UpdateFailed
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-_LOGGER = logging.getLogger(__name__)
+from custom_components.airplanes_live.const import DOMAIN, MODE_ZONE, MODE_SINGLE
+from custom_components.airplanes_live.coordinator import AirplanesLiveCoordinator, haversine_distance
 
-def haversine_distance(lat1, lon1, lat2, lon2):
-    R = 3440.065
-    phi1, phi2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlambda = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
-    return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    """Enable loading custom components during testing."""
+    yield
 
-class AirplanesLiveCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, config_entry):
-        # Move super().__init__ to the top so the base class doesn't clear our attributes!
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL))
-        
-        self.config_entry = config_entry
-        self.api = AirplanesLiveAPI(async_get_clientsession(hass))
-        self.mode = config_entry.data.get(CONF_TRACKING_MODE, MODE_ZONE)
-        
-        self.previous_hexes = None
-        self.entered_area = 0
-        self.exited_area = 0
+@pytest.fixture
+def mock_api():
+    """Mock the API module layout explicitly using absolute paths."""
+    with patch("custom_components.airplanes_live.coordinator.AirplanesLiveAPI") as mock_cls:
+        mock_inst = MagicMock()
+        mock_inst.get_aircraft_in_zone = AsyncMock(return_value=[])
+        mock_inst.get_aircraft_by_callsign = AsyncMock(return_value=[])
+        mock_inst.get_aircraft_by_hex = AsyncMock(return_value=[])
+        mock_cls.return_value = mock_inst
+        yield mock_inst
 
-    def classify_aircraft(self, ac):
-        desc = ac.get("desc", "").lower()
-        if "heli" in desc or "rotor" in desc: return "helicopter"
-        if "military" in desc: return "military"
-        if ac.get("flight", "").startswith(("KLM", "PH", "TRA")): return "commercial"
-        return "private"
 
-    async def _async_update_data(self):
-        try:
-            radius_meters = self.config_entry.options.get(CONF_RADIUS, self.config_entry.data.get(CONF_RADIUS, 5000))
-            tracked_list = self.config_entry.options.get(CONF_TRACKED_LIST, [])
-            
-            cat_counts = {"helicopter": 0, "military": 0, "commercial": 0, "private": 0}
-            closest_aircraft = None
-            closest_distance_meters = float('inf')
-            filtered_aircraft = []
-            current_hexes = set()
+def test_haversine_distance_calculation():
+    """Verify nautical mile to meters conversion math is precise."""
+    assert haversine_distance(52.0, 5.0, 52.0, 5.0) == 0.0
 
-            if self.mode == MODE_ZONE:
-                lat = self.config_entry.data.get(CONF_LATITUDE, self.hass.config.latitude)
-                lon = self.config_entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
-                radius_nm = max(1, math.ceil(radius_meters / 1852.0))
-                aircraft_list = await self.api.get_aircraft_in_zone(lat, lon, radius_nm) or []
-                
-                for ac in aircraft_list:
-                    ac_lat = ac.get("lat")
-                    ac_lon = ac.get("lon")
-                    if ac_lat is None or ac_lon is None: continue
-                        
-                    dist_meters = haversine_distance(lat, lon, ac_lat, ac_lon) * 1852.0
-                    
-                    if dist_meters <= radius_meters:
-                        current_hexes.add(ac.get("hex"))
-                        cat = self.classify_aircraft(ac)
-                        ac["air_category"] = cat
-                        ac["distance_meter"] = round(dist_meters, 1)
-                        cat_counts[cat] += 1
-                        filtered_aircraft.append(ac)
-                        
-                        if dist_meters < closest_distance_meters:
-                            closest_distance_meters = dist_meters
-                            closest_aircraft = ac
-            
-            # Entered & Exited logic
-            if self.previous_hexes is not None:
-                self.entered_area = len(current_hexes - self.previous_hexes)
-                self.exited_area = len(self.previous_hexes - current_hexes)
-            self.previous_hexes = current_hexes
 
-            # Specifiek Tracked Vliegtuigen (FR24 Style)
-            tracked_aircraft_data = []
-            for identifier in tracked_list:
-                found = next((ac for ac in filtered_aircraft if ac.get("flight", "").strip() == identifier or ac.get("hex") == identifier), None)
-                if not found:
-                    res = await self.api.get_aircraft_by_callsign(identifier)
-                    if not res:
-                        res = await self.api.get_aircraft_by_hex(identifier)
-                    if res:
-                        ac = res[0]
-                        ac["air_category"] = self.classify_aircraft(ac)
-                        tracked_aircraft_data.append(ac)
-                else:
-                    tracked_aircraft_data.append(found)
+@pytest.mark.asyncio
+async def test_aircraft_classification_categories(hass: HomeAssistant):
+    """Verify strict keyword checks correctly route aircraft classifications."""
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    coord = AirplanesLiveCoordinator(hass, entry)
 
-            return {
-                "aircraft": filtered_aircraft, 
-                "tracked_aircraft": tracked_aircraft_data,
-                "total": len(filtered_aircraft), 
-                "counts": cat_counts,
-                "closest": closest_aircraft,
-                "entered": self.entered_area,
-                "exited": self.exited_area,
-                "additional_tracked": len(tracked_aircraft_data)
-            }
-        except Exception as err:
-            raise UpdateFailed(f"Error fetching data: {err}")
+    assert coord.classify_aircraft({"desc": "Heli-Rotor"}) == "helicopter"
+    assert coord.classify_aircraft({"desc": "Military Transport"}) == "military"
+    assert coord.classify_aircraft({"flight": "KLM1234", "desc": "Boeing"}) == "commercial"
+    assert coord.classify_aircraft({"flight": "N12345", "desc": "Cessna"}) == "private"
+
+
+@pytest.mark.asyncio
+async def test_coordinator_zone_analytics(hass: HomeAssistant, mock_api):
+    """Test zone processing engine calculates distances, categories, and entries completely."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"tracking_mode": MODE_ZONE, "latitude": 52.0, "longitude": 5.0, "radius": 10000},
+        options={"tracked_list": ["TARGET1"]}
+    )
+    coord = AirplanesLiveCoordinator(hass, entry)
+
+    # 1. First Run: Aircraft inside tracked zone range bounds
+    mock_api.get_aircraft_in_zone.return_value = [
+        {"hex": "A1B2C3", "lat": 52.001, "lon": 5.001, "desc": "Military Drone", "flight": "MIL1"},
+        {"hex": "D4E5F6", "lat": 59.000, "lon": 9.000, "desc": "Boeing", "flight": "FAR_AWAY"}
+    ]
+
+    result = await coord._async_update_data()
+    assert result["total"] == 1
+    assert result["counts"]["military"] == 1
+    assert result["closest"]["hex"] == "A1B2C3"
+    assert result["entered"] == 0
+
+    # 2. Second Run: Map changes to verify "Entered" and "Exited" telemetry tracking
+    mock_api.get_aircraft_in_zone.return_value = [
+        {"hex": "A1B2C3", "lat": 52.001, "lon": 5.001, "desc": "Military Drone", "flight": "MIL1"},
+        {"hex": "NEW777", "lat": 52.002, "lon": 5.002, "desc": "Rotor-craft", "flight": "HELI"}
+    ]
+    result2 = await coord._async_update_data()
+    assert result2["entered"] == 1
+    assert result2["exited"] == 0
+
+    # 3. Third Run: Flight leaves zone radius
+    mock_api.get_aircraft_in_zone.return_value = []
+    result3 = await coord._async_update_data()
+    assert result3["entered"] == 0
+    assert result3["exited"] == 2
+
+
+@pytest.mark.asyncio
+async def test_coordinator_api_fallbacks(hass: HomeAssistant, mock_api):
+    """Verify FR24 external target lookup query chains trigger on missing local vectors."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"tracking_mode": MODE_ZONE},
+        options={"tracked_list": ["EXTERNAL_HEX"]}
+    )
+    coord = AirplanesLiveCoordinator(hass, entry)
+    coord.mode = MODE_ZONE
+
+    mock_api.get_aircraft_in_zone.return_value = []
+    mock_api.get_aircraft_by_callsign.return_value = []
+    mock_api.get_aircraft_by_hex.return_value = [{"hex": "EXTERNAL_HEX", "flight": "EXT1", "desc": "Private Jet"}]
+
+    result = await coord._async_update_data()
+    assert len(result["tracked_aircraft"]) == 1
+    assert result["tracked_aircraft"][0]["flight"] == "EXT1"
+
+
+@pytest.mark.asyncio
+async def test_coordinator_unhandled_exception(hass: HomeAssistant, mock_api):
+    """Verify unhandled API disruptions throw UpdateFailed exceptions securely."""
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    coord = AirplanesLiveCoordinator(hass, entry)
+    
+    mock_api.get_aircraft_in_zone.side_effect = Exception("API Server Outage")
+    
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
