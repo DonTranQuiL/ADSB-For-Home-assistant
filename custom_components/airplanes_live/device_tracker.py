@@ -62,18 +62,28 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
         ac_type = ac.get("desc", "").lower()
         baro_rate = ac.get("baro_rate", 0)
 
-        if "heli" in ac_type or "rotor" in ac_type: return "mdi:helicopter"
-        if "glider" in ac_type: return "mdi:paper-airplane"
-        if "balloon" in ac_type: return "mdi:hot-air-balloon"
+        if "heli" in ac_type or "rotor" in ac_type: 
+            return "mdi:helicopter"
+            
+        if "glider" in ac_type: 
+            return "mdi:paper-airplane"
+            
+        if "balloon" in ac_type: 
+            return "mdi:hot-air-balloon"
 
-        if baro_rate > 250: return "mdi:airplane-takeoff"
-        elif baro_rate < -250: return "mdi:airplane-landing"
+        if baro_rate > 250: 
+            return "mdi:airplane-takeoff"
+            
+        elif baro_rate < -250: 
+            return "mdi:airplane-landing"
+            
         return "mdi:airplane"
 
     @property
     def entity_picture(self):
         icao_type = self._ac().get("t")
-        if icao_type: return f"/local/airplanes/{icao_type.upper()}.png"
+        if icao_type: 
+            return f"/local/airplanes/{icao_type.upper()}.png"
         return None
 
     @property
