@@ -38,8 +38,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements_test.txt ]; then pip install -r requirements_test.txt; fi
           pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov respx
-          pip install hassil home_assistant_intents mutagen ha-ffmpeg pymicro-vad webrtc-noise-gain pyspeex-noise
 
       - name: Run tests
         run: |
-          pytest -v tests/ --cov=custom_components/nova_conversation/ --cov-report=xml
+          pytest -v tests/ --cov=custom_components/airplanes_live/ --cov-report=xml
