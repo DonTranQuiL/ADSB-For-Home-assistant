@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/DonTranQuiL/ADSB-For-Home-assistant/releases">
-    <img src="https://img.shields.io/github/v/release/DonTranQuiL/nova-conversation?style=for-the-badge&color=007ec6" alt="Latest Release">
+    <img src="https://img.shields.io/github/v/release/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6" alt="Latest Release">
   </a>
   <a href="https://github.com/DonTranQuiL/ADSB-For-Home-assistant/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6" alt="License">
