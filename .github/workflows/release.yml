@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Update manifest version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+          tmp=$(mktemp)
+          jq --arg version "$VERSION" '.version = $version' \
+            custom_components/nova_conversation/manifest.json > "$tmp"
+
+          mv "$tmp" custom_components/nova_conversation/manifest.json
+
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "Bump manifest version to ${{ github.ref_name }} [skip ci]"
+          file_pattern: "custom_components/nova_conversation/manifest.json"
+          branch: main 
+
+      - name: Create ZIP
+        run: |
+          cd custom_components/nova_conversation
+          zip -r nova_conversation.zip ./
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v3
+        with:
+          files: custom_components/nova_conversation/nova_conversation.zip
