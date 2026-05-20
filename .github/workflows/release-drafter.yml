@@ -1,12 +1,15 @@
-name: Release Drafter
+name: Release Drafter Beta
 
 on:
   push:
-    # Trigger the bot when code is pushed to your main branch
     branches:
-      - main
+      - BETA-TEST
+
   pull_request:
-    types: [opened, reopened, synchronized]
+    types:
+      - opened
+      - reopened
+      - synchronized
 
 permissions:
   contents: write
@@ -15,7 +18,17 @@ permissions:
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: release-drafter/release-drafter@v7
+      - name: Checkout beta branch
+        uses: actions/checkout@v4
+        with:
+          ref: BETA-TEST
+          fetch-depth: 0
+
+      - name: Run Release Drafter
+        uses: release-drafter/release-drafter@v7
+        with:
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
