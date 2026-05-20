@@ -5,6 +5,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.airplanes_live.const import DOMAIN, PLATFORMS
 
+
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
     """Enable loading custom components during testing."""
@@ -23,12 +24,17 @@ def mock_coordinator_init():
 
 
 @pytest.mark.asyncio
-async def test_setup_unload_and_reload_lifecycle(hass: HomeAssistant, mock_coordinator_init):
+async def test_setup_unload_and_reload_lifecycle(
+    hass: HomeAssistant, mock_coordinator_init
+):
     """Verify clean full configuration lifecycle loops execute completely."""
     entry = MockConfigEntry(domain=DOMAIN, data={"tracking_mode": "zone_radius"})
     entry.add_to_hass(hass)
 
-    with patch("homeassistant.config_entries.ConfigEntries.async_forward_entry_setups", return_value=True) as mock_forward:
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
+        return_value=True,
+    ) as mock_forward:
         assert await hass.config_entries.async_setup(entry.entry_id) is True
         mock_coordinator_init.async_config_entry_first_refresh.assert_called_once()
         assert DOMAIN in hass.data
@@ -40,12 +46,17 @@ async def test_setup_unload_and_reload_lifecycle(hass: HomeAssistant, mock_coord
     mock_coordinator_init.async_request_refresh.assert_called_once()
 
     # Test Entry Reload Triggering
-    with patch("homeassistant.config_entries.ConfigEntries.async_reload") as mock_reload:
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_reload"
+    ) as mock_reload:
         await hass.config_entries.async_reload(entry.entry_id)
         mock_reload.assert_called_once_with(entry.entry_id)
 
     # Test Unload Lifecycle
-    with patch("homeassistant.config_entries.ConfigEntries.async_unload_platforms", return_value=True) as mock_unload:
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_unload_platforms",
+        return_value=True,
+    ) as mock_unload:
         assert await hass.config_entries.async_unload(entry.entry_id) is True
         # Ruff is happy now because we are actively verifying the call parameters here:
         mock_unload.assert_called_once_with(entry, PLATFORMS)

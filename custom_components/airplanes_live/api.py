@@ -1,4 +1,5 @@
 """API Client for Airplanes.Live."""
+
 import logging
 import aiohttp
 import asyncio
@@ -6,6 +7,7 @@ from typing import Optional
 from .const import API_BASE_URL
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class AirplanesLiveAPI:
     """Async API Client for Airplanes.Live."""
@@ -16,7 +18,7 @@ class AirplanesLiveAPI:
 
     async def _request(self, endpoint: str) -> Optional[dict]:
         url = f"{API_BASE_URL}{endpoint}"
-        
+
         async with self._lock:
             try:
                 await asyncio.sleep(1.1)

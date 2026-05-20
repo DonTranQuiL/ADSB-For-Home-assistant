@@ -1,12 +1,14 @@
 import pytest
 from unittest.mock import MagicMock
-from homeassistant.const import EntityCategory
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import DOMAIN, MODE_ZONE
+from custom_components.airplanes_live.const import DOMAIN
 from custom_components.airplanes_live.sensor import (
-    AirplanesLiveOverviewSensor, AirplanesLiveStatSensor, AirplanesLiveCategorySensor
+    AirplanesLiveOverviewSensor,
+    AirplanesLiveStatSensor,
+    AirplanesLiveCategorySensor,
 )
+
 
 @pytest.fixture
 def mock_coord_data():
@@ -22,8 +24,8 @@ def mock_coord_data():
             "flight": "KLM123",
             "distance_meter": 1250.5,
             "desc": "Boeing 737",
-            "alt_baro": 4000
-        }
+            "alt_baro": 4000,
+        },
     }
     return coord
 
@@ -31,10 +33,10 @@ def mock_coord_data():
 def test_overview_sensor_attributes(mock_coord_data):
     """Verify airspace overview telemetry maps target data states cleanly."""
     sensor = AirplanesLiveOverviewSensor(mock_coord_data)
-    
+
     assert sensor.native_value == 5
     assert sensor.unique_id == "airspace_overview_test_id"
-    
+
     attrs = sensor.extra_state_attributes
     assert attrs["Closest Flight"] == "KLM123"
     assert attrs["Closest Distance (m)"] == 1250.5
@@ -51,7 +53,9 @@ def test_overview_sensor_no_closest(mock_coord_data):
 
 def test_stat_and_category_sensors(mock_coord_data):
     """Verify category splitting and entity isolation categories match completely."""
-    entered_sensor = AirplanesLiveStatSensor(mock_coord_data, "entered", "Entered", "mdi:icon")
+    entered_sensor = AirplanesLiveStatSensor(
+        mock_coord_data, "entered", "Entered", "mdi:icon"
+    )
     heli_sensor = AirplanesLiveCategorySensor(mock_coord_data, "helicopter")
 
     assert entered_sensor.native_value == 2

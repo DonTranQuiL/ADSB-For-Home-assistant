@@ -1,6 +1,7 @@
 import voluptuous as vol
 from homeassistant import config_entries
-from .const import DOMAIN, CONF_RADIUS, CONF_LATITUDE, CONF_LONGITUDE
+from .const import CONF_RADIUS, CONF_LATITUDE, CONF_LONGITUDE
+
 
 class AirplanesLiveOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry):
@@ -12,9 +13,18 @@ class AirplanesLiveOptionsFlow(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema({
-                vol.Required(CONF_LATITUDE, default=self.config_entry.data.get(CONF_LATITUDE)): float,
-                vol.Required(CONF_LONGITUDE, default=self.config_entry.data.get(CONF_LONGITUDE)): float,
-                vol.Required(CONF_RADIUS, default=self.config_entry.data.get(CONF_RADIUS)): int,
-            })
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_LATITUDE, default=self.config_entry.data.get(CONF_LATITUDE)
+                    ): float,
+                    vol.Required(
+                        CONF_LONGITUDE,
+                        default=self.config_entry.data.get(CONF_LONGITUDE),
+                    ): float,
+                    vol.Required(
+                        CONF_RADIUS, default=self.config_entry.data.get(CONF_RADIUS)
+                    ): int,
+                }
+            ),
         )
