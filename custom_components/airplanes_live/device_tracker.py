@@ -13,12 +13,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     @callback
     def _update():
         new = []
-        # OPMERKING: We itereren hier ALLEEN over de specifiek getrackte vliegtuigen!
+        
         for ac in coordinator.data.get("tracked_aircraft", []):
             if ac.get("hex") not in tracked_hexes:
                 tracked_hexes.add(ac.get("hex"))
                 new.append(AirplanesLiveTracker(coordinator, ac.get("hex")))
-        if new: async_add_entities(new)
+        if new:
+            async_add_entities(new)
         
     coordinator.async_add_listener(_update)
     _update()
