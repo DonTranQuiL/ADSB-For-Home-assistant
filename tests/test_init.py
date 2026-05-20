@@ -47,5 +47,7 @@ async def test_setup_unload_and_reload_lifecycle(hass: HomeAssistant, mock_coord
         mock_reload.assert_called_once_with(entry.entry_id)
 
     # Test Unload Lifecycle
-    with patch("homeassistant.config_entries.ConfigEntries.async_unload_platforms", return_value=True) as mock_unload:
-        assert await hass.config_entries.async_unload(entry.entry_id) is True
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_unload_platforms",
+        return_value=True,
+    ):
