@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📡 Airplanes.Live Tracker (2026 Edition)
+# 📡 Airplanes.Live Tracker (BETA TESTING) (2026 Edition)
 **The high-performance, zero-bloat ADS-B airspace monitor for Home Assistant.**
 </div>
 
