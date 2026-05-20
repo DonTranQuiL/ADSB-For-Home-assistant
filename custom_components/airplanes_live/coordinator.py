@@ -41,9 +41,16 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
 
     def classify_aircraft(self, ac):
         desc = ac.get("desc", "").lower()
-        if "heli" in desc or "rotor" in desc: return "helicopter"
-        if "military" in desc: return "military"
-        if ac.get("flight", "").startswith(("KLM", "PH", "TRA")): return "commercial"
+        
+        if "heli" in desc or "rotor" in desc: 
+            return "helicopter"
+        
+        if "military" in desc: 
+            return "military"
+        
+        if ac.get("flight", "").startswith(("KLM", "PH", "TRA")): 
+            return "commercial"
+            
         return "private"
 
     async def _async_update_data(self):
@@ -66,7 +73,8 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
                 for ac in aircraft_list:
                     ac_lat = ac.get("lat")
                     ac_lon = ac.get("lon")
-                    if ac_lat is None or ac_lon is None: continue
+                    if ac_lat is None or ac_lon is None: 
+                        continue
                         
                     dist_meters = haversine_distance(lat, lon, ac_lat, ac_lon) * 1852.0
                     
