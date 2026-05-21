@@ -2,19 +2,19 @@
   "config": {
     "step": {
       "user": { "title": "Seurantatila", "data": { "tracking_mode": "Tila" } },
-      "zone": { "title": "Vyöhykkeen asetukset", "data": { "latitude": "Leveysaste", "longitude": "Pituusaste", "radius": "Säde (metriä)" } },
+      "zone": { "title": "VyÃ¶hykkeen asetukset", "data": { "latitude": "Leveysaste", "longitude": "Pituusaste", "radius": "SÃ¤de (metriÃ¤)" } },
       "single": { "title": "Kohteen seuranta", "data": { "identifier_type": "Tunnisteen tyyppi", "identifier": "Tunniste" } }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live Määritys",
+        "title": "Airplanes.Live MÃ¤Ã¤ritys",
         "data": {
-          "radius": "Vyöhykkeen säde (metriä)",
-          "enable_tracker": "Ota karttaseuranta käyttöön (Poista valinta piilottaaksesi)",
-          "global_emergency": "Ota käyttöön globaali hätätutka (Squawk 7700)",
-          "global_military": "Ota käyttöön globaali sotilastutka"
+          "radius": "VyÃ¶hykkeen sÃ¤de (metriÃ¤)",
+          "enable_tracker": "Ota karttaseuranta kÃ¤yttÃ¶Ã¶n (Poista valinta piilottaaksesi)",
+          "global_emergency": "Ota kÃ¤yttÃ¶Ã¶n globaali hÃ¤tÃ¤tutka (Squawk 7700)",
+          "global_military": "Ota kÃ¤yttÃ¶Ã¶n globaali sotilastutka"
         }
       }
     }
