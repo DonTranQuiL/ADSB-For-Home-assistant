@@ -1,20 +1,20 @@
 {
   "config": {
     "step": {
-      "user": { "title": "????", "data": { "tracking_mode": "??" } },
-      "zone": { "title": "????", "data": { "latitude": "??", "longitude": "??", "radius": "?? (??)" } },
-      "single": { "title": "?????", "data": { "identifier_type": "?????", "identifier": "???" } }
+      "user": { "title": "追蹤模式", "data": { "tracking_mode": "模式" } },
+      "zone": { "title": "區域設定", "data": { "latitude": "緯度", "longitude": "經度", "radius": "半徑 (公尺)" } },
+      "single": { "title": "目標追蹤器", "data": { "identifier_type": "標識符類型", "identifier": "標識符" } }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live ??",
+        "title": "Airplanes.Live 配置",
         "data": {
-          "radius": "???? (??)",
-          "enable_tracker": "????????? (???????)",
-          "global_emergency": "???????? (Squawk 7700)",
-          "global_military": "????????"
+          "radius": "區域半徑 (公尺)",
+          "enable_tracker": "啟用地圖設備追蹤器 (取消勾選以隱藏)",
+          "global_emergency": "啟用全球緊急雷達 (Squawk 7700)",
+          "global_military": "啟用全球軍事雷達"
         }
       }
     }
