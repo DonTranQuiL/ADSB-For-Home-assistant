@@ -2,8 +2,8 @@
   "config": {
     "step": {
       "user": { "title": "Sporingstilstand", "data": { "tracking_mode": "Tilstand" } },
-      "zone": { "title": "Zoneindstillinger", "data": { "latitude": "Breddegrad", "longitude": "Længdegrad", "radius": "Radius (meter)" } },
-      "single": { "title": "Målsporer", "data": { "identifier_type": "Identifikatortype", "identifier": "Identifikator" } }
+      "zone": { "title": "Zoneindstillinger", "data": { "latitude": "Breddegrad", "longitude": "LÃ¦ngdegrad", "radius": "Radius (meter)" } },
+      "single": { "title": "MÃ¥lsporer", "data": { "identifier_type": "Identifikatortype", "identifier": "Identifikator" } }
     }
   },
   "options": {
@@ -12,9 +12,9 @@
         "title": "Airplanes.Live Konfiguration",
         "data": {
           "radius": "Zoneradius (meter)",
-          "enable_tracker": "Aktivér kortsporere (Fjern markering for at skjule)",
-          "global_emergency": "Aktivér global nødradar (Squawk 7700)",
-          "global_military": "Aktivér global militærradar"
+          "enable_tracker": "AktivÃ©r kortsporere (Fjern markering for at skjule)",
+          "global_emergency": "AktivÃ©r global nÃ¸dradar (Squawk 7700)",
+          "global_military": "AktivÃ©r global militÃ¦rradar"
         }
       }
     }
