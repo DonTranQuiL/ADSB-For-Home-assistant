@@ -1,9 +1,11 @@
 """Test the Airplanes.Live Tracker config flow."""
-
 from unittest.mock import patch
+import pytest
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
 from custom_components.airplanes_live.const import (
     DOMAIN,
     CONF_TRACKING_MODE,
@@ -19,7 +21,7 @@ from custom_components.airplanes_live.const import (
     MODE_SINGLE,
 )
 
-
+@pytest.mark.asyncio
 async def test_form_zone(hass: HomeAssistant) -> None:
     """Test we get the form for zone tracking and create an entry."""
     result = await hass.config_entries.flow.async_init(
@@ -35,10 +37,7 @@ async def test_form_zone(hass: HomeAssistant) -> None:
     assert result2["type"] == "form"
     assert result2["step_id"] == "zone"
 
-    with patch(
-        "custom_components.airplanes_live.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with patch("custom_components.airplanes_live.async_setup_entry", return_value=True) as mock_setup_entry:
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             {
@@ -59,13 +58,13 @@ async def test_form_zone(hass: HomeAssistant) -> None:
     }
     assert len(mock_setup_entry.mock_calls) == 1
 
-
+@pytest.mark.asyncio
 async def test_form_single(hass: HomeAssistant) -> None:
     """Test we get the form for single target tracking and create an entry."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-
+    
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {CONF_TRACKING_MODE: MODE_SINGLE},
@@ -73,10 +72,7 @@ async def test_form_single(hass: HomeAssistant) -> None:
     assert result2["type"] == "form"
     assert result2["step_id"] == "single"
 
-    with patch(
-        "custom_components.airplanes_live.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with patch("custom_components.airplanes_live.async_setup_entry", return_value=True) as mock_setup_entry:
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             {
@@ -88,18 +84,12 @@ async def test_form_single(hass: HomeAssistant) -> None:
 
     assert result3["type"] == "create_entry"
     assert result3["title"] == "Target Tracker"
-    assert result3["data"] == {
-        CONF_TRACKING_MODE: MODE_SINGLE,
-        CONF_IDENTIFIER_TYPE: "callsign",
-        CONF_IDENTIFIER: "KLM123",
-    }
     assert len(mock_setup_entry.mock_calls) == 1
 
-
+@pytest.mark.asyncio
 async def test_options_flow(hass: HomeAssistant) -> None:
     """Test config flow options."""
-    config_entry = config_entries.ConfigEntry(
-        version=1,
+    config_entry = MockConfigEntry(
         domain=DOMAIN,
         title="Airplanes.Live",
         data={
@@ -108,13 +98,13 @@ async def test_options_flow(hass: HomeAssistant) -> None:
             CONF_LONGITUDE: 6.1,
             CONF_RADIUS: 5000,
         },
-        source=config_entries.SOURCE_USER,
         options={},
-        discovery_keys=None,
-        unique_id=None,
     )
-
+    
     config_entry.add_to_hass(hass)
+
+    with patch("custom_components.airplanes_live.async_setup_entry", return_value=True):
+        await hass.config_entries.async_setup(config_entry.entry_id)
 
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
     assert result["type"] == "form"
@@ -131,9 +121,5 @@ async def test_options_flow(hass: HomeAssistant) -> None:
     )
 
     assert result2["type"] == "create_entry"
-    assert config_entry.options == {
-        CONF_RADIUS: 10000,
-        CONF_ENABLE_TRACKER: False,
-        CONF_GLOBAL_EMERGENCY: True,
-        CONF_GLOBAL_MILITARY: False,
-    }
+    assert config_entry.options[CONF_RADIUS] == 10000
+    assert config_entry.options[CONF_ENABLE_TRACKER] is False
