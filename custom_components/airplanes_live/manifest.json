@@ -5,6 +5,7 @@
     "@DonTranQuiL"
   ],
   "config_flow": true,
+  "dependencies": ["http"],
   "documentation": "https://github.com/DonTranQuiL/airplanes_live",
   "integration_type": "service",
   "iot_class": "cloud_polling",
