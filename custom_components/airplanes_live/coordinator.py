@@ -44,17 +44,17 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL))
 
     def add_track(self, identifier):
-        if identifier: 
-            self.tracked_list.add
-                (identifier.strip().upper().replace(" ", "")
+        if identifier:
+            self.tracked_list.add(
+                identifier.strip().upper().replace(" ", "")
             )
-        
+
     def remove_track(self, identifier):
-        if identifier: 
-            self.tracked_list.discard
-                (identifier.strip().upper().replace(" ", "")
+        if identifier:
+            self.tracked_list.discard(
+                identifier.strip().upper().replace(" ", "")
             )
-        
+
     def clear_tracks(self):
         self.tracked_list.clear()
 
