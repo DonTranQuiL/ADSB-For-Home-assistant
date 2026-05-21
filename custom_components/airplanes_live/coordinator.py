@@ -54,7 +54,7 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
         # --- FIX: TRACKING FIX AFTER RESTART ---
         state = hass.states.get("sensor.additional_tracked")
         if state and state.state not in ["unknown", "unavailable", "0"]:
-            for item in state.state.split(','):
+            for item in state.state.split(","):
                 self.add_track(item.strip())
         # -----------------------------------------------
 
