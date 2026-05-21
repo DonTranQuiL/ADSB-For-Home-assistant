@@ -4,12 +4,18 @@ from homeassistant.components.device_tracker.const import SourceType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.airplanes_live.const import DOMAIN
-from custom_components.airplanes_live.device_tracker import AirplanesLiveTracker, async_setup_entry
+from custom_components.airplanes_live.device_tracker import (
+    AirplanesLiveTracker,
+    async_setup_entry,
+)
+
 
 @pytest.fixture
 def mock_tracker_coord():
     coord = MagicMock()
-    coord.config_entry = MockConfigEntry(domain=DOMAIN, entry_id="tracker_test", options={})
+    coord.config_entry = MockConfigEntry(
+        domain=DOMAIN, entry_id="tracker_test", options={}
+    )
     coord.data = {
         "tracked_aircraft": [
             {
@@ -24,11 +30,12 @@ def mock_tracker_coord():
                 "alt_baro": 1500,
                 "track": 180,
                 "r": "PH-XY",
-                "distance_meter": 500
+                "distance_meter": 500,
             }
         ]
     }
     return coord
+
 
 @pytest.mark.asyncio
 async def test_async_setup_entry_device_tracker(hass, mock_tracker_coord):
@@ -38,6 +45,7 @@ async def test_async_setup_entry_device_tracker(hass, mock_tracker_coord):
 
     await async_setup_entry(hass, entry, async_add_entities)
     assert async_add_entities.called
+
 
 def test_device_tracker_properties_and_icons(mock_tracker_coord):
     tracker_heli = AirplanesLiveTracker(mock_tracker_coord, "A4B5C6")
