@@ -1,20 +1,20 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Izleme Modu", "data": { "tracking_mode": "Mod" } },
-      "zone": { "title": "B�lge Ayarlari", "data": { "latitude": "Enlem", "longitude": "Boylam", "radius": "Yari�ap (metre)" } },
-      "single": { "title": "Hedef Izleyici", "data": { "identifier_type": "Tanimlayici T�r�", "identifier": "Tanimlayici" } }
+      "user": { "title": "İzleme Modu", "data": { "tracking_mode": "Mod" } },
+      "zone": { "title": "Bölge Ayarları", "data": { "latitude": "Enlem", "longitude": "Boylam", "radius": "Yarıçap (metre)" } },
+      "single": { "title": "Hedef İzleyici", "data": { "identifier_type": "Tanımlayıcı Türü", "identifier": "Tanımlayıcı" } }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live Yapilandirmasi",
+        "title": "Airplanes.Live Yapılandırması",
         "data": {
-          "radius": "B�lge Yari�api (metre)",
-          "enable_tracker": "Harita Cihaz Izleyicilerini Etkinlestir (Gizlemek i�in isareti kaldirin)",
-          "global_emergency": "K�resel Acil Durum Radarini Etkinlestir (Squawk 7700)",
-          "global_military": "K�resel Askeri Radari Etkinlestir"
+          "radius": "Bölge Yarıçapı (metre)",
+          "enable_tracker": "Harita Cihaz İzleyicilerini Etkinleştir (Gizlemek için işareti kaldırın)",
+          "global_emergency": "Küresel Acil Durum Radarını Etkinleştir (Squawk 7700)",
+          "global_military": "Küresel Askeri Radarı Etkinleştir"
         }
       }
     }
