@@ -1,5 +1,4 @@
 """Constants for the Airplanes.Live integration."""
-from datetime import timedelta
 
 DOMAIN = "airplanes_live"
 NAME = "Airplanes.Live Tracker"
@@ -23,5 +22,5 @@ CONF_ENABLE_TRACKER = "enable_tracker"
 MODE_SINGLE = "single_aircraft"
 MODE_ZONE = "zone_radius"
 
-DEFAULT_SCAN_INTERVAL = 10 
+DEFAULT_SCAN_INTERVAL = 10
 PLATFORMS = ["sensor", "device_tracker", "text", "button"]

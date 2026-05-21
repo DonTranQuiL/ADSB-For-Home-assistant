@@ -1,4 +1,5 @@
 """API Client for Airplanes.Live."""
+
 import logging
 import aiohttp
 import asyncio
@@ -7,6 +8,7 @@ from typing import Optional
 from .const import API_BASE_URL
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class AirplanesLiveAPI:
     def __init__(self, session: aiohttp.ClientSession):
@@ -48,27 +50,31 @@ class AirplanesLiveAPI:
         res = await self._request(f"{API_BASE_URL}/mil")
         return res.get("ac", []) if res else []
 
-    async def get_planespotters_photo(self, registration: str, hex_code: str = None) -> Optional[str]:
+    async def get_planespotters_photo(
+        self, registration: str, hex_code: str = None
+    ) -> Optional[str]:
         """Haal de live fotolink op via Registratie of Hex."""
-        
+
         async def fetch_photo_from_url(url: str):
             data = await self._request(url)
             if data and "photos" in data and len(data["photos"]) > 0:
                 photo = data["photos"][0]
                 # Planespotters gebruikt thumbnail_large voor de beste kleine resolutie!
-                return photo.get("thumbnail_large", {}).get("src") or photo.get("thumbnail", {}).get("src")
+                return photo.get("thumbnail_large", {}).get("src") or photo.get(
+                    "thumbnail", {}
+                ).get("src")
             return None
 
         if registration and registration != "Unknown":
             url = f"https://api.planespotters.net/pub/photos/reg/{registration.strip()}"
             photo_url = await fetch_photo_from_url(url)
-            if photo_url: 
+            if photo_url:
                 return photo_url
 
         if hex_code and hex_code != "Unknown":
             url = f"https://api.planespotters.net/pub/photos/hex/{hex_code.strip()}"
             photo_url = await fetch_photo_from_url(url)
-            if photo_url: 
+            if photo_url:
                 return photo_url
-            
+
         return None
