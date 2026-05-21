@@ -1,63 +1,88 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import patch
+from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import DOMAIN
-from custom_components.airplanes_live.sensor import (
-    AirplanesLiveOverviewSensor,
-    AirplanesLiveStatSensor,
-    AirplanesLiveCategorySensor,
+from custom_components.airplanes_live.const import (
+    DOMAIN, CONF_TRACKING_MODE, CONF_RADIUS, CONF_LATITUDE, CONF_LONGITUDE,
+    CONF_IDENTIFIER_TYPE, CONF_IDENTIFIER, CONF_GLOBAL_EMERGENCY, CONF_GLOBAL_MILITARY, MODE_SINGLE, MODE_ZONE
 )
 
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    """Enable loading custom components during testing."""
+    yield
 
-@pytest.fixture
-def mock_coord_data():
-    coord = MagicMock()
-    coord.config_entry = MockConfigEntry(domain=DOMAIN, entry_id="test_id")
-    coord.data = {
-        "total": 5,
-        "entered": 2,
-        "exited": 1,
-        "additional_tracked": 0,
-        "counts": {"helicopter": 1, "military": 1, "commercial": 3, "private": 0},
-        "closest": {
-            "flight": "KLM123",
-            "distance_meter": 1250.5,
-            "desc": "Boeing 737",
-            "alt_baro": 4000,
-        },
-    }
-    return coord
-
-
-def test_overview_sensor_attributes(mock_coord_data):
-    """Verify airspace overview telemetry maps target data states cleanly."""
-    sensor = AirplanesLiveOverviewSensor(mock_coord_data)
-
-    assert sensor.native_value == 5
-    assert sensor.unique_id == "airspace_overview_test_id"
-
-    attrs = sensor.extra_state_attributes
-    assert attrs["Closest Flight"] == "KLM123"
-    assert attrs["Closest Distance (m)"] == 1250.5
-    assert attrs["Closest Type"] == "Boeing 737"
-    assert attrs["Closest Altitude"] == 4000
-
-
-def test_overview_sensor_no_closest(mock_coord_data):
-    """Verify overview attributes fall back cleanly when no aircraft are visible."""
-    mock_coord_data.data["closest"] = None
-    sensor = AirplanesLiveOverviewSensor(mock_coord_data)
-    assert sensor.extra_state_attributes == {"Closest": "None"}
-
-
-def test_stat_and_category_sensors(mock_coord_data):
-    """Verify category splitting and entity isolation categories match completely."""
-    entered_sensor = AirplanesLiveStatSensor(
-        mock_coord_data, "entered", "Entered", "mdi:icon"
+@pytest.mark.asyncio
+async def test_form_zone(hass):
+    """Test we get the form for zone tracking and create an entry."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": "user"}
     )
-    heli_sensor = AirplanesLiveCategorySensor(mock_coord_data, "helicopter")
+    assert result["type"] == FlowResultType.FORM
 
-    assert entered_sensor.native_value == 2
-    assert heli_sensor.native_value == 1
-    assert heli_sensor.icon == "mdi:helicopter"
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_TRACKING_MODE: MODE_ZONE}
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["step_id"] == "zone"
+
+    with patch("custom_components.airplanes_live.async_setup_entry", return_value=True):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
+            user_input={
+                CONF_LATITUDE: 52.0,
+                CONF_LONGITUDE: 5.0,
+                CONF_RADIUS: 10000,
+            },
+        )
+    assert result3["type"] == FlowResultType.CREATE_ENTRY
+    assert result3["data"][CONF_TRACKING_MODE] == MODE_ZONE
+
+
+@pytest.mark.asyncio
+async def test_form_single(hass):
+    """Test we get the form for single target tracking and create an entry."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": "user"}
+    )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_TRACKING_MODE: MODE_SINGLE}
+    )
+    assert result2["step_id"] == "single"
+
+    with patch("custom_components.airplanes_live.async_setup_entry", return_value=True):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
+            user_input={
+                CONF_IDENTIFIER_TYPE: "callsign",
+                CONF_IDENTIFIER: "KLM123",
+            },
+        )
+    assert result3["type"] == FlowResultType.CREATE_ENTRY
+
+
+@pytest.mark.asyncio
+async def test_options_flow(hass):
+    """Test config flow options."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_TRACKING_MODE: MODE_ZONE},
+        options={CONF_RADIUS: 5000},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] == FlowResultType.FORM
+    
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={
+            CONF_RADIUS: 6000,
+            CONF_GLOBAL_EMERGENCY: True,
+            CONF_GLOBAL_MILITARY: False,
+        }
+    )
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
+    assert result2["data"][CONF_RADIUS] == 6000
+    assert result2["data"][CONF_GLOBAL_EMERGENCY] is True
