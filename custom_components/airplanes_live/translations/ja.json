@@ -1,20 +1,20 @@
 {
   "config": {
     "step": {
-      "user": { "title": "?????", "data": { "tracking_mode": "???" } },
-      "zone": { "title": "?????", "data": { "latitude": "??", "longitude": "??", "radius": "?? (????)" } },
-      "single": { "title": "??????????", "data": { "identifier_type": "??????", "identifier": "???" } }
+      "user": { "title": "追跡モード", "data": { "tracking_mode": "モード" } },
+      "zone": { "title": "ゾーン設定", "data": { "latitude": "緯度", "longitude": "経度", "radius": "半径 (メートル)" } },
+      "single": { "title": "ターゲットトラッカー", "data": { "identifier_type": "識別子タイプ", "identifier": "識別子" } }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live ??",
+        "title": "Airplanes.Live 設定",
         "data": {
-          "radius": "????? (????)",
-          "enable_tracker": "?????????????????? (??????????)",
-          "global_emergency": "????????????????? (Squawk 7700)",
-          "global_military": "?????????????????"
+          "radius": "ゾーン半径 (メートル)",
+          "enable_tracker": "マップデバイストラッカーを有効にする (非表示にするにはオフ)",
+          "global_emergency": "グローバル緊急レーダーを有効にする (Squawk 7700)",
+          "global_military": "グローバル軍事レーダーを有効にする"
         }
       }
     }
