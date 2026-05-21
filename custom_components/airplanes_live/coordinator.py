@@ -44,10 +44,16 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL))
 
     def add_track(self, identifier):
-        if identifier: self.tracked_list.add(identifier.strip().upper().replace(" ", ""))
+        if identifier: 
+            self.tracked_list.add
+                (identifier.strip().upper().replace(" ", "")
+            )
         
     def remove_track(self, identifier):
-        if identifier: self.tracked_list.discard(identifier.strip().upper().replace(" ", ""))
+        if identifier: 
+            self.tracked_list.discard
+                (identifier.strip().upper().replace(" ", "")
+            )
         
     def clear_tracks(self):
         self.tracked_list.clear()
@@ -60,9 +66,15 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
 
     def classify_aircraft(self, ac):
         desc = ac.get("desc", "").lower()
-        if "heli" in desc or "rotor" in desc: return "helicopter"
-        if "military" in desc: return "military"
-        if ac.get("flight", "").startswith(("KLM", "PH", "TRA")): return "commercial"
+        
+        if "heli" in desc or "rotor" in desc: 
+            return "helicopter"
+            
+        if "military" in desc: 
+            return "military"
+            
+        if ac.get("flight", "").startswith(("KLM", "PH", "TRA")): 
+            return "commercial"
         return "private"
 
     async def _async_update_data(self):
@@ -86,7 +98,8 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
                 
                 for ac in aircraft_list:
                     ac_lat, ac_lon = ac.get("lat"), ac.get("lon")
-                    if ac_lat is None or ac_lon is None: continue
+                    if ac_lat is None or ac_lon is None: 
+                        continue
                         
                     dist_meters = haversine_distance(home_lat, home_lon, ac_lat, ac_lon) * 1852.0
                     
