@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": { "title": "Tracking-Modus", "data": { "tracking_mode": "Modus" } },
-      "zone": { "title": "Zoneneinstellungen", "data": { "latitude": "Breitengrad", "longitude": "L‰ngengrad", "radius": "Radius (Meter)" } },
+      "zone": { "title": "Zoneneinstellungen", "data": { "latitude": "Breitengrad", "longitude": "L√§ngengrad", "radius": "Radius (Meter)" } },
       "single": { "title": "Ziel-Tracker", "data": { "identifier_type": "Kennungstyp", "identifier": "Kennung" } }
     }
   },
@@ -14,7 +14,7 @@
           "radius": "Zonenradius (Meter)",
           "enable_tracker": "Karten-Tracker aktivieren (Deaktivieren zum Ausblenden)",
           "global_emergency": "Globales Notfallradar aktivieren (Squawk 7700)",
-          "global_military": "Globales Milit‰rradar aktivieren"
+          "global_military": "Globales Milit√§rradar aktivieren"
         }
       }
     }
