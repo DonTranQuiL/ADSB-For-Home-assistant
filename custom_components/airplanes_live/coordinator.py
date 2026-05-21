@@ -115,13 +115,52 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
         if flight:
             if re.match(r"^[A-Z]{3}\d", flight):
                 return "commercial"
-            
+
             commercial_prefixes = (
-                "NJE", "EJA", "VJT", "FLX", "WUP", "AHO", "GAC", "QQE", "LUX", "TAG", 
-                "EJM", "CLY", "SLR", "JAS", "CLA", "DCS", "JFA", "FLY", "FYG", "SVW", 
-                "XGO", "AWC", "HFY", "LYX", "TVS", "EXS", "TOM", "TUI", "CND", "MPH", 
-                "BTI", "FDX", "UPS", "DHL", "BCS", "BOX", "GTI", "PAC", "CKS", "TAY", 
-                "CCX", "KLM", "PH", "TRA"
+                "NJE",
+                "EJA",
+                "VJT",
+                "FLX",
+                "WUP",
+                "AHO",
+                "GAC",
+                "QQE",
+                "LUX",
+                "TAG",
+                "EJM",
+                "CLY",
+                "SLR",
+                "JAS",
+                "CLA",
+                "DCS",
+                "JFA",
+                "FLY",
+                "FYG",
+                "SVW",
+                "XGO",
+                "AWC",
+                "HFY",
+                "LYX",
+                "TVS",
+                "EXS",
+                "TOM",
+                "TUI",
+                "CND",
+                "MPH",
+                "BTI",
+                "FDX",
+                "UPS",
+                "DHL",
+                "BCS",
+                "BOX",
+                "GTI",
+                "PAC",
+                "CKS",
+                "TAY",
+                "CCX",
+                "KLM",
+                "PH",
+                "TRA",
             )
             if flight.startswith(commercial_prefixes):
                 return "commercial"
