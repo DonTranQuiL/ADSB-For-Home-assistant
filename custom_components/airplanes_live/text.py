@@ -45,7 +45,8 @@ class AirplanesLiveRemoveText(AirplanesLiveTextBase):
 
     async def async_set_value(self, value: str) -> None:
         clean_val = value.strip().upper().replace(" ", "")
-        if not clean_val: return
+        if not clean_val: 
+            return
         
         # BULLETPROOF GHOST CLEANUP VOOR STANDALONE TRACKERS
         registry = er.async_get(self.hass)
