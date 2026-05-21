@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": { "title": "Izleme Modu", "data": { "tracking_mode": "Mod" } },
+      "zone": { "title": "Bölge Ayarlari", "data": { "latitude": "Enlem", "longitude": "Boylam", "radius": "Yariçap (metre)" } },
+      "single": { "title": "Hedef Izleyici", "data": { "identifier_type": "Tanimlayici Türü", "identifier": "Tanimlayici" } }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Airplanes.Live Yapilandirmasi",
+        "data": {
+          "radius": "Bölge Yariçapi (metre)",
+          "enable_tracker": "Harita Cihaz Izleyicilerini Etkinlestir (Gizlemek için isareti kaldirin)",
+          "global_emergency": "Küresel Acil Durum Radarini Etkinlestir (Squawk 7700)",
+          "global_military": "Küresel Askeri Radari Etkinlestir"
+        }
+      }
+    }
+  }
+}

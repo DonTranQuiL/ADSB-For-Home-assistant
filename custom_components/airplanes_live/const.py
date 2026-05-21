@@ -1,4 +1,5 @@
 """Constants for the Airplanes.Live integration."""
+from datetime import timedelta
 
 DOMAIN = "airplanes_live"
 NAME = "Airplanes.Live Tracker"
@@ -12,14 +13,15 @@ CONF_RADIUS = "radius"
 CONF_LATITUDE = "latitude"
 CONF_LONGITUDE = "longitude"
 
-# Nieuwe FR24-stijl opties
 CONF_TRACKED_LIST = "tracked_list"
-CONF_ADD_TRACK = "add_track"
-CONF_REMOVE_TRACK = "remove_track"
-CONF_CLEAR_TRACK = "clear_track"
+CONF_GLOBAL_EMERGENCY = "global_emergency"
+CONF_GLOBAL_MILITARY = "global_military"
+
+# De missende sleutel voor de Device Trackers:
+CONF_ENABLE_TRACKER = "enable_tracker"
 
 MODE_SINGLE = "single_aircraft"
 MODE_ZONE = "zone_radius"
 
-DEFAULT_SCAN_INTERVAL = 10
-PLATFORMS = ["sensor", "device_tracker"]
+DEFAULT_SCAN_INTERVAL = 10 
+PLATFORMS = ["sensor", "device_tracker", "text", "button"]

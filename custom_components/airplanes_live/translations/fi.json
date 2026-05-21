@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": { "title": "Seurantatila", "data": { "tracking_mode": "Tila" } },
+      "zone": { "title": "Vyöhykkeen asetukset", "data": { "latitude": "Leveysaste", "longitude": "Pituusaste", "radius": "Säde (metriä)" } },
+      "single": { "title": "Kohteen seuranta", "data": { "identifier_type": "Tunnisteen tyyppi", "identifier": "Tunniste" } }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Airplanes.Live Määritys",
+        "data": {
+          "radius": "Vyöhykkeen säde (metriä)",
+          "enable_tracker": "Ota karttaseuranta käyttöön (Poista valinta piilottaaksesi)",
+          "global_emergency": "Ota käyttöön globaali hätätutka (Squawk 7700)",
+          "global_military": "Ota käyttöön globaali sotilastutka"
+        }
+      }
+    }
+  }
+}

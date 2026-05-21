@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": { "title": "Tracking-Modus", "data": { "tracking_mode": "Modus" } },
+      "zone": { "title": "Zoneneinstellungen", "data": { "latitude": "Breitengrad", "longitude": "Längengrad", "radius": "Radius (Meter)" } },
+      "single": { "title": "Ziel-Tracker", "data": { "identifier_type": "Kennungstyp", "identifier": "Kennung" } }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Airplanes.Live Konfiguration",
+        "data": {
+          "radius": "Zonenradius (Meter)",
+          "enable_tracker": "Karten-Tracker aktivieren (Deaktivieren zum Ausblenden)",
+          "global_emergency": "Globales Notfallradar aktivieren (Squawk 7700)",
+          "global_military": "Globales Militärradar aktivieren"
+        }
+      }
+    }
+  }
+}

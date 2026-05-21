@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": { "title": "Tryb sledzenia", "data": { "tracking_mode": "Tryb" } },
+      "zone": { "title": "Ustawienia strefy", "data": { "latitude": "Szerokosc geograficzna", "longitude": "Dlugosc geograficzna", "radius": "Promien (metry)" } },
+      "single": { "title": "Sledzenie celu", "data": { "identifier_type": "Typ identyfikatora", "identifier": "Identyfikator" } }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Konfiguracja Airplanes.Live",
+        "data": {
+          "radius": "Promien strefy (metry)",
+          "enable_tracker": "Wlacz lokalizatory na mapie (Odznacz, aby ukryc)",
+          "global_emergency": "Wlacz globalny radar alarmowy (Squawk 7700)",
+          "global_military": "Wlacz globalny radar wojskowy"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": { "title": "Modalità di tracciamento", "data": { "tracking_mode": "Modalità" } },
+      "zone": { "title": "Impostazioni Zona", "data": { "latitude": "Latitudine", "longitude": "Longitudine", "radius": "Raggio (metri)" } },
+      "single": { "title": "Tracciatore di bersagli", "data": { "identifier_type": "Tipo di identificatore", "identifier": "Identificatore" } }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configurazione Airplanes.Live",
+        "data": {
+          "radius": "Raggio della zona (metri)",
+          "enable_tracker": "Abilita tracciatori sulla mappa (Deseleziona per nascondere)",
+          "global_emergency": "Abilita Radar di Emergenza Globale (Squawk 7700)",
+          "global_military": "Abilita Radar Militare Globale"
+        }
+      }
+    }
+  }
+}
