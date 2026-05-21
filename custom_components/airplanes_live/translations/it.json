@@ -1,7 +1,7 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Modalit‡ di tracciamento", "data": { "tracking_mode": "Modalit‡" } },
+      "user": { "title": "Modalit√† di tracciamento", "data": { "tracking_mode": "Modalit√†" } },
       "zone": { "title": "Impostazioni Zona", "data": { "latitude": "Latitudine", "longitude": "Longitudine", "radius": "Raggio (metri)" } },
       "single": { "title": "Tracciatore di bersagli", "data": { "identifier_type": "Tipo di identificatore", "identifier": "Identificatore" } }
     }
