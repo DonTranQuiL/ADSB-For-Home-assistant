@@ -1,24 +1,17 @@
 name: "CodeQL Security Analysis"
-# BETTER VERSION BY THE ITALIAN DON
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
   schedule:
-    # Weekly scan every Saturday at 22:17 UTC
     - cron: '17 22 * * 6'
 
   workflow_dispatch:
 
-# Prevent duplicate scans on rapid successive pushes
 concurrency:
   group: codeql-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -32,74 +25,29 @@ permissions:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     timeout-minutes: 45
 
     strategy:
       fail-fast: false
-
       matrix:
-        include:
-          # GitHub Actions workflow analysis
-          - language: actions
-            build-mode: none
-            os: ubuntu-latest
-
-          # Python source analysis
-          - language: python
-            build-mode: none
-            os: ubuntu-latest
-
-          # Uncomment if your repository contains JavaScript or TypeScript
-          # - language: javascript-typescript
-          #   build-mode: none
-          #   os: ubuntu-latest
+        language: [actions, python]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Full history improves CodeQL analysis accuracy
           fetch-depth: 0
 
-      # Python setup
-      - name: Set up Python
-        if: matrix.language == 'python'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
-
-      # Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
+          build-mode: none
+          queries:
+            - uses: security-extended
+            - uses: security-and-quality
 
-          # Extended security + quality query packs
-          queries: |
-            security-extended
-            security-and-quality
-
-      # Manual build section for compiled languages
-      # Only used if build-mode becomes "manual"
-      - name: Manual build
-        if: matrix.build-mode == 'manual'
-        shell: bash
-        run: |
-          echo "Running manual build steps..."
-
-          # Example:
-          # python -m pip install -r requirements.txt
-          # python -m pytest
-          # make build
-
-          echo "Replace this section with your actual build commands."
-          exit 1
-
-      # Run analysis
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
