@@ -1,17 +1,21 @@
 name: "CodeQL Security Analysis"
-#BETTER VERSION BY THE ITALIAN DON
+# BETTER VERSION BY THE ITALIAN DON
+
 on:
   push:
     branches:
       - main
       - develop
+
   pull_request:
     branches:
       - main
       - develop
+
   schedule:
     # Weekly scan every Saturday at 22:17 UTC
     - cron: '17 22 * * 6'
+
   workflow_dispatch:
 
 # Prevent duplicate scans on rapid successive pushes
@@ -33,6 +37,7 @@ jobs:
 
     strategy:
       fail-fast: false
+
       matrix:
         include:
           # GitHub Actions workflow analysis
@@ -57,38 +62,36 @@ jobs:
           # Full history improves CodeQL analysis accuracy
           fetch-depth: 0
 
-      # Optional but recommended for Python repositories
+      # Python setup
       - name: Set up Python
         if: matrix.language == 'python'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
+          cache-dependency-path: requirements.txt
 
-      # Initialize CodeQL with enhanced security and quality queries
+      # Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
 
-          # Extended query suites
+          # Extended security + quality query packs
           queries: |
             security-extended
             security-and-quality
 
-          # Optional custom config file
-          # config-file: ./.github/codeql/codeql-config.yml
-
       # Manual build section for compiled languages
-      # Only runs if build-mode is manually changed to "manual"
+      # Only used if build-mode becomes "manual"
       - name: Manual build
         if: matrix.build-mode == 'manual'
         shell: bash
         run: |
           echo "Running manual build steps..."
 
-          # Example build commands:
+          # Example:
           # python -m pip install -r requirements.txt
           # python -m pytest
           # make build
@@ -96,7 +99,7 @@ jobs:
           echo "Replace this section with your actual build commands."
           exit 1
 
-      # Perform analysis
+      # Run analysis
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
