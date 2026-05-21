@@ -2,18 +2,18 @@
   "config": {
     "step": {
       "user": { "title": "Modo de Rastreamento", "data": { "tracking_mode": "Modo" } },
-      "zone": { "title": "Configurações da Zona", "data": { "latitude": "Latitude", "longitude": "Longitude", "radius": "Raio (metros)" } },
+      "zone": { "title": "ConfiguraÃ§Ãµes da Zona", "data": { "latitude": "Latitude", "longitude": "Longitude", "radius": "Raio (metros)" } },
       "single": { "title": "Rastreador de Alvo", "data": { "identifier_type": "Tipo de Identificador", "identifier": "Identificador" } }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Configuração Airplanes.Live",
+        "title": "ConfiguraÃ§Ã£o Airplanes.Live",
         "data": {
           "radius": "Raio da Zona (metros)",
           "enable_tracker": "Ativar Rastreadores no Mapa (Desmarque para ocultar)",
-          "global_emergency": "Ativar Radar de Emergência Global (Squawk 7700)",
+          "global_emergency": "Ativar Radar de EmergÃªncia Global (Squawk 7700)",
           "global_military": "Ativar Radar Militar Global"
         }
       }
