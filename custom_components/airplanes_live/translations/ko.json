@@ -1,20 +1,20 @@
 {
   "config": {
     "step": {
-      "user": { "title": "?? ??", "data": { "tracking_mode": "??" } },
-      "zone": { "title": "?? ??", "data": { "latitude": "??", "longitude": "??", "radius": "?? (??)" } },
-      "single": { "title": "?? ???", "data": { "identifier_type": "??? ??", "identifier": "???" } }
+      "user": { "title": "추적 모드", "data": { "tracking_mode": "모드" } },
+      "zone": { "title": "영역 설정", "data": { "latitude": "위도", "longitude": "경도", "radius": "반경 (미터)" } },
+      "single": { "title": "목표 추적기", "data": { "identifier_type": "식별자 유형", "identifier": "식별자" } }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live ??",
+        "title": "Airplanes.Live 구성",
         "data": {
-          "radius": "?? ?? (??)",
-          "enable_tracker": "?? ?? ??? ??? (???? ?? ??)",
-          "global_emergency": "??? ?? ??? ??? (Squawk 7700)",
-          "global_military": "??? ?? ??? ???"
+          "radius": "영역 반경 (미터)",
+          "enable_tracker": "지도 장치 추적기 활성화 (숨기려면 선택 해제)",
+          "global_emergency": "글로벌 비상 레이더 활성화 (Squawk 7700)",
+          "global_military": "글로벌 군사 레이더 활성화"
         }
       }
     }
