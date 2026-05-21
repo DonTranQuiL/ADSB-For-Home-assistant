@@ -49,8 +49,14 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
         self.consecutive_errors = 0
         self.last_update_status = "Pending"
         self.last_update_time = None
-
         self.photo_cache = {}
+
+        # --- FIX: TRACKING FIX AFTER RESTART ---
+        state = hass.states.get("sensor.additional_tracked")
+        if state and state.state not in ["unknown", "unavailable", "0"]:
+            for item in state.state.split(','):
+                self.add_track(item.strip())
+        # -----------------------------------------------
 
         super().__init__(
             hass,
