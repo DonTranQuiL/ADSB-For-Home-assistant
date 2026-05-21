@@ -1,6 +1,7 @@
 import logging
 from datetime import timedelta
 import math
+import re
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -102,15 +103,32 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
 
     def classify_aircraft(self, ac):
         desc = ac.get("desc", "").lower()
+        flight = ac.get("flight", "").strip().upper()
+        cat = ac.get("category", "").strip().upper()
 
-        if "heli" in desc or "rotor" in desc:
+        if "heli" in desc or "rotor" in desc or cat == "A7":
             return "helicopter"
 
-        if "military" in desc:
+        if "military" in desc or "mil" in desc or cat == "A6":
             return "military"
 
-        if ac.get("flight", "").startswith(("KLM", "PH", "TRA")):
+        if flight:
+            if re.match(r"^[A-Z]{3}\d", flight):
+                return "commercial"
+            
+            commercial_prefixes = (
+                "NJE", "EJA", "VJT", "FLX", "WUP", "AHO", "GAC", "QQE", "LUX", "TAG", 
+                "EJM", "CLY", "SLR", "JAS", "CLA", "DCS", "JFA", "FLY", "FYG", "SVW", 
+                "XGO", "AWC", "HFY", "LYX", "TVS", "EXS", "TOM", "TUI", "CND", "MPH", 
+                "BTI", "FDX", "UPS", "DHL", "BCS", "BOX", "GTI", "PAC", "CKS", "TAY", 
+                "CCX", "KLM", "PH", "TRA"
+            )
+            if flight.startswith(commercial_prefixes):
+                return "commercial"
+
+        if cat in ["A3", "A4", "A5"]:
             return "commercial"
+
         return "private"
 
     async def _async_update_data(self):
