@@ -36,10 +36,10 @@ class AirplanesLiveAddText(AirplanesLiveTextBase):
         """Set new value."""
         if value:
             self.coordinator.add_track(value)
-            
+
             self._attr_native_value = ""
             self.async_write_ha_state()
-            
+
             await self.coordinator.async_request_refresh()
 
 
