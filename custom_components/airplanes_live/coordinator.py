@@ -68,11 +68,15 @@ class AirplanesLiveCoordinator(DataUpdateCoordinator):
 
     def add_track(self, identifier):
         if identifier:
-            self.tracked_list.add(identifier.strip().upper().replace(" ", ""))
+            clean_id = identifier.strip().upper().replace(" ", "")
+            self.tracked_list.add(clean_id)
+            _LOGGER.info("Airplanes.Live: Target '%s' added to tracking list. Total targets: %s", clean_id, len(self.tracked_list))
 
     def remove_track(self, identifier):
         if identifier:
-            self.tracked_list.discard(identifier.strip().upper().replace(" ", ""))
+            clean_id = identifier.strip().upper().replace(" ", "")
+            self.tracked_list.discard(clean_id)
+            _LOGGER.info("Airplanes.Live: Target '%s' removed from tracking list.", clean_id)
 
     def clear_tracks(self):
         self.tracked_list.clear()
