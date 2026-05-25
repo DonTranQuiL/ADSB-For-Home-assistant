@@ -4,32 +4,28 @@ from homeassistant.components.device_tracker.config_entry import TrackerEntity
 from homeassistant.components.device_tracker.const import SourceType
 from homeassistant.core import callback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers import entity_registry as er
 from .const import DOMAIN, CONF_ENABLE_TRACKER
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    
     tracked_hexes = set()
 
     @callback
     def _update():
         if not coordinator.config_entry.options.get(CONF_ENABLE_TRACKER, True):
-            registry = er.async_get(hass)
-            entries = er.async_entries_for_config_entry(registry, config_entry.entry_id)
-            for entry in entries:
-                if entry.domain == "device_tracker":
-                    registry.async_remove(entry.entity_id)
-            tracked_hexes.clear()
             return
 
-        new = []
+        new_entities = []
+        
         for ac in coordinator.data.get("tracked_aircraft", []):
-            if ac.get("hex") not in tracked_hexes:
-                tracked_hexes.add(ac.get("hex"))
-                new.append(AirplanesLiveTracker(coordinator, ac.get("hex")))
-        if new:
-            async_add_entities(new)
+            hex_id = ac.get("hex")
+            if hex_id and hex_id not in tracked_hexes:
+                tracked_hexes.add(hex_id)
+                new_entities.append(AirplanesLiveTracker(coordinator, hex_id))
+                
+        if new_entities:
+            async_add_entities(new_entities)
 
     coordinator.async_add_listener(_update)
     _update()
@@ -40,32 +36,42 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
         super().__init__(coordinator)
         self._hex_id = hex_id
 
-        ac_data = self._ac()
+        ac_data = self._ac_live_or_offline()
         callsign = ac_data.get("flight", "").strip() or self._hex_id
 
-        # STANDALONE ENTITEIT INSTELLINGEN (Niet tonen in Apparaat/Diagnostics)
         self._attr_has_entity_name = False
         self._attr_name = f"airplanes_live_{callsign}"
         self._attr_unique_id = f"airplanes_live_{self._hex_id}"
-        # We stellen BEWUST GEEN self._attr_device_info in!
 
-    def _ac(self):
-        return next(
+    def _ac_live_or_offline(self):
+        current_ac = next(
             (
                 ac
                 for ac in self.coordinator.data.get("tracked_aircraft", [])
                 if ac.get("hex") == self._hex_id
             ),
-            {},
+            None,
         )
+        
+        if current_ac:
+            return current_ac
+            
+        return {
+            "hex": self._hex_id,
+            "flight": "Offline",
+            "lat": None,
+            "lon": None,
+            "air_category": "Offline",
+            "is_offline": True
+        }
 
     @property
     def latitude(self):
-        return self._ac().get("lat")
+        return self._ac_live_or_offline().get("lat")
 
     @property
     def longitude(self):
-        return self._ac().get("lon")
+        return self._ac_live_or_offline().get("lon")
 
     @property
     def source_type(self):
@@ -73,22 +79,23 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
 
     @property
     def icon(self):
-        ac = self._ac()
+        ac = self._ac_live_or_offline()
+        
+        if ac.get("is_offline"):
+            return "mdi:airplane-off"
+            
         ac_type = ac.get("desc", "").lower()
         baro_rate = ac.get("baro_rate", 0)
 
         if "heli" in ac_type or "rotor" in ac_type:
             return "mdi:helicopter"
-
         if "glider" in ac_type:
             return "mdi:paper-airplane"
-
         if "balloon" in ac_type:
             return "mdi:hot-air-balloon"
 
         if baro_rate > 250:
             return "mdi:airplane-takeoff"
-
         elif baro_rate < -250:
             return "mdi:airplane-landing"
 
@@ -96,8 +103,11 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
 
     @property
     def entity_picture(self):
-        ac_data = self._ac()
-
+        ac_data = self._ac_live_or_offline()
+        
+        if ac_data.get("is_offline"):
+            return None
+            
         api_photo = ac_data.get("api_photo_url")
         if api_photo:
             return api_photo
@@ -110,12 +120,45 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
 
     @property
     def extra_state_attributes(self):
-        ac = self._ac()
-        return {
-            "Category": ac.get("air_category"),
-            "Altitude": ac.get("alt_baro"),
-            "Heading (deg)": ac.get("track"),
+        ac = self._ac_live_or_offline()
+        
+        if ac.get("is_offline"):
+            return {
+                "Status": "Offline / Out of Range",
+                "Info": "Radar tracking is disabled or aircraft left the area."
+            }
+        
+        raw_attrs = {
+            "Callsign": ac.get("flight", "Unknown").strip(),
             "Registration": ac.get("r", "Unknown"),
             "Type": ac.get("t", "Unknown"),
+            "Description": ac.get("desc"),
+            "Category": ac.get("air_category"),
+            "Altitude (ft)": ac.get("alt_baro"),
+            "Target Altitude (ft)": ac.get("nav_altitude_mcp"),
+            "Ground Speed (kts)": ac.get("gs"),
+            "Mach": ac.get("mach"),
+            "Vertical Rate (ft/min)": ac.get("baro_rate"),
+            "Heading (deg)": ac.get("track"),
+            "Squawk": ac.get("squawk"),
+            "Emergency": ac.get("emergency"),
+            "Outside Temp (C)": ac.get("oat"),
             "Distance (m)": ac.get("distance_meter", "N/A"),
         }
+
+        attrs = {k: v for k, v in raw_attrs.items() if v is not None and v != "none"}
+
+        if ac.get("fr24_route") and ac.get("fr24_route") != "N/A - N/A":
+            attrs["Route (FR24)"] = ac.get("fr24_route")
+        if ac.get("fr24_airline") and ac.get("fr24_airline") != "Unknown":
+            attrs["Airline (FR24)"] = ac.get("fr24_airline")
+        if ac.get("fr24_scheduled_departure"):
+            attrs["Scheduled Departure"] = ac.get("fr24_scheduled_departure")
+        if ac.get("fr24_real_departure"):
+            attrs["Actual Departure"] = ac.get("fr24_real_departure")
+        if ac.get("fr24_scheduled_arrival"):
+            attrs["Scheduled Arrival"] = ac.get("fr24_scheduled_arrival")
+        if ac.get("fr24_estimated_arrival"):
+            attrs["Estimated Arrival (ETA)"] = ac.get("fr24_estimated_arrival")
+
+        return attrs

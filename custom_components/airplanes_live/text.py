@@ -55,14 +55,13 @@ class AirplanesLiveRemoveText(AirplanesLiveTextBase):
         if not clean_val:
             return
 
-        # BULLETPROOF GHOST CLEANUP VOOR STANDALONE TRACKERS
+        # KICK FOR STANDALONE TRACKERS
         registry = er.async_get(self.hass)
         entries = er.async_entries_for_config_entry(
             registry, self.coordinator.config_entry.entry_id
         )
         for entry in entries:
             if entry.domain == "device_tracker":
-                # Kijkt nu in het entiteit-ID zelf (device_tracker.airplanes_live_klm123)
                 if (
                     clean_val in entry.entity_id.upper()
                     or clean_val in (entry.original_name or "").upper()

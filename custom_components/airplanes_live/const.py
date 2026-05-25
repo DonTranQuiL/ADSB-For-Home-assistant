@@ -11,6 +11,7 @@ CONF_IDENTIFIER = "identifier"
 CONF_RADIUS = "radius"
 CONF_LATITUDE = "latitude"
 CONF_LONGITUDE = "longitude"
+CONF_ENABLE_FR24_ENRICHMENT = "enable_fr24_enrichment"
 
 CONF_TRACKED_LIST = "tracked_list"
 CONF_GLOBAL_EMERGENCY = "global_emergency"

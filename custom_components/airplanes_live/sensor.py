@@ -8,7 +8,6 @@ from .const import DOMAIN, MODE_ZONE, CONF_GLOBAL_EMERGENCY, CONF_GLOBAL_MILITAR
 
 CATEGORIES = ["helicopter", "military", "commercial", "private"]
 
-
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
@@ -22,8 +21,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         ),
         AirplanesLiveTrackedRestoreSensor(
             coordinator
-        ),  # De slimme memory-herstelsensor
-        # NIEUW: Diagnostische Sensoren!
+        ),
         AirplanesLiveDiagnosticSensor(
             coordinator,
             "consecutive_errors",
@@ -79,7 +77,6 @@ class AirplanesLiveSensorBase(CoordinatorEntity, SensorEntity):
             name="Airplanes.Live Tracker",
         )
 
-
 class AirplanesLiveTrackedRestoreSensor(AirplanesLiveSensorBase, RestoreSensor):
     def __init__(self, coordinator):
         super().__init__(coordinator)
@@ -108,8 +105,6 @@ class AirplanesLiveTrackedRestoreSensor(AirplanesLiveSensorBase, RestoreSensor):
             for identifier in last_state.attributes["tracking_list"]:
                 self.coordinator.add_track(identifier)
 
-
-# --- Diagnostic Sensors ---
 class AirplanesLiveDiagnosticSensor(AirplanesLiveSensorBase):
     def __init__(self, coordinator, key, name, icon, device_class=None):
         super().__init__(coordinator)
@@ -128,7 +123,6 @@ class AirplanesLiveDiagnosticSensor(AirplanesLiveSensorBase):
         return getattr(self.coordinator, self._key, None)
 
 
-# --- Old known sensors ---
 class AirplanesLiveStatSensor(AirplanesLiveSensorBase):
     def __init__(self, coordinator, stat_type, name, icon):
         super().__init__(coordinator)
@@ -219,8 +213,13 @@ class AirplanesLiveGlobalSensor(AirplanesLiveSensorBase):
 
     @property
     def extra_state_attributes(self):
-        return {
-            "flights_list": self.coordinator.data.get(self._data_key, [])
-            if self.coordinator.data
-            else []
-        }
+        raw_data = self.coordinator.data.get(self._data_key, []) if self.coordinator.data else []
+        
+        flight_list = []
+        for ac in raw_data:
+            callsign = ac.get("flight", "").strip() or "Unknown"
+            hex_code = ac.get("hex", "Unknown")
+            ac_type = ac.get("t", "Unknown")
+            flight_list.append(f"{callsign} ({ac_type}) - Hex: {hex_code}")
+            
+        return {"active_flights": flight_list}
