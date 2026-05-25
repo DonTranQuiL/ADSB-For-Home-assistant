@@ -1,4 +1,5 @@
 """API Client for Airplanes.Live."""
+
 import logging
 import aiohttp
 import asyncio
@@ -11,14 +12,16 @@ from .const import API_BASE_URL
 _LOGGER = logging.getLogger(__name__)
 logging.getLogger("FlightRadarAPI").setLevel(logging.ERROR)
 
+
 def format_unix_time(unix_ts):
     """Vertaal UNIX timestamps naar leesbare kloktijden."""
     if not unix_ts:
         return None
     try:
-        return datetime.datetime.fromtimestamp(unix_ts).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.datetime.fromtimestamp(unix_ts).strftime("%Y-%m-%d %H:%M:%S")
     except Exception:
         return str(unix_ts)
+
 
 class AirplanesLiveAPI:
     def __init__(self, session: aiohttp.ClientSession, hass=None):
@@ -40,51 +43,54 @@ class AirplanesLiveAPI:
     def _get_fr24_data_sync(self, identifier: str) -> dict | None:
         try:
             flights = self.fr24.search(identifier)
-            live = flights.get('live', [])
+            live = flights.get("live", [])
             if not live:
                 return None
-            
+
             found = live[0]
-            flight_id = found.get('id')
+            flight_id = found.get("id")
             if not flight_id:
                 return None
-            
+
             from FlightRadar24 import Flight
+
             dummy_flight = Flight(flight_id, [None] * 20)
-            
+
             details = self.fr24.get_flight_details(dummy_flight)
             if not details:
                 return None
-            
-            airport = details.get('airport', {}) or {}
-            origin = airport.get('origin', {}) or {}
-            destination = airport.get('destination', {}) or {}
-            
-            time_info = details.get('time', {}) or {}
-            scheduled = time_info.get('scheduled', {}) or {}
-            real = time_info.get('real', {}) or {}
-            estimated = time_info.get('estimated', {}) or {}
-            
-            airline = details.get('airline', {}) or {}
-            aircraft = details.get('aircraft', {}) or {}
-            images = aircraft.get('images', {}) or {}
-            
+
+            airport = details.get("airport", {}) or {}
+            origin = airport.get("origin", {}) or {}
+            destination = airport.get("destination", {}) or {}
+
+            time_info = details.get("time", {}) or {}
+            scheduled = time_info.get("scheduled", {}) or {}
+            real = time_info.get("real", {}) or {}
+            estimated = time_info.get("estimated", {}) or {}
+
+            airline = details.get("airline", {}) or {}
+            aircraft = details.get("aircraft", {}) or {}
+            images = aircraft.get("images", {}) or {}
+
             photo_large = None
             if images and isinstance(images, dict):
-                large_imgs = images.get('large', [])
+                large_imgs = images.get("large", [])
                 if large_imgs and len(large_imgs) > 0:
-                    photo_large = large_imgs[0].get('src')
+                    photo_large = large_imgs[0].get("src")
 
             return {
                 "fr24_route": f"{origin.get('code', {}).get('iata', 'N/A')} - {destination.get('code', {}).get('iata', 'N/A')}",
-                "fr24_origin": origin.get('name', 'Unknown'),
-                "fr24_destination": destination.get('name', 'Unknown'),
-                "fr24_airline": airline.get('name', 'Unknown'),
+                "fr24_origin": origin.get("name", "Unknown"),
+                "fr24_destination": destination.get("name", "Unknown"),
+                "fr24_airline": airline.get("name", "Unknown"),
                 "fr24_photo": photo_large,
-                "fr24_scheduled_departure": format_unix_time(scheduled.get('departure')),
-                "fr24_real_departure": format_unix_time(real.get('departure')),
-                "fr24_scheduled_arrival": format_unix_time(scheduled.get('arrival')),
-                "fr24_estimated_arrival": format_unix_time(estimated.get('arrival'))
+                "fr24_scheduled_departure": format_unix_time(
+                    scheduled.get("departure")
+                ),
+                "fr24_real_departure": format_unix_time(real.get("departure")),
+                "fr24_scheduled_arrival": format_unix_time(scheduled.get("arrival")),
+                "fr24_estimated_arrival": format_unix_time(estimated.get("arrival")),
             }
         except Exception as err:
             _LOGGER.debug("FR24 Lookup failed for %s: %s", identifier, err)
@@ -93,7 +99,9 @@ class AirplanesLiveAPI:
     async def get_fr24_enrichment(self, identifier: str):
         if not self.hass:
             return None
-        return await self.hass.async_add_executor_job(self._get_fr24_data_sync, identifier)
+        return await self.hass.async_add_executor_job(
+            self._get_fr24_data_sync, identifier
+        )
 
     async def get_aircraft_by_hex(self, hex_code: str):
         res = await self._request(f"{API_BASE_URL}/hex/{hex_code.strip().lower()}")
@@ -119,12 +127,16 @@ class AirplanesLiveAPI:
         res = await self._request(f"{API_BASE_URL}/mil")
         return res.get("ac", []) if res else []
 
-    async def get_planespotters_photo(self, registration: str, hex_code: str = None) -> Optional[str]:
+    async def get_planespotters_photo(
+        self, registration: str, hex_code: str = None
+    ) -> Optional[str]:
         async def fetch_photo_from_url(url: str):
             data = await self._request(url)
             if data and "photos" in data and len(data["photos"]) > 0:
                 photo = data["photos"][0]
-                return photo.get("thumbnail_large", {}).get("src") or photo.get("thumbnail", {}).get("src")
+                return photo.get("thumbnail_large", {}).get("src") or photo.get(
+                    "thumbnail", {}
+                ).get("src")
             return None
 
         if registration and registration != "Unknown":
@@ -138,5 +150,5 @@ class AirplanesLiveAPI:
             photo_url = await fetch_photo_from_url(url)
             if photo_url:
                 return photo_url
-            
+
         return None
