@@ -1,20 +1,41 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Mode de suivi", "data": { "tracking_mode": "Mode" } },
-      "zone": { "title": "Paramètres de la zone", "data": { "latitude": "Latitude", "longitude": "Longitude", "radius": "Rayon (mètres)" } },
-      "single": { "title": "Suivi de cible", "data": { "identifier_type": "Type d'identifiant", "identifier": "Identifiant" } }
+      "user": {
+        "title": "Mode de suivi",
+        "data": {
+          "tracking_mode": "Sélectionner le mode de suivi"
+        }
+      },
+      "zone": {
+        "title": "Paramètres de la zone",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "radius": "Rayon (mètres)"
+        }
+      },
+      "single": {
+        "title": "Suivi de cible",
+        "data": {
+          "identifier_type": "Type d'identifiant (Indicatif, Reg, Hex)",
+          "identifier": "Identifiant de l'appareil"
+        }
+      }
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Configuration Airplanes.Live",
+        "title": "Configuration d'Airplanes.Live",
         "data": {
+          "latitude": "Latitude (Centre de votre radar)",
+          "longitude": "Longitude (Centre de votre radar)",
           "radius": "Rayon de la zone (mètres)",
-          "enable_tracker": "Activer les traceurs sur la carte (Décocher pour masquer)",
+          "enable_tracker": "Activer les traceurs d'appareils sur la carte (décocher pour masquer)",
           "global_emergency": "Activer le radar d'urgence mondial (Squawk 7700)",
-          "global_military": "Activer le radar militaire mondial"
+          "global_military": "Activer le radar militaire mondial",
+          "enable_fr24_enrichment": "Activer l'enrichissement FlightRadar24 (Photos et itinéraires)"
         }
       }
     }

@@ -1,9 +1,27 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Tryb sledzenia", "data": { "tracking_mode": "Tryb" } },
-      "zone": { "title": "Ustawienia strefy", "data": { "latitude": "Szerokosc geograficzna", "longitude": "Dlugosc geograficzna", "radius": "Promien (metry)" } },
-      "single": { "title": "Sledzenie celu", "data": { "identifier_type": "Typ identyfikatora", "identifier": "Identyfikator" } }
+      "user": {
+        "title": "Tryb śledzenia",
+        "data": {
+          "tracking_mode": "Wybierz tryb śledzenia"
+        }
+      },
+      "zone": {
+        "title": "Ustawienia strefy",
+        "data": {
+          "latitude": "Szerokość geograficzna",
+          "longitude": "Długość geograficzna",
+          "radius": "Promień (metry)"
+        }
+      },
+      "single": {
+        "title": "Śledzenie celu",
+        "data": {
+          "identifier_type": "Typ identyfikatora (Znak wywoławczy, Reg, Hex)",
+          "identifier": "Identyfikator statku powietrznego"
+        }
+      }
     }
   },
   "options": {
@@ -11,10 +29,13 @@
       "init": {
         "title": "Konfiguracja Airplanes.Live",
         "data": {
-          "radius": "Promien strefy (metry)",
-          "enable_tracker": "Wlacz lokalizatory na mapie (Odznacz, aby ukryc)",
-          "global_emergency": "Wlacz globalny radar alarmowy (Squawk 7700)",
-          "global_military": "Wlacz globalny radar wojskowy"
+          "latitude": "Szerokość geograficzna (Środek twojego radaru)",
+          "longitude": "Długość geograficzna (Środek twojego radaru)",
+          "radius": "Promień strefy (metry)",
+          "enable_tracker": "Włącz śledzenie urządzeń na mapie (odznacz, aby ukryć)",
+          "global_emergency": "Włącz globalny radar awaryjny (Squawk 7700)",
+          "global_military": "Włącz globalny radar wojskowy",
+          "enable_fr24_enrichment": "Włącz wzbogacenie FlightRadar24 (Zdjęcia i trasy)"
         }
       }
     }

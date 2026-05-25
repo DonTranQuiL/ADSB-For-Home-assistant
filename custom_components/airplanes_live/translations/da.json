@@ -1,9 +1,27 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Sporingstilstand", "data": { "tracking_mode": "Tilstand" } },
-      "zone": { "title": "Zoneindstillinger", "data": { "latitude": "Breddegrad", "longitude": "Længdegrad", "radius": "Radius (meter)" } },
-      "single": { "title": "Målsporer", "data": { "identifier_type": "Identifikatortype", "identifier": "Identifikator" } }
+      "user": {
+        "title": "Sporingstilstand",
+        "data": {
+          "tracking_mode": "Vælg sporingstilstand"
+        }
+      },
+      "zone": {
+        "title": "Zoneindstillinger",
+        "data": {
+          "latitude": "Breddegrad",
+          "longitude": "Længdegrad",
+          "radius": "Radius (meter)"
+        }
+      },
+      "single": {
+        "title": "Målsporing",
+        "data": {
+          "identifier_type": "Identifikatortype (Kaldesignal, Reg, Hex)",
+          "identifier": "Flyidentifikator"
+        }
+      }
     }
   },
   "options": {
@@ -11,10 +29,13 @@
       "init": {
         "title": "Airplanes.Live Konfiguration",
         "data": {
+          "latitude": "Breddegrad (Midten af din radar)",
+          "longitude": "Længdegrad (Midten af din radar)",
           "radius": "Zoneradius (meter)",
-          "enable_tracker": "Aktivér kortsporere (Fjern markering for at skjule)",
+          "enable_tracker": "Aktivér kortenhedssporing (fjern markering for at skjule)",
           "global_emergency": "Aktivér global nødradar (Squawk 7700)",
-          "global_military": "Aktivér global militærradar"
+          "global_military": "Aktivér global militær radar",
+          "enable_fr24_enrichment": "Aktivér FlightRadar24-berigelse (Billeder & Ruter)"
         }
       }
     }

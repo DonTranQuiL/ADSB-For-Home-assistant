@@ -1,9 +1,27 @@
 {
   "config": {
     "step": {
-      "user": { "title": "追跡モード", "data": { "tracking_mode": "モード" } },
-      "zone": { "title": "ゾーン設定", "data": { "latitude": "緯度", "longitude": "経度", "radius": "半径 (メートル)" } },
-      "single": { "title": "ターゲットトラッカー", "data": { "identifier_type": "識別子タイプ", "identifier": "識別子" } }
+      "user": {
+        "title": "トラッキングモード",
+        "data": {
+          "tracking_mode": "トラッキングモードを選択"
+        }
+      },
+      "zone": {
+        "title": "ゾーン設定",
+        "data": {
+          "latitude": "緯度",
+          "longitude": "経度",
+          "radius": "半径（メートル）"
+        }
+      },
+      "single": {
+        "title": "ターゲットトラッカー",
+        "data": {
+          "identifier_type": "識別子タイプ（コールサイン、登録記号、Hex）",
+          "identifier": "航空機識別子"
+        }
+      }
     }
   },
   "options": {
@@ -11,10 +29,13 @@
       "init": {
         "title": "Airplanes.Live 設定",
         "data": {
-          "radius": "ゾーン半径 (メートル)",
-          "enable_tracker": "マップデバイストラッカーを有効にする (非表示にするにはオフ)",
-          "global_emergency": "グローバル緊急レーダーを有効にする (Squawk 7700)",
-          "global_military": "グローバル軍事レーダーを有効にする"
+          "latitude": "緯度（レーダーの中心）",
+          "longitude": "経度（レーダーの中心）",
+          "radius": "ゾーン半径（メートル）",
+          "enable_tracker": "マップデバイストラッカーを有効にする（非表示にするにはチェックを外す）",
+          "global_emergency": "グローバル緊急レーダーを有効にする（スコーク7700）",
+          "global_military": "グローバル軍事レーダーを有効にする",
+          "enable_fr24_enrichment": "FlightRadar24の強化を有効にする（写真とルート）"
         }
       }
     }

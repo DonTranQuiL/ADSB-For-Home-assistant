@@ -1,9 +1,27 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Režim sledování", "data": { "tracking_mode": "Režim" } },
-      "zone": { "title": "Nastavení zóny", "data": { "latitude": "Zemepisná šírka", "longitude": "Zemepisná délka", "radius": "Polomer (metry)" } },
-      "single": { "title": "Sledování cíle", "data": { "identifier_type": "Typ identifikátoru", "identifier": "Identifikátor" } }
+      "user": {
+        "title": "Režim sledování",
+        "data": {
+          "tracking_mode": "Vyberte režim sledování"
+        }
+      },
+      "zone": {
+        "title": "Nastavení zóny",
+        "data": {
+          "latitude": "Zeměpisná šířka",
+          "longitude": "Zeměpisná délka",
+          "radius": "Poloměr (metry)"
+        }
+      },
+      "single": {
+        "title": "Sledování cíle",
+        "data": {
+          "identifier_type": "Typ identifikátoru (Volací znak, Reg, Hex)",
+          "identifier": "Identifikátor letadla"
+        }
+      }
     }
   },
   "options": {
@@ -11,10 +29,13 @@
       "init": {
         "title": "Konfigurace Airplanes.Live",
         "data": {
-          "radius": "Polomer zóny (metry)",
-          "enable_tracker": "Povolit sledovace na mape (Zrušte zaškrtnutí pro skrytí)",
+          "latitude": "Zeměpisná šířka (Střed vašeho radaru)",
+          "longitude": "Zeměpisná délka (Střed vašeho radaru)",
+          "radius": "Poloměr zóny (metry)",
+          "enable_tracker": "Povolit sledování zařízení na mapě (zrušte zaškrtnutí pro skrytí)",
           "global_emergency": "Povolit globální nouzový radar (Squawk 7700)",
-          "global_military": "Povolit globální vojenský radar"
+          "global_military": "Povolit globální vojenský radar",
+          "enable_fr24_enrichment": "Povolit obohacení FlightRadar24 (Fotografie a trasy)"
         }
       }
     }

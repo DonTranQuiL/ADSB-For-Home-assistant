@@ -1,9 +1,27 @@
 {
   "config": {
     "step": {
-      "user": { "title": "وضع التتبع", "data": { "tracking_mode": "الوضع" } },
-      "zone": { "title": "إعدادات المنطقة", "data": { "latitude": "خط العرض", "longitude": "خط الطول", "radius": "نصف القطر (متر)" } },
-      "single": { "title": "متتبع الهدف", "data": { "identifier_type": "نوع المعرف", "identifier": "المعرف" } }
+      "user": {
+        "title": "وضع التتبع",
+        "data": {
+          "tracking_mode": "حدد وضع التتبع"
+        }
+      },
+      "zone": {
+        "title": "إعدادات المنطقة",
+        "data": {
+          "latitude": "خط العرض",
+          "longitude": "خط الطول",
+          "radius": "نصف القطر (بالأمتار)"
+        }
+      },
+      "single": {
+        "title": "متتبع الهدف",
+        "data": {
+          "identifier_type": "نوع المعرف (إشارة النداء، التسجيل، السداسي)",
+          "identifier": "معرف الطائرة"
+        }
+      }
     }
   },
   "options": {
@@ -11,10 +29,13 @@
       "init": {
         "title": "تكوين Airplanes.Live",
         "data": {
-          "radius": "نصف قطر المنطقة (متر)",
-          "enable_tracker": "تمكين متتبعات الخريطة (قم بإلغاء التحديد للإخفاء)",
+          "latitude": "خط العرض (مركز الرادار الخاص بك)",
+          "longitude": "خط الطول (مركز الرادار الخاص بك)",
+          "radius": "نصف قطر المنطقة (بالأمتار)",
+          "enable_tracker": "تمكين متتبعات أجهزة الخريطة (قم بإلغاء التحديد للإخفاء)",
           "global_emergency": "تمكين رادار الطوارئ العالمي (Squawk 7700)",
-          "global_military": "تمكين الرادار العسكري العالمي"
+          "global_military": "تمكين الرادار العسكري العالمي",
+          "enable_fr24_enrichment": "تمكين إثراء FlightRadar24 (الصور والمسارات)"
         }
       }
     }

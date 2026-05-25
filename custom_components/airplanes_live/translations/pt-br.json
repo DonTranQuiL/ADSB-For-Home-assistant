@@ -2,13 +2,13 @@
   "config": {
     "step": {
       "user": {
-        "title": "Modo de Rastreio",
+        "title": "Modo de Rastreamento",
         "data": {
-          "tracking_mode": "Selecionar Modo de Rastreio"
+          "tracking_mode": "Selecionar Modo de Rastreamento"
         }
       },
       "zone": {
-        "title": "Definições de Zona",
+        "title": "Configurações de Zona",
         "data": {
           "latitude": "Latitude",
           "longitude": "Longitude",
@@ -18,7 +18,7 @@
       "single": {
         "title": "Rastreador de Alvo",
         "data": {
-          "identifier_type": "Tipo de Identificador (Indicativo, Reg, Hex)",
+          "identifier_type": "Tipo de Identificador (Callsign, Reg, Hex)",
           "identifier": "Identificador da Aeronave"
         }
       }
@@ -32,10 +32,10 @@
           "latitude": "Latitude (Centro do seu radar)",
           "longitude": "Longitude (Centro do seu radar)",
           "radius": "Raio da Zona (metros)",
-          "enable_tracker": "Ativar Rastreadores de Dispositivos no Mapa (desmarque para ocultar)",
-          "global_emergency": "Ativar Radar de Emergência Global (Squawk 7700)",
-          "global_military": "Ativar Radar Militar Global",
-          "enable_fr24_enrichment": "Ativar Enriquecimento FlightRadar24 (Fotos e Rotas)"
+          "enable_tracker": "Habilitar Rastreadores de Dispositivos no Mapa (desmarque para ocultar)",
+          "global_emergency": "Habilitar Radar de Emergência Global (Squawk 7700)",
+          "global_military": "Habilitar Radar Militar Global",
+          "enable_fr24_enrichment": "Habilitar Enriquecimento FlightRadar24 (Fotos e Rotas)"
         }
       }
     }

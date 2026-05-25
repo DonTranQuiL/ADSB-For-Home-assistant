@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mod heuliañ",
+        "data": {
+          "tracking_mode": "Diuzañ ar mod heuliañ"
+        }
+      },
+      "zone": {
+        "title": "Arventennoù an takad",
+        "data": {
+          "latitude": "Ledred",
+          "longitude": "Hedred",
+          "radius": "Skin (metradoù)"
+        }
+      },
+      "single": {
+        "title": "Heulier ar pal",
+        "data": {
+          "identifier_type": "Seurt naoueder (Galv, Reg, Hex)",
+          "identifier": "Naoueder ar c'harr-nij"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Kefluniadur Airplanes.Live",
+        "data": {
+          "latitude": "Ledred (Kreiz ho radar)",
+          "longitude": "Hedred (Kreiz ho radar)",
+          "radius": "Skin an takad (metradoù)",
+          "enable_tracker": "Gweredekaat heulierioù an drobarzhell war ar gartenn (diaskañ evit kuzhat)",
+          "global_emergency": "Gweredekaat ar radar gwallzarvoud bedel (Squawk 7700)",
+          "global_military": "Gweredekaat ar radar milourel bedel",
+          "enable_fr24_enrichment": "Gweredekaat pinvidikaat FlightRadar24 (Luc'hskeudennoù ha Hentoù)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mode Pelacakan",
+        "data": {
+          "tracking_mode": "Pilih Mode Pelacakan"
+        }
+      },
+      "zone": {
+        "title": "Pengaturan Zona",
+        "data": {
+          "latitude": "Garis Lintang",
+          "longitude": "Garis Bujur",
+          "radius": "Radius (meter)"
+        }
+      },
+      "single": {
+        "title": "Pelacak Target",
+        "data": {
+          "identifier_type": "Jenis Pengenal (Callsign, Reg, Hex)",
+          "identifier": "Pengenal Pesawat"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Konfigurasi Airplanes.Live",
+        "data": {
+          "latitude": "Garis Lintang (Pusat radar Anda)",
+          "longitude": "Garis Bujur (Pusat radar Anda)",
+          "radius": "Radius Zona (meter)",
+          "enable_tracker": "Aktifkan Pelacak Perangkat Peta (Hapus centang untuk menyembunyikan)",
+          "global_emergency": "Aktifkan Radar Darurat Global (Squawk 7700)",
+          "global_military": "Aktifkan Radar Militer Global",
+          "enable_fr24_enrichment": "Aktifkan Pengayaan FlightRadar24 (Foto & Rute)"
+        }
+      }
+    }
+  }
+}
