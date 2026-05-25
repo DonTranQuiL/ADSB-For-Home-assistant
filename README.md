@@ -3,6 +3,8 @@
 # 📡 Airplanes.Live Tracker (2026 Edition)
 **The high-performance, zero-bloat, real-time ADS-B airspace intelligence monitor for Home Assistant.**
 
+# I DID A MASSIVE OVERHAUL !!! ADDED FR24 DATA !
+
 [![Latest Release](https://img.shields.io/github/v/release/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/releases)
 [![License](https://img.shields.io/github/license/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/blob/main/LICENSE)
 [![Home Assistant CI](https://img.shields.io/github/actions/workflow/status/DonTranQuiL/ADSB-For-Home-assistant/hass-ci.yml?label=Home%20Assistant%20CI&style=for-the-badge)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/actions/workflows/hass-ci.yml)
