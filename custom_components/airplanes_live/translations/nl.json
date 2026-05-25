@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tracking Modus",
+        "data": {
+          "tracking_mode": "Selecteer Tracking Modus"
+        }
+      },
+      "zone": {
+        "title": "Zone Instellingen",
+        "data": {
+          "latitude": "Breedtegraad (Latitude)",
+          "longitude": "Lengtegraad (Longitude)",
+          "radius": "Straal (meters)"
+        }
+      },
+      "single": {
+        "title": "Doelwit Tracker",
+        "data": {
+          "identifier_type": "Type Identificatie (Callsign, Reg, Hex)",
+          "identifier": "Vliegtuig Identificatie"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Airplanes.Live Configuratie",
+        "data": {
+          "latitude": "Breedtegraad (Middelpunt van je radar)",
+          "longitude": "Lengtegraad (Middelpunt van je radar)",
+          "radius": "Zone Straal (meters)",
+          "enable_tracker": "Apparaattrackers op de kaart inschakelen",
+          "global_emergency": "Wereldwijde Noodgevallen Radar inschakelen (Squawk 7700)",
+          "global_military": "Wereldwijde Militaire Radar inschakelen",
+          "enable_fr24_enrichment": "FlightRadar24 Verrijking inschakelen (Foto's & Routes)"
+        }
+      }
+    }
+  }
+}
