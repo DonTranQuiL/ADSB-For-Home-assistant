@@ -1,9 +1,27 @@
 {
   "config": {
     "step": {
-      "user": { "title": "Tracking Mode", "data": { "tracking_mode": "Mode" } },
-      "zone": { "title": "Zone Settings", "data": { "latitude": "Latitude", "longitude": "Longitude", "radius": "Radius (meters)" } },
-      "single": { "title": "Target Tracker", "data": { "identifier_type": "Identifier Type", "identifier": "Identifier" } }
+      "user": {
+        "title": "Tracking Mode",
+        "data": {
+          "tracking_mode": "Select Tracking Mode"
+        }
+      },
+      "zone": {
+        "title": "Zone Settings",
+        "data": {
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "radius": "Radius (meters)"
+        }
+      },
+      "single": {
+        "title": "Target Tracker",
+        "data": {
+          "identifier_type": "Identifier Type (Callsign, Reg, Hex)",
+          "identifier": "Aircraft Identifier"
+        }
+      }
     }
   },
   "options": {
@@ -11,10 +29,13 @@
       "init": {
         "title": "Airplanes.Live Configuration",
         "data": {
+          "latitude": "Latitude (Center of your radar)",
+          "longitude": "Longitude (Center of your radar)",
           "radius": "Zone Radius (meters)",
           "enable_tracker": "Enable Map Device Trackers (Uncheck to hide)",
           "global_emergency": "Enable Global Emergency Radar (Squawk 7700)",
-          "global_military": "Enable Global Military Radar"
+          "global_military": "Enable Global Military Radar",
+          "enable_fr24_enrichment": "Enable FlightRadar24 Enrichment (Photos & Routes)"
         }
       }
     }
