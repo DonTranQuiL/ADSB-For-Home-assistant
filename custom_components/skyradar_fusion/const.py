@@ -12,12 +12,12 @@ CONF_RADIUS = "radius"
 CONF_LATITUDE = "latitude"
 CONF_LONGITUDE = "longitude"
 CONF_ENABLE_FR24_ENRICHMENT = "enable_fr24_enrichment"
+CONF_FR24_RADIUS = "fr24_radius"
 
 CONF_TRACKED_LIST = "tracked_list"
 CONF_GLOBAL_EMERGENCY = "global_emergency"
 CONF_GLOBAL_MILITARY = "global_military"
 
-# De missende sleutel voor de Device Trackers:
 CONF_ENABLE_TRACKER = "enable_tracker"
 
 MODE_SINGLE = "single_aircraft"
