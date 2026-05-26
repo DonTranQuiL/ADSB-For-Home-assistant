@@ -6,7 +6,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import DOMAIN, MODE_ZONE
 from custom_components.skyradar_fusion.coordinator import (
-    AirplanesLiveCoordinator,
+    SkyRadarFusionCoordinator,
     haversine_distance,
 )
 
@@ -19,7 +19,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 @pytest.fixture
 def mock_api():
     with patch(
-        "custom_components.skyradar_fusion.coordinator.AirplanesLiveAPI"
+        "custom_components.skyradar_fusion.coordinator.SkyRadarFusionAPI"
     ) as mock_cls:
         mock_inst = MagicMock()
         mock_inst.get_aircraft_in_zone = AsyncMock(return_value=[])
@@ -48,7 +48,7 @@ async def test_coordinator_zone_analytics(hass: HomeAssistant, mock_api):
         },
         options={"tracked_list": ["TARGET1"]},
     )
-    coord = AirplanesLiveCoordinator(hass, entry)
+    coord = SkyRadarFusionCoordinator(hass, entry)
     coord.config_entry = (
         entry  # FIX: Prevent DataUpdateCoordinator from setting this to None
     )
@@ -83,7 +83,7 @@ async def test_coordinator_api_fallbacks(hass: HomeAssistant, mock_api):
         data={"tracking_mode": MODE_ZONE},
         options={"tracked_list": ["EXTERNAL_HEX"]},
     )
-    coord = AirplanesLiveCoordinator(hass, entry)
+    coord = SkyRadarFusionCoordinator(hass, entry)
     coord.config_entry = entry  # FIX
     coord.mode = MODE_ZONE
     coord.tracked_list = ["EXTERNAL_HEX"]
@@ -102,7 +102,7 @@ async def test_coordinator_api_fallbacks(hass: HomeAssistant, mock_api):
 @pytest.mark.asyncio
 async def test_coordinator_unhandled_exception(hass: HomeAssistant, mock_api):
     entry = MockConfigEntry(domain=DOMAIN, data={})
-    coord = AirplanesLiveCoordinator(hass, entry)
+    coord = SkyRadarFusionCoordinator(hass, entry)
     coord.config_entry = entry  # FIX
 
     mock_api.get_aircraft_in_zone.side_effect = Exception("API Server Outage")
