@@ -260,9 +260,12 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             advanced_filters = [x.strip().upper() for x in advanced_filter_str.split(",") if x.strip()]
 
             allowed_fr24_cats = []
-            if fr24_comm: allowed_fr24_cats.append("commercial")
-            if fr24_priv: allowed_fr24_cats.append("private")
-            if fr24_heli: allowed_fr24_cats.append("helicopter")
+            if fr24_comm: 
+                allowed_fr24_cats.append("commercial")
+            if fr24_priv: 
+                allowed_fr24_cats.append("private")
+            if fr24_heli: 
+                allowed_fr24_cats.append("helicopter")
             
             overhead_aircraft = []
             for ac in filtered_aircraft:
