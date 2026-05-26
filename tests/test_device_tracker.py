@@ -5,7 +5,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import DOMAIN
 from custom_components.skyradar_fusion.device_tracker import (
-    AirplanesLiveTracker,
+    SkyRadarFusionTracker,
     async_setup_entry,
 )
 
@@ -48,7 +48,7 @@ async def test_async_setup_entry_device_tracker(hass, mock_tracker_coord):
 
 
 def test_device_tracker_properties_and_icons(mock_tracker_coord):
-    tracker_heli = AirplanesLiveTracker(mock_tracker_coord, "A4B5C6")
+    tracker_heli = SkyRadarFusionTracker(mock_tracker_coord, "A4B5C6")
 
     # Name check updated to match user's device_tracker.py format
     assert tracker_heli.name == "skyradar_fusion_HELI1"
