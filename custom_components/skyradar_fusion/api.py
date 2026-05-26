@@ -129,11 +129,13 @@ class SkyRadarFusionAPI:
         if registration and registration != "Unknown":
             url = f"https://api.planespotters.net/pub/photos/reg/{registration.strip()}"
             photo_url = await fetch_photo_from_url(url)
-            if photo_url: return photo_url
+            if photo_url: 
+                return photo_url
 
         if hex_code and hex_code != "Unknown":
             url = f"https://api.planespotters.net/pub/photos/hex/{hex_code.strip()}"
             photo_url = await fetch_photo_from_url(url)
-            if photo_url: return photo_url
+            if photo_url: 
+                return photo_url
             
         return None
