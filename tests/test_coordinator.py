@@ -4,8 +4,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import DOMAIN, MODE_ZONE
-from custom_components.airplanes_live.coordinator import (
+from custom_components.skyradar_fusion.const import DOMAIN, MODE_ZONE
+from custom_components.skyradar_fusion.coordinator import (
     AirplanesLiveCoordinator,
     haversine_distance,
 )
@@ -19,7 +19,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 @pytest.fixture
 def mock_api():
     with patch(
-        "custom_components.airplanes_live.coordinator.AirplanesLiveAPI"
+        "custom_components.skyradar_fusion.coordinator.AirplanesLiveAPI"
     ) as mock_cls:
         mock_inst = MagicMock()
         mock_inst.get_aircraft_in_zone = AsyncMock(return_value=[])
