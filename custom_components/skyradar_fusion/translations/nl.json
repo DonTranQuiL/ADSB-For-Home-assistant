@@ -10,13 +10,13 @@
       "zone": {
         "title": "Zone Instellingen",
         "data": {
-          "latitude": "Breedtegraad (Latitude)",
-          "longitude": "Lengtegraad (Longitude)",
-          "radius": "Straal (meters)"
+          "latitude": "Breedtegraad",
+          "longitude": "Lengtegraad",
+          "radius": "Radius (meters)"
         }
       },
       "single": {
-        "title": "Doelwit Tracker",
+        "title": "Doel Tracker",
         "data": {
           "identifier_type": "Type Identificatie (Callsign, Reg, Hex)",
           "identifier": "Vliegtuig Identificatie"
@@ -27,15 +27,20 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live Configuratie",
+        "title": "SkyRadar Fusion Configuratie",
         "data": {
           "latitude": "Breedtegraad (Middelpunt van je radar)",
           "longitude": "Lengtegraad (Middelpunt van je radar)",
-          "radius": "Zone Straal (meters)",
-          "enable_tracker": "Apparaattrackers op de kaart inschakelen",
-          "global_emergency": "Wereldwijde Noodgevallen Radar inschakelen (Squawk 7700)",
-          "global_military": "Wereldwijde Militaire Radar inschakelen",
-          "enable_fr24_enrichment": "FlightRadar24 Verrijking inschakelen (Foto's & Routes)"
+          "radius": "Zone Radius (meters)",
+          "fr24_radius": "FR24 Overhead Bubbel Radius (meters)",
+          "enable_tracker": "Schakel Kaart Trackers in (Uitvinken om te verbergen)",
+          "global_emergency": "Schakel Wereldwijde Noodgevallen Radar in (Squawk 7700)",
+          "global_military": "Schakel Wereldwijde Militaire Radar in",
+          "enable_fr24_enrichment": "Schakel FlightRadar24 Verrijking in (Foto's & Routes)",
+          "fr24_commercial": "Verrijk Commerciële Vluchten",
+          "fr24_private": "Verrijk Privévliegtuigen",
+          "fr24_helicopter": "Verrijk Helikopters",
+          "advanced_adsb_filter": "Geavanceerd ADS-B Filter (bijv. A3, A5) - Overschrijft vinkjes"
         }
       }
     }

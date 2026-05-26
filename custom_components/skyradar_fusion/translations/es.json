@@ -32,10 +32,15 @@
           "latitude": "Latitud (Centro de tu radar)",
           "longitude": "Longitud (Centro de tu radar)",
           "radius": "Radio de la zona (metros)",
+          "fr24_radius": "FR24 Overhead Bubble Radius (meters)",
           "enable_tracker": "Habilitar rastreadores de dispositivos de mapa (desmarque para ocultar)",
           "global_emergency": "Habilitar radar de emergencia global (Squawk 7700)",
           "global_military": "Habilitar radar militar global",
-          "enable_fr24_enrichment": "Habilitar enriquecimiento de FlightRadar24 (Fotos y rutas)"
+          "enable_fr24_enrichment": "Habilitar enriquecimiento de FlightRadar24 (Fotos y rutas)",
+          "fr24_commercial": "Enrich Commercial Flights",
+          "fr24_private": "Enrich Private Aircraft",
+          "fr24_helicopter": "Enrich Helicopters",
+          "advanced_adsb_filter": "Advanced ADS-B Filter (e.g., A3, A5) - Overrides checkboxes"
         }
       }
     }

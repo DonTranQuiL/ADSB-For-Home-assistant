@@ -32,10 +32,15 @@
           "latitude": "緯度（雷達中心）",
           "longitude": "經度（雷達中心）",
           "radius": "區域半徑（公尺）",
+          "fr24_radius": "FR24 Overhead Bubble Radius (meters)",
           "enable_tracker": "啟用地圖設備追蹤器（取消勾選以隱藏）",
           "global_emergency": "啟用全球緊急雷達 (Squawk 7700)",
           "global_military": "啟用全球軍事雷達",
-          "enable_fr24_enrichment": "啟用 FlightRadar24 增強功能（照片和航線）"
+          "enable_fr24_enrichment": "啟用 FlightRadar24 增強功能（照片和航線）",
+          "fr24_commercial": "Enrich Commercial Flights",
+          "fr24_private": "Enrich Private Aircraft",
+          "fr24_helicopter": "Enrich Helicopters",
+          "advanced_adsb_filter": "Advanced ADS-B Filter (e.g., A3, A5) - Overrides checkboxes"
         }
       }
     }

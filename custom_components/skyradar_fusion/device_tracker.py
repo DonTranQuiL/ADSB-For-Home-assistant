@@ -23,7 +23,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             hex_id = ac.get("hex")
             if hex_id and hex_id not in tracked_hexes:
                 tracked_hexes.add(hex_id)
-                # FIX: Hier is de oude naam aangepast naar SkyRadarFusionTracker!
                 new_entities.append(SkyRadarFusionTracker(coordinator, hex_id))
 
         if new_entities:
@@ -32,8 +31,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator.async_add_listener(_update)
     _update()
 
-
-# FIX: Hier is de class naam aangepast!
 class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
     def __init__(self, coordinator, hex_id):
         super().__init__(coordinator)
@@ -124,13 +121,13 @@ class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
     @property
     def extra_state_attributes(self):
         ac = self._ac_live_or_offline()
-
+        
         if ac.get("is_offline"):
             return {
                 "Status": "Offline / Out of Range",
-                "Info": "Radar tracking is disabled or aircraft left the area.",
+                "Info": "Radar tracking is disabled or aircraft left the area."
             }
-
+        
         raw_attrs = {
             "Callsign": ac.get("flight", "Unknown").strip(),
             "Registration": ac.get("r", "Unknown"),
@@ -153,8 +150,22 @@ class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
 
         if ac.get("fr24_route") and ac.get("fr24_route") != "N/A - N/A":
             attrs["Route (FR24)"] = ac.get("fr24_route")
-        if ac.get("fr24_airline") and ac.get("fr24_airline") != "Unknown":
-            attrs["Airline (FR24)"] = ac.get("fr24_airline")
+        if ac.get("airline"):
+            attrs["Airline"] = ac.get("airline")
+        if ac.get("airline_icao"):
+            attrs["Airline ICAO"] = ac.get("airline_icao")
+        if ac.get("airport_origin_name"):
+            attrs["Origin Airport"] = ac.get("airport_origin_name")
+        if ac.get("airport_origin_city"):
+            attrs["Origin City"] = ac.get("airport_origin_city")
+        if ac.get("airport_origin_country_code"):
+            attrs["Origin Country"] = ac.get("airport_origin_country_code")
+        if ac.get("airport_destination_name"):
+            attrs["Destination Airport"] = ac.get("airport_destination_name")
+        if ac.get("airport_destination_country_name"):
+            attrs["Destination Country"] = ac.get("airport_destination_country_name")
+            
+        # De bestaande tijd-velden:
         if ac.get("fr24_scheduled_departure"):
             attrs["Scheduled Departure"] = ac.get("fr24_scheduled_departure")
         if ac.get("fr24_real_departure"):

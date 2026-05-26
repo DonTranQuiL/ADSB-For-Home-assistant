@@ -15,12 +15,14 @@ from .const import (
     CONF_GLOBAL_EMERGENCY,
     CONF_GLOBAL_MILITARY,
     CONF_FR24_RADIUS,
+    CONF_ENABLE_FR24_ENRICHMENT,
+    CONF_FR24_COMMERCIAL,
+    CONF_FR24_PRIVATE,
+    CONF_FR24_HELICOPTER,
+    CONF_ADVANCED_ADSB_FILTER,
     MODE_SINGLE,
     MODE_ZONE,
 )
-
-CONF_ENABLE_FR24_ENRICHMENT = "enable_fr24_enrichment"
-
 
 class SkyRadarFusionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -100,50 +102,38 @@ class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             options[CONF_LATITUDE] = user_input.get(CONF_LATITUDE)
             options[CONF_LONGITUDE] = user_input.get(CONF_LONGITUDE)
-            options[CONF_RADIUS] = user_input.get(
-                CONF_RADIUS, options.get(CONF_RADIUS, 5000)
-            )
-            options[CONF_FR24_RADIUS] = user_input.get(
-                CONF_FR24_RADIUS, options.get(CONF_FR24_RADIUS, 3000)
-            )
-            options[CONF_GLOBAL_EMERGENCY] = user_input.get(
-                CONF_GLOBAL_EMERGENCY, False
-            )
+            options[CONF_RADIUS] = user_input.get(CONF_RADIUS, options.get(CONF_RADIUS, 5000))
+            options[CONF_FR24_RADIUS] = user_input.get(CONF_FR24_RADIUS, options.get(CONF_FR24_RADIUS, 3000))
+            options[CONF_GLOBAL_EMERGENCY] = user_input.get(CONF_GLOBAL_EMERGENCY, False)
             options[CONF_GLOBAL_MILITARY] = user_input.get(CONF_GLOBAL_MILITARY, False)
-            options[CONF_ENABLE_FR24_ENRICHMENT] = user_input.get(
-                CONF_ENABLE_FR24_ENRICHMENT, False
-            )
-
+            options[CONF_ENABLE_FR24_ENRICHMENT] = user_input.get(CONF_ENABLE_FR24_ENRICHMENT, False)
+            options[CONF_FR24_COMMERCIAL] = user_input.get(CONF_FR24_COMMERCIAL, True)
+            options[CONF_FR24_PRIVATE] = user_input.get(CONF_FR24_PRIVATE, False)
+            options[CONF_FR24_HELICOPTER] = user_input.get(CONF_FR24_HELICOPTER, False)
+            options[CONF_ADVANCED_ADSB_FILTER] = user_input.get(CONF_ADVANCED_ADSB_FILTER, "")
+            
             return self.async_create_entry(title="", data=options)
 
         entry = getattr(self, "config_entry", self._config_entry)
-
-        current_lat = options.get(
-            CONF_LATITUDE, entry.data.get(CONF_LATITUDE, self.hass.config.latitude)
-        )
-        current_lon = options.get(
-            CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
-        )
+        
+        current_lat = options.get(CONF_LATITUDE, entry.data.get(CONF_LATITUDE, self.hass.config.latitude))
+        current_lon = options.get(CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE, self.hass.config.longitude))
         current_radius = options.get(CONF_RADIUS, entry.data.get(CONF_RADIUS, 5000))
-        current_fr24_radius = options.get(
-            CONF_FR24_RADIUS, entry.data.get(CONF_FR24_RADIUS, 3000)
-        )
+        current_fr24_radius = options.get(CONF_FR24_RADIUS, entry.data.get(CONF_FR24_RADIUS, 3000))
+        current_advanced = options.get(CONF_ADVANCED_ADSB_FILTER, entry.data.get(CONF_ADVANCED_ADSB_FILTER, ""))
 
         schema_dict = {
             vol.Required(CONF_LATITUDE, default=current_lat): cv.latitude,
             vol.Required(CONF_LONGITUDE, default=current_lon): cv.longitude,
             vol.Required(CONF_RADIUS, default=current_radius): int,
             vol.Required(CONF_FR24_RADIUS, default=current_fr24_radius): int,
-            vol.Optional(
-                CONF_GLOBAL_EMERGENCY, default=options.get(CONF_GLOBAL_EMERGENCY, False)
-            ): bool,
-            vol.Optional(
-                CONF_GLOBAL_MILITARY, default=options.get(CONF_GLOBAL_MILITARY, False)
-            ): bool,
-            vol.Optional(
-                CONF_ENABLE_FR24_ENRICHMENT,
-                default=options.get(CONF_ENABLE_FR24_ENRICHMENT, False),
-            ): bool,
+            vol.Optional(CONF_GLOBAL_EMERGENCY, default=options.get(CONF_GLOBAL_EMERGENCY, False)): bool,
+            vol.Optional(CONF_GLOBAL_MILITARY, default=options.get(CONF_GLOBAL_MILITARY, False)): bool,
+            vol.Optional(CONF_ENABLE_FR24_ENRICHMENT, default=options.get(CONF_ENABLE_FR24_ENRICHMENT, False)): bool,
+            vol.Optional(CONF_FR24_COMMERCIAL, default=options.get(CONF_FR24_COMMERCIAL, True)): bool,
+            vol.Optional(CONF_FR24_PRIVATE, default=options.get(CONF_FR24_PRIVATE, False)): bool,
+            vol.Optional(CONF_FR24_HELICOPTER, default=options.get(CONF_FR24_HELICOPTER, False)): bool,
+            vol.Optional(CONF_ADVANCED_ADSB_FILTER, default=current_advanced): str,
         }
 
         return self.async_show_form(step_id="init", data_schema=vol.Schema(schema_dict))

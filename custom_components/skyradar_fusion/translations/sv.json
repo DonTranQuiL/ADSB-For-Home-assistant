@@ -32,10 +32,15 @@
           "latitude": "Latitud (Mitten av din radar)",
           "longitude": "Longitud (Mitten av din radar)",
           "radius": "Zonradie (meter)",
+          "fr24_radius": "FR24 Overhead Bubble Radius (meters)",
           "enable_tracker": "Aktivera kartenhetsspårning (avmarkera för att dölja)",
           "global_emergency": "Aktivera global nödradar (Squawk 7700)",
           "global_military": "Aktivera global militærradar",
-          "enable_fr24_enrichment": "Aktivera FlightRadar24-berikning (Foton och rutter)"
+          "enable_fr24_enrichment": "Aktivera FlightRadar24-berikning (Foton och rutter)",
+          "fr24_commercial": "Enrich Commercial Flights",
+          "fr24_private": "Enrich Private Aircraft",
+          "fr24_helicopter": "Enrich Helicopters",
+          "advanced_adsb_filter": "Advanced ADS-B Filter (e.g., A3, A5) - Overrides checkboxes"
         }
       }
     }
