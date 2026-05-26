@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 from homeassistant.components.device_tracker.const import SourceType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import DOMAIN
-from custom_components.airplanes_live.device_tracker import (
+from custom_components.skyradar_fusion.const import DOMAIN
+from custom_components.skyradar_fusion.device_tracker import (
     AirplanesLiveTracker,
     async_setup_entry,
 )
@@ -51,10 +51,10 @@ def test_device_tracker_properties_and_icons(mock_tracker_coord):
     tracker_heli = AirplanesLiveTracker(mock_tracker_coord, "A4B5C6")
 
     # Name check updated to match user's device_tracker.py format
-    assert tracker_heli.name == "airplanes_live_HELI1"
-    assert tracker_heli.unique_id == "airplanes_live_A4B5C6"
+    assert tracker_heli.name == "skyradar_fusion_HELI1"
+    assert tracker_heli.unique_id == "skyradar_fusion_A4B5C6"
     assert tracker_heli.latitude == 52.1
     assert tracker_heli.longitude == 5.1
     assert tracker_heli.source_type == SourceType.GPS
     assert tracker_heli.icon == "mdi:helicopter"
-    assert tracker_heli.entity_picture == "/airplanes_live_assets/planes/H135.png"
+    assert tracker_heli.entity_picture == "/skyradar_fusion_assets/planes/H135.png"
