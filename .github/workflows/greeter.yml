@@ -35,5 +35,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "🎉 Thank you for contributing to Airplanes Live! Your Pull Request has been received. Our automated tests (Hassfest, Ruff, etc.) will run shortly. If anything fails, don't worry—just check the logs and update your branch!"
+              body: "🎉 Thank you for contributing to SkyRadar Fusion! Your Pull Request has been received. Our automated tests (Hassfest, Ruff, etc.) will run shortly. If anything fails, don't worry—just check the logs and update your branch!"
             })
