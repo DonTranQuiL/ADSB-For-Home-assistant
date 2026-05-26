@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, AsyncMock, patch
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import DOMAIN, PLATFORMS
+from custom_components.skyradar_fusion.const import DOMAIN, PLATFORMS
 
 
 @pytest.fixture(autouse=True)
@@ -13,7 +13,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 @pytest.fixture
 def mock_coordinator_init():
-    with patch("custom_components.airplanes_live.AirplanesLiveCoordinator") as mock_cls:
+    with patch("custom_components.skyradar_fusion.AirplanesLiveCoordinator") as mock_cls:
         mock_coord = MagicMock()
         mock_coord.async_config_entry_first_refresh = AsyncMock()
         mock_coord.async_request_refresh = AsyncMock()
