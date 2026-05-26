@@ -4,9 +4,9 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import DOMAIN
 from custom_components.skyradar_fusion.sensor import (
-    AirplanesLiveOverviewSensor,
-    AirplanesLiveStatSensor,
-    AirplanesLiveCategorySensor,
+    SkyRadarFusionOverviewSensor,
+    SkyRadarFusionStatSensor,
+    SkyRadarFusionCategorySensor,
 )
 
 
@@ -32,7 +32,7 @@ def mock_coord_data():
 
 
 def test_overview_sensor_attributes(mock_coord_data):
-    sensor = AirplanesLiveOverviewSensor(mock_coord_data)
+    sensor = SkyRadarFusionOverviewSensor(mock_coord_data)
 
     assert sensor.native_value == 5
     assert sensor.unique_id == "airspace_overview_test_id"
@@ -46,7 +46,7 @@ def test_overview_sensor_attributes(mock_coord_data):
 
 def test_overview_sensor_no_closest(mock_coord_data):
     mock_coord_data.data["closest"] = None
-    sensor = AirplanesLiveOverviewSensor(mock_coord_data)
+    sensor = SkyRadarFusionOverviewSensor(mock_coord_data)
     # Updated to match the actual output of the user's sensor.py when closest is None
     assert sensor.extra_state_attributes == {
         "Closest Flight": "None",
@@ -55,10 +55,10 @@ def test_overview_sensor_no_closest(mock_coord_data):
 
 
 def test_stat_and_category_sensors(mock_coord_data):
-    entered_sensor = AirplanesLiveStatSensor(
+    entered_sensor = SkyRadarFusionStatSensor(
         mock_coord_data, "entered", "Entered", "mdi:icon"
     )
-    heli_sensor = AirplanesLiveCategorySensor(mock_coord_data, "helicopter")
+    heli_sensor = SkyRadarFusionCategorySensor(mock_coord_data, "helicopter")
 
     assert entered_sensor.native_value == 2
     assert heli_sensor.native_value == 1
