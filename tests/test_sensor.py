@@ -2,8 +2,8 @@ import pytest
 from unittest.mock import MagicMock
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import DOMAIN
-from custom_components.airplanes_live.sensor import (
+from custom_components.skyradar_fusion.const import DOMAIN
+from custom_components.skyradar_fusion.sensor import (
     AirplanesLiveOverviewSensor,
     AirplanesLiveStatSensor,
     AirplanesLiveCategorySensor,
