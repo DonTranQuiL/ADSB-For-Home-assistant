@@ -1,4 +1,4 @@
-"""Button entities for Airplanes.Live."""
+"""Button entities for SkyRadar Fusion."""
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.helpers import entity_registry as er
@@ -8,10 +8,10 @@ from .const import DOMAIN
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities([AirplanesLiveClearButton(coordinator)])
+    async_add_entities([SkyRadarFusionClearButton(coordinator)])
 
 
-class AirplanesLiveClearButton(ButtonEntity):
+class SkyRadarFusionClearButton(ButtonEntity):
     has_entity_name = True
 
     def __init__(self, coordinator):
@@ -21,7 +21,7 @@ class AirplanesLiveClearButton(ButtonEntity):
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_clear_track"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
-            name="Airplanes.Live Tracker",
+            name="SkyRadar Fusion",
         )
 
     async def async_press(self) -> None:

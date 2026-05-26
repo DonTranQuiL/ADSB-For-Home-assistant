@@ -1,7 +1,7 @@
-"""Constants for the Airplanes.Live integration."""
+"""Constants for the SkyRadar Fusion integration."""
 
-DOMAIN = "airplanes_live"
-NAME = "Airplanes.Live Tracker"
+DOMAIN = "skyradar_fusion"
+NAME = "SkyRadar Fusion"
 
 API_BASE_URL = "https://api.airplanes.live/v2"
 

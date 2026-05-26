@@ -1,4 +1,4 @@
-"""Text entities for Airplanes.Live (FR24 Style)."""
+"""Text entities for SkyRadar Fusion."""
 
 from homeassistant.components.text import TextEntity
 from homeassistant.helpers import entity_registry as er
@@ -9,23 +9,23 @@ from .const import DOMAIN
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
     async_add_entities(
-        [AirplanesLiveAddText(coordinator), AirplanesLiveRemoveText(coordinator)]
+        [SkyRadarFusionAddText(coordinator), SkyRadarFusionRemoveText(coordinator)]
     )
 
 
-class AirplanesLiveTextBase(TextEntity):
+class SkyRadarFusionTextBase(TextEntity):
     has_entity_name = True
 
     def __init__(self, coordinator):
         self.coordinator = coordinator
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
-            name="Airplanes.Live Tracker",
+            name="SkyRadar Fusion",
         )
         self._attr_native_value = ""
 
 
-class AirplanesLiveAddText(AirplanesLiveTextBase):
+class SkyRadarFusionAddText(SkyRadarFusionTextBase):
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_name = "Add to track"
@@ -43,7 +43,7 @@ class AirplanesLiveAddText(AirplanesLiveTextBase):
             await self.coordinator.async_request_refresh()
 
 
-class AirplanesLiveRemoveText(AirplanesLiveTextBase):
+class SkyRadarFusionRemoveText(SkyRadarFusionTextBase):
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_name = "Remove from track"

@@ -1,15 +1,15 @@
-"""Device tracker platform for Airplanes.Live."""
+"""Device tracker platform for SkyRadar Fusion."""
 
 from homeassistant.components.device_tracker.config_entry import TrackerEntity
 from homeassistant.components.device_tracker.const import SourceType
 from homeassistant.core import callback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers import entity_registry as er
 from .const import DOMAIN, CONF_ENABLE_TRACKER
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-
+    
     tracked_hexes = set()
 
     @callback
@@ -18,13 +18,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             return
 
         new_entities = []
-
+        
         for ac in coordinator.data.get("tracked_aircraft", []):
             hex_id = ac.get("hex")
             if hex_id and hex_id not in tracked_hexes:
                 tracked_hexes.add(hex_id)
                 new_entities.append(AirplanesLiveTracker(coordinator, hex_id))
-
+                
         if new_entities:
             async_add_entities(new_entities)
 
@@ -41,8 +41,8 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
         callsign = ac_data.get("flight", "").strip() or self._hex_id
 
         self._attr_has_entity_name = False
-        self._attr_name = f"airplanes_live_{callsign}"
-        self._attr_unique_id = f"airplanes_live_{self._hex_id}"
+        self._attr_name = f"skyradar_fusion_{callsign}"
+        self._attr_unique_id = f"skyradar_fusion_{self._hex_id}"
 
     def _ac_live_or_offline(self):
         current_ac = next(
@@ -53,17 +53,17 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
             ),
             None,
         )
-
+        
         if current_ac:
             return current_ac
-
+            
         return {
             "hex": self._hex_id,
             "flight": "Offline",
             "lat": None,
             "lon": None,
             "air_category": "Offline",
-            "is_offline": True,
+            "is_offline": True
         }
 
     @property
@@ -81,10 +81,10 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
     @property
     def icon(self):
         ac = self._ac_live_or_offline()
-
+        
         if ac.get("is_offline"):
             return "mdi:airplane-off"
-
+            
         ac_type = ac.get("desc", "").lower()
         baro_rate = ac.get("baro_rate", 0)
 
@@ -105,10 +105,10 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
     @property
     def entity_picture(self):
         ac_data = self._ac_live_or_offline()
-
+        
         if ac_data.get("is_offline"):
             return None
-
+            
         api_photo = ac_data.get("api_photo_url")
         if api_photo:
             return api_photo
@@ -122,13 +122,13 @@ class AirplanesLiveTracker(CoordinatorEntity, TrackerEntity):
     @property
     def extra_state_attributes(self):
         ac = self._ac_live_or_offline()
-
+        
         if ac.get("is_offline"):
             return {
                 "Status": "Offline / Out of Range",
-                "Info": "Radar tracking is disabled or aircraft left the area.",
+                "Info": "Radar tracking is disabled or aircraft left the area."
             }
-
+        
         raw_attrs = {
             "Callsign": ac.get("flight", "Unknown").strip(),
             "Registration": ac.get("r", "Unknown"),

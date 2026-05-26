@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live कॉन्फ़िगरेशन",
+        "title": "SkyRadar Fusion कॉन्फ़िगरेशन",
         "data": {
           "latitude": "अक्षांश (आपके रडार का केंद्र)",
           "longitude": "देशांतर (आपके रडार का केंद्र)",

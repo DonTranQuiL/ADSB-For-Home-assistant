@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Конфигурация Airplanes.Live",
+        "title": "Конфигурация SkyRadar Fusion",
         "data": {
           "latitude": "Широта (Центр вашего радара)",
           "longitude": "Долгота (Центр вашего радара)",

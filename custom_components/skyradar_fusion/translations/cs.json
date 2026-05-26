@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Konfigurace Airplanes.Live",
+        "title": "Konfigurace SkyRadar Fusion",
         "data": {
           "latitude": "Zeměpisná šířka (Střed vašeho radaru)",
           "longitude": "Zeměpisná délka (Střed vašeho radaru)",

@@ -1,4 +1,4 @@
-"""Sensor platform for Airplanes.Live."""
+"""Sensor platform for SkyRadar Fusion."""
 
 from homeassistant.components.sensor import SensorEntity, RestoreSensor
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -8,32 +8,33 @@ from .const import DOMAIN, MODE_ZONE, CONF_GLOBAL_EMERGENCY, CONF_GLOBAL_MILITAR
 
 CATEGORIES = ["helicopter", "military", "commercial", "private"]
 
-
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = [
-        AirplanesLiveOverviewSensor(coordinator),
-        AirplanesLiveStatSensor(
+        SkyRadarFusionOverviewSensor(coordinator),
+        SkyRadarFusionStatSensor(
             coordinator, "entered", "Entered area", "mdi:airplane-takeoff"
         ),
-        AirplanesLiveStatSensor(
+        SkyRadarFusionStatSensor(
             coordinator, "exited", "Exited area", "mdi:airplane-landing"
         ),
-        AirplanesLiveTrackedRestoreSensor(coordinator),
-        AirplanesLiveDiagnosticSensor(
+        SkyRadarFusionTrackedRestoreSensor(
+            coordinator
+        ),
+        SkyRadarFusionDiagnosticSensor(
             coordinator,
             "consecutive_errors",
             "Consecutive Errors",
             "mdi:alert-circle-outline",
         ),
-        AirplanesLiveDiagnosticSensor(
+        SkyRadarFusionDiagnosticSensor(
             coordinator,
             "last_update_status",
             "Last Update Status",
             "mdi:check-network-outline",
         ),
-        AirplanesLiveDiagnosticSensor(
+        SkyRadarFusionDiagnosticSensor(
             coordinator,
             "last_update_time",
             "Last Update Time",
@@ -44,11 +45,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     if config_entry.data.get("tracking_mode") == MODE_ZONE:
         for cat in CATEGORIES:
-            entities.append(AirplanesLiveCategorySensor(coordinator, cat))
+            entities.append(SkyRadarFusionCategorySensor(coordinator, cat))
 
     if config_entry.options.get(CONF_GLOBAL_EMERGENCY, False):
         entities.append(
-            AirplanesLiveGlobalSensor(
+            SkyRadarFusionGlobalSensor(
                 coordinator,
                 "global_emergencies",
                 "Global Emergencies (7700)",
@@ -58,7 +59,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     if config_entry.options.get(CONF_GLOBAL_MILITARY, False):
         entities.append(
-            AirplanesLiveGlobalSensor(
+            SkyRadarFusionGlobalSensor(
                 coordinator, "global_military", "Global Military", "mdi:fighter-jet"
             )
         )
@@ -66,24 +67,23 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(entities)
 
 
-class AirplanesLiveSensorBase(CoordinatorEntity, SensorEntity):
+class SkyRadarFusionSensorBase(CoordinatorEntity, SensorEntity):
     has_entity_name = True
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
-            name="Airplanes.Live Tracker",
+            name="SkyRadar Fusion",
         )
 
-
-class AirplanesLiveTrackedRestoreSensor(AirplanesLiveSensorBase, RestoreSensor):
+class SkyRadarFusionTrackedRestoreSensor(SkyRadarFusionSensorBase, RestoreSensor):
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_name = "Additional tracked"
         self._attr_icon = "mdi:radar"
         self._attr_unique_id = (
-            f"airplanes_live_additional_tracked_{coordinator.config_entry.entry_id}"
+            f"skyradar_fusion_additional_tracked_{coordinator.config_entry.entry_id}"
         )
 
     @property
@@ -105,15 +105,14 @@ class AirplanesLiveTrackedRestoreSensor(AirplanesLiveSensorBase, RestoreSensor):
             for identifier in last_state.attributes["tracking_list"]:
                 self.coordinator.add_track(identifier)
 
-
-class AirplanesLiveDiagnosticSensor(AirplanesLiveSensorBase):
+class SkyRadarFusionDiagnosticSensor(SkyRadarFusionSensorBase):
     def __init__(self, coordinator, key, name, icon, device_class=None):
         super().__init__(coordinator)
         self._key = key
         self._attr_name = name
         self._attr_icon = icon
         self._attr_unique_id = (
-            f"airplanes_live_{key}_{coordinator.config_entry.entry_id}"
+            f"skyradar_fusion_{key}_{coordinator.config_entry.entry_id}"
         )
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         if device_class:
@@ -124,14 +123,14 @@ class AirplanesLiveDiagnosticSensor(AirplanesLiveSensorBase):
         return getattr(self.coordinator, self._key, None)
 
 
-class AirplanesLiveStatSensor(AirplanesLiveSensorBase):
+class SkyRadarFusionStatSensor(SkyRadarFusionSensorBase):
     def __init__(self, coordinator, stat_type, name, icon):
         super().__init__(coordinator)
         self._stat_type = stat_type
         self._attr_name = name
         self._attr_icon = icon
         self._attr_unique_id = (
-            f"airplanes_live_{stat_type}_{coordinator.config_entry.entry_id}"
+            f"skyradar_fusion_{stat_type}_{coordinator.config_entry.entry_id}"
         )
 
     @property
@@ -143,7 +142,7 @@ class AirplanesLiveStatSensor(AirplanesLiveSensorBase):
         )
 
 
-class AirplanesLiveOverviewSensor(AirplanesLiveSensorBase):
+class SkyRadarFusionOverviewSensor(SkyRadarFusionSensorBase):
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_name = "Current in area"
@@ -173,13 +172,13 @@ class AirplanesLiveOverviewSensor(AirplanesLiveSensorBase):
         return attrs
 
 
-class AirplanesLiveCategorySensor(AirplanesLiveSensorBase):
+class SkyRadarFusionCategorySensor(SkyRadarFusionSensorBase):
     def __init__(self, coordinator, category):
         super().__init__(coordinator)
         self._category = category
         self._attr_name = f"{category.capitalize()}s in area"
         self._attr_unique_id = (
-            f"airplanes_live_{category}_{coordinator.config_entry.entry_id}"
+            f"skyradar_fusion_{category}_{coordinator.config_entry.entry_id}"
         )
         self._attr_icon = (
             "mdi:helicopter" if category == "helicopter" else "mdi:airplane"
@@ -194,14 +193,14 @@ class AirplanesLiveCategorySensor(AirplanesLiveSensorBase):
         )
 
 
-class AirplanesLiveGlobalSensor(AirplanesLiveSensorBase):
+class SkyRadarFusionGlobalSensor(SkyRadarFusionSensorBase):
     def __init__(self, coordinator, data_key, name, icon):
         super().__init__(coordinator)
         self._data_key = data_key
         self._attr_name = name
         self._attr_icon = icon
         self._attr_unique_id = (
-            f"airplanes_live_{data_key}_{coordinator.config_entry.entry_id}"
+            f"skyradar_fusion_{data_key}_{coordinator.config_entry.entry_id}"
         )
 
     @property
@@ -214,17 +213,13 @@ class AirplanesLiveGlobalSensor(AirplanesLiveSensorBase):
 
     @property
     def extra_state_attributes(self):
-        raw_data = (
-            self.coordinator.data.get(self._data_key, [])
-            if self.coordinator.data
-            else []
-        )
-
+        raw_data = self.coordinator.data.get(self._data_key, []) if self.coordinator.data else []
+        
         flight_list = []
         for ac in raw_data:
             callsign = ac.get("flight", "").strip() or "Unknown"
             hex_code = ac.get("hex", "Unknown")
             ac_type = ac.get("t", "Unknown")
             flight_list.append(f"{callsign} ({ac_type}) - Hex: {hex_code}")
-
+            
         return {"active_flights": flight_list}

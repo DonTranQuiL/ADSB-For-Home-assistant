@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live -määritykset",
+        "title": "SkyRadar Fusion -määritykset",
         "data": {
           "latitude": "Leveysaste (Tutkan keskipiste)",
           "longitude": "Pituusaste (Tutkan keskipiste)",

@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live 設定",
+        "title": "SkyRadar Fusion 設定",
         "data": {
           "latitude": "緯度（レーダーの中心）",
           "longitude": "経度（レーダーの中心）",

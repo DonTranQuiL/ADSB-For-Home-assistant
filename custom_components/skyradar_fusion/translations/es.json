@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Configuración de Airplanes.Live",
+        "title": "Configuración de SkyRadar Fusion",
         "data": {
           "latitude": "Latitud (Centro de tu radar)",
           "longitude": "Longitud (Centro de tu radar)",

@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live Konfiguration",
+        "title": "SkyRadar Fusion Konfiguration",
         "data": {
           "latitude": "Breddegrad (Midten af din radar)",
           "longitude": "Længdegrad (Midten af din radar)",

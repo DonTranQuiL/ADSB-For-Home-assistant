@@ -3,7 +3,7 @@ from homeassistant import config_entries
 from .const import CONF_RADIUS, CONF_LATITUDE, CONF_LONGITUDE
 
 
-class AirplanesLiveOptionsFlow(config_entries.OptionsFlow):
+class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry):
         self.config_entry = config_entry
 

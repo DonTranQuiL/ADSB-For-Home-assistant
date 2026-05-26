@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Διαμόρφωση Airplanes.Live",
+        "title": "Διαμόρφωση SkyRadar Fusion",
         "data": {
           "latitude": "Γεωγραφικό πλάτος (Κέντρο του ραντάρ σας)",
           "longitude": "Γεωγραφικό μήκος (Κέντρο του ραντάρ σας)",

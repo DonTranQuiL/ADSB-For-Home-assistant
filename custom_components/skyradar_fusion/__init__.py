@@ -1,28 +1,28 @@
-"""The Airplanes.Live integration."""
+"""The SkyRadar Fusion integration."""
 
 import importlib
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.components.http import StaticPathConfig
 from .const import DOMAIN, PLATFORMS
-from .coordinator import AirplanesLiveCoordinator
+from .coordinator import SkyRadarFusionCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Airplanes.Live from a config entry."""
+    """Set up SkyRadar Fusion from a config entry."""
 
     await hass.http.async_register_static_paths(
         [
             StaticPathConfig(
-                url_path="/airplanes_live_assets",
-                path=hass.config.path("custom_components/airplanes_live/www"),
+                url_path="/skyradar_fusion_assets",
+                path=hass.config.path("custom_components/skyradar_fusion/www"),
                 cache_headers=False,
             )
         ]
     )
     # ------------------------------------------------
 
-    coordinator = AirplanesLiveCoordinator(hass, entry)
+    coordinator = SkyRadarFusionCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 

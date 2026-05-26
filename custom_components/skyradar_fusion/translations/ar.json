@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "تكوين Airplanes.Live",
+        "title": "تكوين SkyRadar Fusion",
         "data": {
           "latitude": "خط العرض (مركز الرادار الخاص بك)",
           "longitude": "خط الطول (مركز الرادار الخاص بك)",

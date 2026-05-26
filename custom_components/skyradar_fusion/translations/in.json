@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Konfigurasi Airplanes.Live",
+        "title": "Konfigurasi SkyRadar Fusion",
         "data": {
           "latitude": "Garis Lintang (Pusat radar Anda)",
           "longitude": "Garis Bujur (Pusat radar Anda)",

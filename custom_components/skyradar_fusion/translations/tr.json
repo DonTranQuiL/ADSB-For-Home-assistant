@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live Yapılandırması",
+        "title": "SkyRadar Fusion Yapılandırması",
         "data": {
           "latitude": "Enlem (Radarınızın merkezi)",
           "longitude": "Boylam (Radarınızın merkezi)",

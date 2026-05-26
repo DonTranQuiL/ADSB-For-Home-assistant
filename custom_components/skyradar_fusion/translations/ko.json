@@ -27,7 +27,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Airplanes.Live 구성",
+        "title": "SkyRadar Fusion 구성",
         "data": {
           "latitude": "위도 (레이더의 중심)",
           "longitude": "경도 (레이더의 중심)",
