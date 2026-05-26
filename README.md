@@ -3,7 +3,7 @@
 # 📡 SkyRadar Fusion
 **The high-performance, zero-bloat, hybrid ADS-B & FlightRadar24 airspace intelligence monitor for Home Assistant.**
 
-> ⚠️ **MASSIVE OVERHAUL ANNOUNCEMENT:** > We have just released a gigantic core rewrite! This integration (formerly Airplanes.Live Tracker) now features a **Hybrid Engine**, combining the ultra-fast Airplanes.Live radar feed with rich **FlightRadar24 API enrichment** (live routes, high-res photos, and scheduled times). So soon we will change the name! Welcome to the SkyRadar Fusion era!
+> ⚠️ **MASSIVE OVERHAUL ANNOUNCEMENT:** > We have just released a gigantic core rewrite! This integration (formerly Airplanes.Live Tracker) now features a **Hybrid Engine**, combining the ultra-fast Airplanes.Live radar feed with rich **FlightRadar24 API enrichment** (live routes, high-res photos, and scheduled times). Welcome to the SkyRadar Fusion era!
 
 [![Latest Release](https://img.shields.io/github/v/release/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/releases)
 [![License](https://img.shields.io/github/license/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/blob/main/LICENSE)
@@ -37,6 +37,18 @@ The most efficient deployment method is through **HACS** (Home Assistant Communi
 5. Locate the newly added **SkyRadar Fusion** repository card and hit **Download**.
 6. ⚠️ **Restart your Home Assistant instance**.
 7. Navigate to **Settings > Devices & Services > Add Integration**, lookup **SkyRadar Fusion**, and configure your primary boundary coordinates.
+
+---
+
+## ✈️ How to Enable FlightRadar24 Enrichment
+Because the FR24 Enrichment makes additional API calls on your behalf, it is strictly **Opt-In**. Here is how to turn on the magic:
+
+1. Go to **Settings > Devices & Services** in Home Assistant.
+2. Find the **SkyRadar Fusion** integration card.
+3. Click on **Configure**.
+4. Check the box that says **"Enable FlightRadar24 Enrichment (Photos & Routes)"**.
+5. Click **Submit**. 
+*(Boom! Your map trackers will now instantly populate with high-res photos and live route data).*
 
 ---
 
