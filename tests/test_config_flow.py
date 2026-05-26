@@ -38,7 +38,9 @@ async def test_form_zone(hass):
     assert result2["type"] == FlowResultType.FORM
     assert result2["step_id"] == "zone"
 
-    with patch("custom_components.skyradar_fusion.async_setup_entry", return_value=True):
+    with patch(
+        "custom_components.skyradar_fusion.async_setup_entry", return_value=True
+    ):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             user_input={
@@ -62,7 +64,9 @@ async def test_form_single(hass):
     )
     assert result2["step_id"] == "single"
 
-    with patch("custom_components.skyradar_fusion.async_setup_entry", return_value=True):
+    with patch(
+        "custom_components.skyradar_fusion.async_setup_entry", return_value=True
+    ):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             user_input={

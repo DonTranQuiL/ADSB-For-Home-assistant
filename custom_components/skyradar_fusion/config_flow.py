@@ -99,26 +99,43 @@ class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             options[CONF_LATITUDE] = user_input.get(CONF_LATITUDE)
             options[CONF_LONGITUDE] = user_input.get(CONF_LONGITUDE)
-            options[CONF_RADIUS] = user_input.get(CONF_RADIUS, options.get(CONF_RADIUS, 5000))
-            options[CONF_GLOBAL_EMERGENCY] = user_input.get(CONF_GLOBAL_EMERGENCY, False)
+            options[CONF_RADIUS] = user_input.get(
+                CONF_RADIUS, options.get(CONF_RADIUS, 5000)
+            )
+            options[CONF_GLOBAL_EMERGENCY] = user_input.get(
+                CONF_GLOBAL_EMERGENCY, False
+            )
             options[CONF_GLOBAL_MILITARY] = user_input.get(CONF_GLOBAL_MILITARY, False)
-            options[CONF_ENABLE_FR24_ENRICHMENT] = user_input.get(CONF_ENABLE_FR24_ENRICHMENT, False)
-            
+            options[CONF_ENABLE_FR24_ENRICHMENT] = user_input.get(
+                CONF_ENABLE_FR24_ENRICHMENT, False
+            )
+
             return self.async_create_entry(title="", data=options)
 
         entry = getattr(self, "config_entry", self._config_entry)
-        
-        current_lat = options.get(CONF_LATITUDE, entry.data.get(CONF_LATITUDE, self.hass.config.latitude))
-        current_lon = options.get(CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE, self.hass.config.longitude))
+
+        current_lat = options.get(
+            CONF_LATITUDE, entry.data.get(CONF_LATITUDE, self.hass.config.latitude)
+        )
+        current_lon = options.get(
+            CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
+        )
         current_radius = options.get(CONF_RADIUS, entry.data.get(CONF_RADIUS, 5000))
 
         schema_dict = {
             vol.Required(CONF_LATITUDE, default=current_lat): cv.latitude,
             vol.Required(CONF_LONGITUDE, default=current_lon): cv.longitude,
             vol.Required(CONF_RADIUS, default=current_radius): int,
-            vol.Optional(CONF_GLOBAL_EMERGENCY, default=options.get(CONF_GLOBAL_EMERGENCY, False)): bool,
-            vol.Optional(CONF_GLOBAL_MILITARY, default=options.get(CONF_GLOBAL_MILITARY, False)): bool,
-            vol.Optional(CONF_ENABLE_FR24_ENRICHMENT, default=options.get(CONF_ENABLE_FR24_ENRICHMENT, False)): bool,
+            vol.Optional(
+                CONF_GLOBAL_EMERGENCY, default=options.get(CONF_GLOBAL_EMERGENCY, False)
+            ): bool,
+            vol.Optional(
+                CONF_GLOBAL_MILITARY, default=options.get(CONF_GLOBAL_MILITARY, False)
+            ): bool,
+            vol.Optional(
+                CONF_ENABLE_FR24_ENRICHMENT,
+                default=options.get(CONF_ENABLE_FR24_ENRICHMENT, False),
+            ): bool,
         }
 
         return self.async_show_form(step_id="init", data_schema=vol.Schema(schema_dict))
