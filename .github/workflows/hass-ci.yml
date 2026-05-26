@@ -41,4 +41,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v tests/ --cov=custom_components/airplanes_live/ --cov-report=xml
+          pytest -v tests/ --cov=custom_components/skyradar_fusion/ --cov-report=xml
