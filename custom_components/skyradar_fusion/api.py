@@ -42,55 +42,64 @@ class SkyRadarFusionAPI:
     def _get_fr24_data_sync(self, identifier: str) -> dict | None:
         try:
             flights = self.fr24.search(identifier)
-            live = flights.get('live', [])
+            live = flights.get("live", [])
             if not live:
                 return None
-            
+
             found = live[0]
-            flight_id = found.get('id')
+            flight_id = found.get("id")
             if not flight_id:
                 return None
-            
+
             from FlightRadarAPI import Flight
+
             dummy_flight = Flight(flight_id, [None] * 20)
-            
+
             details = self.fr24.get_flight_details(dummy_flight)
             if not details:
                 return None
-            
-            airport = details.get('airport', {}) or {}
-            origin = airport.get('origin', {}) or {}
-            destination = airport.get('destination', {}) or {}
-            
-            time_info = details.get('time', {}) or {}
-            scheduled = time_info.get('scheduled', {}) or {}
-            real = time_info.get('real', {}) or {}
-            estimated = time_info.get('estimated', {}) or {}
-            
-            airline = details.get('airline', {}) or {}
-            aircraft = details.get('aircraft', {}) or {}
-            images = aircraft.get('images', {}) or {}
-            
+
+            airport = details.get("airport", {}) or {}
+            origin = airport.get("origin", {}) or {}
+            destination = airport.get("destination", {}) or {}
+
+            time_info = details.get("time", {}) or {}
+            scheduled = time_info.get("scheduled", {}) or {}
+            real = time_info.get("real", {}) or {}
+            estimated = time_info.get("estimated", {}) or {}
+
+            airline = details.get("airline", {}) or {}
+            aircraft = details.get("aircraft", {}) or {}
+            images = aircraft.get("images", {}) or {}
+
             photo_large = None
             if images and isinstance(images, dict):
-                large_imgs = images.get('large', [])
+                large_imgs = images.get("large", [])
                 if large_imgs and len(large_imgs) > 0:
-                    photo_large = large_imgs[0].get('src')
+                    photo_large = large_imgs[0].get("src")
 
             return {
                 "fr24_route": f"{origin.get('code', {}).get('iata', 'N/A')} - {destination.get('code', {}).get('iata', 'N/A')}",
-                "airline": airline.get('name', 'Unknown'),
-                "airline_icao": airline.get('code', {}).get('icao', 'N/A'),
-                "airport_origin_name": origin.get('name', 'Unknown'),
-                "airport_origin_city": origin.get('position', {}).get('region', {}).get('city', 'Unknown'),
-                "airport_origin_country_code": origin.get('position', {}).get('country', {}).get('code', 'Unknown'),
-                "airport_destination_name": destination.get('name', 'Unknown'),
-                "airport_destination_country_name": destination.get('position', {}).get('country', {}).get('name', 'Unknown'),
+                "airline": airline.get("name", "Unknown"),
+                "airline_icao": airline.get("code", {}).get("icao", "N/A"),
+                "airport_origin_name": origin.get("name", "Unknown"),
+                "airport_origin_city": origin.get("position", {})
+                .get("region", {})
+                .get("city", "Unknown"),
+                "airport_origin_country_code": origin.get("position", {})
+                .get("country", {})
+                .get("code", "Unknown"),
+                "airport_destination_name": destination.get("name", "Unknown"),
+                "airport_destination_country_name": destination.get("position", {})
+                .get("country", {})
+                .get("name", "Unknown"),
                 "fr24_photo": photo_large,
-                "fr24_scheduled_departure": format_unix_time(scheduled.get('departure')),
-                "fr24_real_departure": format_unix_time(real.get('departure')),
-                "fr24_scheduled_arrival": format_unix_time(scheduled.get('arrival')),
-                "fr24_estimated_arrival": format_unix_time(estimated.get('arrival'))
+                "fr24_scheduled_departure": format_unix_time(
+                    scheduled.get("departure")
+                ),
+                "fr24_real_departure": format_unix_time(real.get("departure")),
+                "fr24_scheduled_arrival": format_unix_time(scheduled.get("arrival")),
+                "fr24_estimated_arrival": format_unix_time(estimated.get("arrival")),
             }
 
         except Exception as err:

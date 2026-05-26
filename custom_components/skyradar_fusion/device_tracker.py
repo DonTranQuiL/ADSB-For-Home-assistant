@@ -31,6 +31,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator.async_add_listener(_update)
     _update()
 
+
 class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
     def __init__(self, coordinator, hex_id):
         super().__init__(coordinator)
@@ -121,13 +122,13 @@ class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
     @property
     def extra_state_attributes(self):
         ac = self._ac_live_or_offline()
-        
+
         if ac.get("is_offline"):
             return {
                 "Status": "Offline / Out of Range",
-                "Info": "Radar tracking is disabled or aircraft left the area."
+                "Info": "Radar tracking is disabled or aircraft left the area.",
             }
-        
+
         raw_attrs = {
             "Callsign": ac.get("flight", "Unknown").strip(),
             "Registration": ac.get("r", "Unknown"),
@@ -164,7 +165,7 @@ class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
             attrs["Destination Airport"] = ac.get("airport_destination_name")
         if ac.get("airport_destination_country_name"):
             attrs["Destination Country"] = ac.get("airport_destination_country_name")
-            
+
         # De bestaande tijd-velden:
         if ac.get("fr24_scheduled_departure"):
             attrs["Scheduled Departure"] = ac.get("fr24_scheduled_departure")
