@@ -5,7 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.airplanes_live.const import (
+from custom_components.skyradar_fusion.const import (
     DOMAIN,
     CONF_TRACKING_MODE,
     CONF_RADIUS,
@@ -57,7 +57,7 @@ async def test_sensors_and_coordinator_data(hass: HomeAssistant):
     """Test that the coordinator processes API data and sensors update correctly."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        title="Airplanes.Live Tracker",
+        title="SkyRadar Fusio",
         data={
             CONF_TRACKING_MODE: MODE_ZONE,
             # Center point coordinates
@@ -83,14 +83,14 @@ async def test_sensors_and_coordinator_data(hass: HomeAssistant):
     mock_api.get_aircraft_in_zone = AsyncMock(return_value=mock_aircraft_data)
 
     with patch(
-        "custom_components.airplanes_live.coordinator.AirplanesLiveAPI",
+        "custom_components.skyradar_fusion.coordinator.AirplanesLiveAPI",
         return_value=mock_api,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
         # 1. Check Overview Sensor (Should be 2 total, because 1 is out of range)
-        overview_sensor = hass.states.get(f"sensor.airplanes_live_tracker_current_in_area")
+        overview_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_current_in_area")
         assert overview_sensor is not None
         assert overview_sensor.state == "2"
         
@@ -100,14 +100,14 @@ async def test_sensors_and_coordinator_data(hass: HomeAssistant):
         assert attrs["Closest Flight"] in ["KLM456", "HELI1"]
 
         # 2. Check Category Sensors
-        commercial_sensor = hass.states.get(f"sensor.airplanes_live_tracker_commercials_in_area")
+        commercial_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_commercials_in_area")
         assert commercial_sensor is not None
         assert commercial_sensor.state == "1"
 
-        heli_sensor = hass.states.get(f"sensor.airplanes_live_tracker_helicopters_in_area")
+        heli_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_helicopters_in_area")
         assert heli_sensor is not None
         assert heli_sensor.state == "1"
 
-        military_sensor = hass.states.get(f"sensor.airplanes_live_tracker_militarys_in_area")
+        military_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_militarys_in_area")
         assert military_sensor is not None
         assert military_sensor.state == "0"
