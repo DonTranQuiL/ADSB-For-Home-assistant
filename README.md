@@ -51,6 +51,7 @@ Because the FR24 Enrichment makes additional API calls on your behalf, it is hig
 * **Live Route Data:** View exact Origin and Destination cities & countries (e.g., `Paris, FR -> Amsterdam, NL`).
 * **Airline Identification:** Know exactly which carrier operates the flight.
 * **Timetables:** View Scheduled Arrival and live Estimated Time of Arrival (ETA).
+* **FR24:** We did only use the needed data of from fr24 otherwise we get attributes errors and it will be too much to handle, if u want to get all the data points returned without ads-b please check this amazing integration from AlexandrErohin the FR24 https://github.com/AlexandrErohin/home-assistant-flightradar24 
 
 ### ☁️ The "Overhead Bubble"
 You can define a secondary, tighter radius (e.g., 3000 meters) known as the **FR24 Overhead Bubble**. Any aircraft flying directly over your house within this bubble will automatically fetch the rich FR24 data and photos for your dashboard sensors, **without** creating map trackers! This keeps your map clean and your API calls incredibly low.
@@ -172,3 +173,12 @@ entities:
   - entity: button.skyradar_fusion_tracker_clear_additional_tracked
     name: "🧹 Wipe Target Registry"
 ```
+##  Credits 
+We need to thank JeanExtreme002 for his hard work to keep the FR24 API going! https://github.com/JeanExtreme002/FlightRadarAPI
+
+It was not possible without the ADS-B data from api.airplanes.live 
+
+If u are interested in non ADS-B data everyone need to check out FR24 Homeassistant integration from AlexandrErohin https://github.com/AlexandrErohin/home-assistant-flightradar24!
+
+
+
