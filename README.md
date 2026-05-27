@@ -1,5 +1,9 @@
 <div align="center">
 
+<img width="870" height="421" alt="{A495DBAA-24A4-4C04-9EAA-7D8B39A8541F}" src="https://github.com/user-attachments/assets/29b30b18-df46-420c-b2eb-e0227417b0dd" />
+
+
+
 # 📡 SkyRadar Fusion
 **The high-performance, zero-bloat, hybrid ADS-B & FlightRadar24 airspace intelligence monitor for Home Assistant.**
 
