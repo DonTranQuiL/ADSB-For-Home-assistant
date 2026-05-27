@@ -74,8 +74,10 @@ class SkyRadarFusionSensorBase(CoordinatorEntity, SensorEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
             name="SkyRadar Fusion",
+            manufacturer="DonTranQuiL",
+            model="Hybrid ADS-B Engine",
+            configuration_url="https://github.com/DonTranQuiL/ADSB-For-Home-assistant"
         )
-
 
 class SkyRadarFusionTrackedRestoreSensor(SkyRadarFusionSensorBase, RestoreSensor):
     def __init__(self, coordinator):
