@@ -161,6 +161,9 @@ If the external photo APIs draw a blank, the system falls back onto your local f
 Build complete airfield operational panels directly inside your Lovelace grid setups:
 
 ### Lovelace Card Control Example
+<img width="1131" height="796" alt="{078505C0-635D-4346-8B4A-1BA3389A0579}" src="https://github.com/user-attachments/assets/18f3b7b8-f750-4338-b85a-71dca7a266ad" />
+
+
 ```yaml
 type: entities
 title: "Airspace Watchlist Controls"
