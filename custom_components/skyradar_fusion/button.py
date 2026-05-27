@@ -24,7 +24,7 @@ class SkyRadarFusionClearButton(ButtonEntity):
             name="SkyRadar Fusion",
             manufacturer="DonTranQuiL",
             model="Hybrid ADS-B Engine",
-            configuration_url="https://github.com/DonTranQuiL/ADSB-For-Home-assistant"
+            configuration_url="https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
         )
 
     async def async_press(self) -> None:
