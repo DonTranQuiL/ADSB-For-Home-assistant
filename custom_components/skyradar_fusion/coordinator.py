@@ -148,6 +148,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 return "commercial"
             commercial_prefixes = (
                 "AAL",
+                "AAR",
                 "ACA",
                 "AEE",
                 "AFR",
