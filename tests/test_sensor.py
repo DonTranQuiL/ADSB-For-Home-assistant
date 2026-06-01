@@ -47,10 +47,10 @@ def test_overview_sensor_attributes(mock_coord_data):
 def test_overview_sensor_no_closest(mock_coord_data):
     # Set up the mock data for a completely empty sky
     mock_coord_data.data["closest"] = None
-    mock_coord_data.recent_history = [] 
-    
+    mock_coord_data.recent_history = []
+
     sensor = SkyRadarFusionOverviewSensor(mock_coord_data)
-    
+
     # Updated to match the actual output of the user's sensor.py when closest is None
     assert sensor.extra_state_attributes == {
         "Closest Flight": "None",
