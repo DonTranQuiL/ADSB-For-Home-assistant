@@ -45,6 +45,20 @@ The most efficient deployment method is through **HACS** (Home Assistant Communi
 
 ---
 
+```markdown
+### 🛠️ Important Configuration Step
+SkyRadar Fusion uses a highly efficient "Zero-Bloat Memory Buffer" to store your last 50 overhead aircraft. To prevent Home Assistant from trying to stuff this massive array into your SQL database (which causes 16KB limit errors), you **must** exclude the main sensor from the recorder in your `configuration.yaml`:
+
+```yaml
+recorder:
+  exclude:
+    entities:
+      - sensor.skyradar_fusion_current_in_area
+```
+Note: Your historical data will still survive reboots, as the integration safely backs it up to the hidden .storage folder!
+
+---
+
 ## ✈️ The Hybrid Engine: FlightRadar24 Enrichment
 Because the FR24 Enrichment makes additional API calls on your behalf, it is highly customizable to protect your IP from rate limits. When enabled, your explicitly tracked targets and overhead flights will populate with **Flight Intelligence Data**:
 * **High-Res Aircraft Photos:** Automatically fetched and applied as the entity picture.
