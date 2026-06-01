@@ -44,11 +44,8 @@ The most efficient deployment method is through **HACS** (Home Assistant Communi
 7. Navigate to **Settings > Devices & Services > Add Integration**, lookup **SkyRadar Fusion**, and configure your primary boundary coordinates.
 
 ---
-
-```markdown
 ### 🛠️ Important Configuration Step
-SkyRadar Fusion uses a highly efficient "Zero-Bloat Memory Buffer" to store your last 50 overhead aircraft. To prevent Home Assistant from trying to stuff this massive array into your SQL database (which causes 16KB limit errors), you **must** exclude the main sensor from the recorder in your `configuration.yaml`:
-
+SkyRadar Fusion uses a highly efficient "Zero-Bloat Memory Buffer" to store your last 50 overhead aircraft. To prevent Home Assistant from trying to stuff this massive array into your SQL database (which causes 16KB limit errors), you **must** exclude the main sensor from the recorder in your `configuration.yaml` Don't worry your data is saved! u can still use it!:
 ```yaml
 recorder:
   exclude:
