@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question or Need Help?
+    url: https://github.com/DonTranQuiL/ADSB-For-Home-assistant/discussions
+    about: Please ask and answer questions in our GitHub Discussions area instead of opening an issue.
