@@ -30,7 +30,7 @@ class SkyRadarFusionAPI:
         self.fr24 = FlightRadar24API()
 
     async def _request(self, url: str) -> Optional[dict]:
-        # Planespotters.net needs an 'User-Agent' header, 
+        # Planespotters.net needs an 'User-Agent' header,
         # 403 Forbidden (anti-bot).
         headers = {
             "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
@@ -43,6 +43,7 @@ class SkyRadarFusionAPI:
         except Exception as err:
             _LOGGER.debug("Fout bij aanroep %s: %s", url, err)
             return None
+
     def _get_fr24_data_sync(self, identifier: str) -> dict | None:
         try:
             flights = self.fr24.search(identifier)
@@ -75,15 +76,23 @@ class SkyRadarFusionAPI:
             airline = details.get("airline", {}) or {}
             aircraft = details.get("aircraft", {}) or {}
             images = aircraft.get("images", {}) or {}
-            
+
             # --- NIEUW: Extract the flightnumber ---
             identification = details.get("identification", {}) or {}
             number_info = identification.get("number", {}) or {}
-            fr24_flight_number = number_info.get("default", "Unknown") if isinstance(number_info, dict) else "Unknown"
-            
+            fr24_flight_number = (
+                number_info.get("default", "Unknown")
+                if isinstance(number_info, dict)
+                else "Unknown"
+            )
+
             # --- NEW: Extract aircraft code (example. B738) ---
             aircraft_model = aircraft.get("model", {}) or {}
-            fr24_aircraft_code = aircraft_model.get("code", "Unknown") if isinstance(aircraft_model, dict) else "Unknown"
+            fr24_aircraft_code = (
+                aircraft_model.get("code", "Unknown")
+                if isinstance(aircraft_model, dict)
+                else "Unknown"
+            )
 
             photo_large = None
             if images and isinstance(images, dict):
@@ -96,20 +105,30 @@ class SkyRadarFusionAPI:
                 "airline": airline.get("name", "Unknown"),
                 "airline_icao": airline.get("code", {}).get("icao", "N/A"),
                 "airport_origin_name": origin.get("name", "Unknown"),
-                "airport_origin_city": origin.get("position", {}).get("region", {}).get("city", "Unknown"),
-                "airport_origin_country_code": origin.get("position", {}).get("country", {}).get("code", "Unknown"),
-                
+                "airport_origin_city": origin.get("position", {})
+                .get("region", {})
+                .get("city", "Unknown"),
+                "airport_origin_country_code": origin.get("position", {})
+                .get("country", {})
+                .get("code", "Unknown"),
                 # --- NIEUW: IATA en ICAO codes filters ---
                 "airport_origin_code_iata": origin.get("code", {}).get("iata", "N/A"),
                 "airport_origin_code_icao": origin.get("code", {}).get("icao", "N/A"),
-                "airport_destination_code_iata": destination.get("code", {}).get("iata", "N/A"),
-                "airport_destination_code_icao": destination.get("code", {}).get("icao", "N/A"),
+                "airport_destination_code_iata": destination.get("code", {}).get(
+                    "iata", "N/A"
+                ),
+                "airport_destination_code_icao": destination.get("code", {}).get(
+                    "icao", "N/A"
+                ),
                 # ---------------------------------------------------------------
-                
                 "airport_destination_name": destination.get("name", "Unknown"),
-                "airport_destination_country_name": destination.get("position", {}).get("country", {}).get("name", "Unknown"),
+                "airport_destination_country_name": destination.get("position", {})
+                .get("country", {})
+                .get("name", "Unknown"),
                 "fr24_photo": photo_large,
-                "fr24_scheduled_departure": format_unix_time(scheduled.get("departure")),
+                "fr24_scheduled_departure": format_unix_time(
+                    scheduled.get("departure")
+                ),
                 "fr24_real_departure": format_unix_time(real.get("departure")),
                 "fr24_scheduled_arrival": format_unix_time(scheduled.get("arrival")),
                 "fr24_estimated_arrival": format_unix_time(estimated.get("arrival")),

@@ -59,7 +59,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         self.photo_cache = {}
         self.fr24_cache = {}
         self.recent_history = []  # <--- New history
-        
+
         # --- NIEUW: prepair for local save (.storage) ---
         self.store = Store(hass, 1, f"{DOMAIN}_history_{config_entry.entry_id}")
         self._history_loaded = False
@@ -152,22 +152,135 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             if re.match(r"^[A-Z]{3}\d", flight):
                 return "commercial"
             commercial_prefixes = (
-                "AAL", "AAR", "ACA", "AEE", "AFR", "AHO", "AIC", "ALK", "AMX",
-        "ANA", "ASA", "AUA", "AVA", "AWC", "BAW", "BCS", "BEL", "BOX",
-        "BTI", "CAL", "CBJ", "CCA", "CCX", "CHH", "CKS", "CLA", "CLX",
-        "CLY", "CMP", "CND", "CPA", "CSH", "CSN", "DAL", "DCS", "DHK",
-         "DHL", "DLH", "EIN", "EJA", "EJM", "ETD", "EVA", "EWE", "EWG",
-         "EWL", "EXS", "EZS", "EZY", "FBA", "FDX", "FFT", "FIN", "FLX",
-         "FLY", "FYG", "GAC", "GFA", "GTI", "HAL", "HFY", "HVN", "IBE",
-        "ICE", "IGO", "ITY", "JAL", "JAS", "JBU", "JFA", "JSX", "KAL",
-        "KLM", "KMM", "KQA", "KZR", "LAN", "LOG", "LOT", "LUX", "LXJ",
-         "LYX", "LZB", "MAS", "MPH", "MXY", "NJE", "NKS", "OMA", "PAC",
-         "PH", "PIA", "QFA", "QQE", "QTR", "QXE", "RJA", "RYA", "SAS",
-        "SCW", "SCX", "SIA", "SKW", "SLR", "SRU", "SVA", "SVW", "SWA",
-         "SWR", "TAG", "TAP", "TAY", "THA", "THY", "TOM", "TRA", "TUI",
-         "TVS", "UAE", "UAL", "UPS", "VIR", "VIV", "VJT", "VOI", "WJA",
-         "WUP", "XGO",            
-        )
+                "AAL",
+                "AAR",
+                "ACA",
+                "AEE",
+                "AFR",
+                "AHO",
+                "AIC",
+                "ALK",
+                "AMX",
+                "ANA",
+                "ASA",
+                "AUA",
+                "AVA",
+                "AWC",
+                "BAW",
+                "BCS",
+                "BEL",
+                "BOX",
+                "BTI",
+                "CAL",
+                "CBJ",
+                "CCA",
+                "CCX",
+                "CHH",
+                "CKS",
+                "CLA",
+                "CLX",
+                "CLY",
+                "CMP",
+                "CND",
+                "CPA",
+                "CSH",
+                "CSN",
+                "DAL",
+                "DCS",
+                "DHK",
+                "DHL",
+                "DLH",
+                "EIN",
+                "EJA",
+                "EJM",
+                "ETD",
+                "EVA",
+                "EWE",
+                "EWG",
+                "EWL",
+                "EXS",
+                "EZS",
+                "EZY",
+                "FBA",
+                "FDX",
+                "FFT",
+                "FIN",
+                "FLX",
+                "FLY",
+                "FYG",
+                "GAC",
+                "GFA",
+                "GTI",
+                "HAL",
+                "HFY",
+                "HVN",
+                "IBE",
+                "ICE",
+                "IGO",
+                "ITY",
+                "JAL",
+                "JAS",
+                "JBU",
+                "JFA",
+                "JSX",
+                "KAL",
+                "KLM",
+                "KMM",
+                "KQA",
+                "KZR",
+                "LAN",
+                "LOG",
+                "LOT",
+                "LUX",
+                "LXJ",
+                "LYX",
+                "LZB",
+                "MAS",
+                "MPH",
+                "MXY",
+                "NJE",
+                "NKS",
+                "OMA",
+                "PAC",
+                "PH",
+                "PIA",
+                "QFA",
+                "QQE",
+                "QTR",
+                "QXE",
+                "RJA",
+                "RYA",
+                "SAS",
+                "SCW",
+                "SCX",
+                "SIA",
+                "SKW",
+                "SLR",
+                "SRU",
+                "SVA",
+                "SVW",
+                "SWA",
+                "SWR",
+                "TAG",
+                "TAP",
+                "TAY",
+                "THA",
+                "THY",
+                "TOM",
+                "TRA",
+                "TUI",
+                "TVS",
+                "UAE",
+                "UAL",
+                "UPS",
+                "VIR",
+                "VIV",
+                "VJT",
+                "VOI",
+                "WJA",
+                "WUP",
+                "XGO",
+            )
             if flight.startswith(commercial_prefixes):
                 return "commercial"
 
@@ -438,21 +551,25 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             for ac in filtered_aircraft:
                 hex_code = ac.get("hex")
                 if hex_code:
-                    self.recent_history = [item for item in self.recent_history if item.get("hex") != hex_code]
-                    
+                    self.recent_history = [
+                        item
+                        for item in self.recent_history
+                        if item.get("hex") != hex_code
+                    ]
+
                     # Kopieer de data en voeg de huidige tijdstempel toe
                     ac_copy = ac.copy()
                     ac_copy["spotted_time"] = dt_util.now().isoformat()
-                    
+
                     self.recent_history.insert(0, ac_copy)
-            
+
             self.recent_history = self.recent_history[:50]
             self.store.async_delay_save(lambda: self.recent_history, 60)
-            
+
             # MAX 50 planes (enhanced for dashboard!)
             self.recent_history = self.recent_history[:50]
-            
-            # Save the list in homeassistant storage. 
+
+            # Save the list in homeassistant storage.
             # async_delay_save Prevents it from putting too much load on the hard drive.
             self.store.async_delay_save(lambda: self.recent_history, 60)
             # --- END  MEMORY BUFFER ---
@@ -483,9 +600,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             self.last_update_time = dt_util.now()
 
             if self.data:
-                _LOGGER.debug(
-                    "API error. using frozen data..."
-                )
+                _LOGGER.debug("API error. using frozen data...")
                 return self.data
 
             raise UpdateFailed(f"Error fetching data: {err}")

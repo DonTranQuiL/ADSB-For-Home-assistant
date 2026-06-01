@@ -4,7 +4,13 @@ from homeassistant.components.sensor import SensorEntity, RestoreSensor
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.const import EntityCategory
-from .const import DOMAIN, MODE_ZONE, CONF_GLOBAL_EMERGENCY, CONF_GLOBAL_MILITARY, VERSION
+from .const import (
+    DOMAIN,
+    MODE_ZONE,
+    CONF_GLOBAL_EMERGENCY,
+    CONF_GLOBAL_MILITARY,
+    VERSION,
+)
 
 CATEGORIES = ["helicopter", "military", "commercial", "private"]
 
@@ -77,8 +83,9 @@ class SkyRadarFusionSensorBase(CoordinatorEntity, SensorEntity):
             manufacturer="DonTranQuiL",
             model="Hybrid ADS-B Engine",
             sw_version=VERSION,
-            configuration_url="https://github.com/DonTranQuiL/ADSB-For-Home-assistant"
+            configuration_url="https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
         )
+
 
 class SkyRadarFusionTrackedRestoreSensor(SkyRadarFusionSensorBase, RestoreSensor):
     def __init__(self, coordinator):
@@ -173,10 +180,10 @@ class SkyRadarFusionOverviewSensor(SkyRadarFusionSensorBase):
             attrs["Closest Flight"] = "None"
 
         attrs["flights_list"] = self.coordinator.data.get("aircraft", [])
-        
+
         # --- HIER IS HET ATRIBUUT VOOR DE GESCHIEDENIS TABEL ---
         attrs["recent_aircraft"] = self.coordinator.recent_history
-        
+
         return attrs
 
 
