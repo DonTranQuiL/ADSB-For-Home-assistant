@@ -1,492 +1,395 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Radar, Plane, Shield, Database, Activity, Map, 
-  Settings, AlertTriangle, Zap, Globe, Github, 
-  CheckCircle2, Server, Clock, PlaneTakeoff, 
-  PlaneLanding, ChevronRight, Copy, Check,
-  Ghost, Target, Image as ImageIcon, Sliders, MapPin
-} from 'lucide-react';
-
-// --- Custom Hooks ---
-const useIntersectionObserver = (options) => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsIntersecting(true);
-        observer.unobserve(entry.target);
-      }
-    }, options);
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-    return () => {
-      if (ref.current) observer.unobserve(ref.current);
-    };
-  }, [options]);
-
-  return [ref, isIntersecting];
-};
-
-// --- Reusable Components ---
-const FadeIn = ({ children, delay = 0, className = '', direction = 'up' }) => {
-  const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
-  
-  const getTransform = () => {
-    switch(direction) {
-      case 'up': return 'translateY(30px)';
-      case 'down': return 'translateY(-30px)';
-      case 'left': return 'translateX(30px)';
-      case 'right': return 'translateX(-30px)';
-      default: return 'translateY(30px)';
-    }
-  };
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translate(0)' : getTransform(),
-        transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
-      }}
-      className={className}
-    >
-      {children}
-    </div>
-  );
-};
-
-const CodeBlock = ({ code, language, title }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="relative group rounded-xl overflow-hidden bg-[#0d1326] border border-slate-700/50 my-4 shadow-2xl flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-800/80 border-b border-slate-700/50">
-        <div className="flex flex-col">
-          {title && <span className="text-sm font-semibold text-slate-200">{title}</span>}
-          <span className="text-xs font-mono text-slate-400">{language}</span>
-        </div>
-        <button 
-          onClick={handleCopy}
-          className="p-2 rounded-md bg-slate-700/50 hover:bg-blue-600 text-slate-300 hover:text-white transition-all flex items-center gap-2 text-xs font-medium"
-        >
-          {copied ? <><Check size={14} className="text-white" /> Copied</> : <><Copy size={14} /> Copy</>}
-        </button>
-      </div>
-      <div className="p-4 overflow-auto max-h-[450px] custom-scrollbar">
-        <pre className="text-sm font-mono text-slate-300 whitespace-pre">
-          <code>{code}</code>
-        </pre>
-      </div>
-    </div>
-  );
-};
-
-// --- Main Application ---
-export default function App() {
-  return (
-    <div className="min-h-screen bg-[#0B1120] text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden">
-      {/* Global CSS for custom animations and scrollbars */}
-      <style dangerouslySetInnerHTML={{__html: `
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyRadar Fusion | Home Assistant</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom Config & Styles -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
         @keyframes sweep {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .radar-sweep {
-          background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.1) 90%, rgba(59, 130, 246, 0.4) 100%);
-          animation: sweep 4s linear infinite;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.1) 90%, rgba(59, 130, 246, 0.4) 100%);
+            animation: sweep 4s linear infinite;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #0f172a; 
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #334155; 
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #475569; 
-        }
-      `}} />
-
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0B1120]/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white font-bold text-xl tracking-wide">
-            <Radar className="text-blue-500" size={24} />
-            SkyRadar <span className="text-blue-500 font-light">Fusion</span>
-          </div>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#capabilities" className="hover:text-white transition-colors">Capabilities</a>
-            <a href="#dashboards" className="hover:text-white transition-colors">Dashboards</a>
-            <a href="#installation" className="hover:text-white transition-colors">Install</a>
-            <a 
-              href="https://github.com/DonTranQuiL/ADSB-For-Home-assistant" 
-              target="_blank" 
-              rel="noreferrer"
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-            >
-              <Github size={16} />
-              GitHub
-            </a>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-blue-900/30 opacity-20 pointer-events-none"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-blue-800/30 opacity-30 pointer-events-none"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-blue-500/30 opacity-50 pointer-events-none radar-sweep"></div>
         
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <FadeIn>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-sm font-medium mb-6 backdrop-blur-sm">
-              <Zap size={14} className="animate-pulse" />
-              v2025.1+ Compatible &middot; V2.0.3 Released
-            </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-500 mb-6 tracking-tight">
-              Airspace Intelligence,<br />Perfected.
-            </h1>
-            <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-              The high-performance, zero-bloat, hybrid ADS-B & FlightRadar24 monitor for Home Assistant. Say goodbye to API bans and database bloat.
-            </p>
-          </FadeIn>
+        /* Custom Scrollbar for Code Blocks */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-[#0B1120] text-slate-200 font-sans selection:bg-blue-500/30 overflow-x-hidden">
 
-          <FadeIn delay={200}>
-            <div className="flex flex-wrap justify-center gap-4 mb-16">
-              <a href="#installation" className="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg hover:shadow-blue-500/25 flex items-center gap-2">
-                Get Started <ChevronRight size={18} />
-              </a>
-              <a href="#dashboards" className="px-8 py-3 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white font-semibold transition-all flex items-center gap-2">
-                View Dashboards
-              </a>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-[#0B1120]/80 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-white font-bold text-xl tracking-wide">
+                <i data-lucide="radar" class="text-blue-500 w-6 h-6"></i>
+                SkyRadar <span class="text-blue-500 font-light">Fusion</span>
             </div>
-          </FadeIn>
-
-          {/* Hero Image */}
-          <FadeIn delay={400} className="relative max-w-5xl mx-auto">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-transparent to-transparent z-10"></div>
-            <div className="rounded-2xl border border-slate-800 p-2 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <img 
-                src="https://github.com/user-attachments/assets/29b30b18-df46-420c-b2eb-e0227417b0dd" 
-                alt="SkyRadar Fusion Interface" 
-                className="rounded-xl w-full object-cover"
-              />
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
+                <a href="#features" class="hover:text-white transition-colors">Features</a>
+                <a href="#capabilities" class="hover:text-white transition-colors">Capabilities</a>
+                <a href="#dashboards" class="hover:text-white transition-colors">Dashboards</a>
+                <a href="#installation" class="hover:text-white transition-colors">Install</a>
+                <a href="https://github.com/DonTranQuiL/ADSB-For-Home-assistant" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                    <i data-lucide="github" class="w-4 h-4"></i> GitHub
+                </a>
             </div>
-          </FadeIn>
         </div>
-      </section>
+    </nav>
 
-      {/* Massive Overhaul Announcement */}
-      <section className="max-w-5xl mx-auto px-6 -mt-10 relative z-20 mb-24">
-        <FadeIn direction="up">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-orange-500/30 p-8 backdrop-blur-md shadow-[0_0_40px_rgba(249,115,22,0.1)]">
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-orange-500/20 rounded-lg text-orange-400">
-                <AlertTriangle size={28} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                  MASSIVE OVERHAUL ANNOUNCEMENT
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-orange-500 text-white uppercase tracking-wider">Hybrid Engine</span>
-                </h3>
-                <p className="text-slate-300 leading-relaxed">
-                  We have released a gigantic core rewrite! This integration now features a <strong>Hybrid Engine</strong>, combining the ultra-fast Airplanes.Live radar feed with rich <strong>FlightRadar24 API enrichment</strong> (live routes, high-res photos, and scheduled times). Welcome to the SkyRadar Fusion era!
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-blue-900/30 opacity-20 pointer-events-none"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-blue-800/30 opacity-30 pointer-events-none"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-blue-500/30 opacity-50 pointer-events-none radar-sweep"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+            <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-sm font-medium mb-6 backdrop-blur-sm">
+                    <i data-lucide="zap" class="w-3.5 h-3.5 animate-pulse"></i>
+                    v2025.1+ Compatible &middot; V2.0.3 Released
+                </div>
+                <h1 class="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-500 mb-6 tracking-tight">
+                    Airspace Intelligence,<br />Perfected.
+                </h1>
+                <p class="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                    The high-performance, zero-bloat, hybrid ADS-B & FlightRadar24 monitor for Home Assistant. Say goodbye to API bans and database bloat.
                 </p>
-              </div>
             </div>
-          </div>
-        </FadeIn>
-      </section>
 
-      {/* The Hybrid Engine Architecture */}
-      <section id="features" className="py-20 bg-slate-900/50 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">The Hybrid Engine Architecture</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">Engineered with a strict optimization-first mindset. Pulls raw telemetric data locally and enriches specific targets with high-res data from FR24.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: <Database className="text-blue-400" />,
-                title: "Zero-Bloat Cleanup",
-                desc: "Standard integrations corrupt your DB. We enforce a strict force_remove policy. No lingering 'Unknown' states in your Home Assistant database."
-              },
-              {
-                icon: <Activity className="text-amber-400" />,
-                title: "Timeout 'Freezer' Logic",
-                desc: "No flashing entities! If upstream APIs experience load, we instantly freeze data on the last known good state until a fresh payload arrives."
-              },
-              {
-                icon: <Server className="text-rose-400" />,
-                title: "Safe State Restoration",
-                desc: "Tracking lists live in fast memory. On server reboots, the specialized RestoreSensor instantly rebuilds your watchlist from encrypted arrays."
-              }
-            ].map((feature, i) => (
-              <FadeIn key={i} delay={i * 100}>
-                <div className="group h-full bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/80 hover:border-blue-500/50 transition-all duration-300 relative overflow-hidden">
-                  <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center mb-6 shadow-inner border border-slate-700">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
+            <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out delay-[200ms]">
+                <div class="flex flex-wrap justify-center gap-4 mb-16">
+                    <a href="#installation" class="px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg hover:shadow-blue-500/25 flex items-center gap-2">
+                        Get Started <i data-lucide="chevron-right" class="w-4.5 h-4.5"></i>
+                    </a>
+                    <a href="#dashboards" class="px-8 py-3 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white font-semibold transition-all flex items-center gap-2">
+                        View Dashboards
+                    </a>
                 </div>
-              </FadeIn>
-            ))}
-          </div>
+            </div>
+
+            <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out delay-[400ms] relative max-w-5xl mx-auto">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-transparent to-transparent z-10"></div>
+                <div class="rounded-2xl border border-slate-800 p-2 bg-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+                    <img src="https://github.com/user-attachments/assets/29b30b18-df46-420c-b2eb-e0227417b0dd" alt="SkyRadar Fusion Interface" class="rounded-xl w-full object-cover" />
+                </div>
+            </div>
         </div>
-      </section>
+    </section>
 
-      {/* Advanced Capabilities (Deep Dive) */}
-      <section id="capabilities" className="py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Advanced Capabilities</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">Surgical precision, global reach, and endless customization options.</p>
-          </div>
-
-          <div className="space-y-24">
-            {/* Feature 1: The Overhead Bubble */}
-            <FadeIn direction="right">
-              <div className="flex flex-col md:flex-row gap-12 items-center">
-                <div className="flex-1 space-y-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <Map size={24} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">The FR24 Overhead Bubble</h3>
-                  <p className="text-slate-400 leading-relaxed">
-                    Because FR24 limits API calls, we developed the Overhead Bubble to protect your IP. Define a tight secondary radius (e.g., 3000m) inside your primary zone. 
-                    When aircraft breach this bubble, the Hybrid Engine wakes up and requests rich data (Origin, Destination, Airline, Photos) <strong>without</strong> creating map trackers!
-                  </p>
-                  <ul className="space-y-3 text-sm text-slate-300">
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-400"/> Enrich Commercial Flights (Highly Recommended)</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-400"/> Enrich Private Aircraft (Business Jets)</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-400"/> Enrich Helicopters</li>
-                  </ul>
-                </div>
-                <div className="flex-1 w-full bg-slate-800/50 rounded-2xl border border-slate-700/50 p-8 flex items-center justify-center relative overflow-hidden">
-                   <div className="w-64 h-64 rounded-full border-2 border-slate-600/50 flex items-center justify-center relative">
-                      <span className="absolute top-4 text-xs text-slate-500">10km Tracking Zone</span>
-                      <div className="w-32 h-32 rounded-full border-2 border-emerald-500/50 bg-emerald-500/10 flex items-center justify-center relative">
-                        <span className="absolute -top-6 text-xs text-emerald-400 font-bold">3km FR24 Bubble</span>
-                        <MapPin className="text-blue-500" />
-                      </div>
-                   </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Feature 2: Ghost Tracking */}
-            <FadeIn direction="left">
-              <div className="flex flex-col md:flex-row-reverse gap-12 items-center">
-                <div className="flex-1 space-y-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                    <Ghost size={24} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white">Offline Ghost Tracking</h3>
-                  <p className="text-slate-400 leading-relaxed">
-                    Want to track a flight before it even takes off? Type a callsign into the Target Lock entity while it's sitting at the gate. 
-                    SkyRadar Fusion creates a "Dummy" entity and instructs FR24 to fetch data anyway.
-                  </p>
-                  <p className="text-slate-400 leading-relaxed">
-                    Before takeoff, your dashboard populates with photos, routes, and scheduled times alongside an <code className="text-purple-400 bg-purple-900/30 px-1 rounded">mdi:airplane-off</code> icon. 
-                    Once transponders turn on, it seamlessly merges into live ADS-B coordinates!
-                  </p>
-                </div>
-                <div className="flex-1 w-full">
-                  <div className="bg-[#0B1120] rounded-xl border border-slate-700 p-6 shadow-2xl relative">
-                    <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-800">
-                       <PlaneTakeoff className="text-slate-500" size={24} />
-                       <div>
-                         <h4 className="text-white font-bold tracking-wide">KLM1036 <span className="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-normal ml-2">Ghost Entity</span></h4>
-                         <p className="text-xs text-slate-500">Scheduled Departure: 14:30</p>
-                       </div>
-                    </div>
-                    <div className="flex justify-between text-sm text-slate-400">
-                      <span>Status: <span className="text-amber-500 font-medium">On Ground</span></span>
-                      <span>Route: AMS ➔ LHR</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-
-            {/* Feature 3: Global Radars & Filters */}
-            <FadeIn direction="right">
-              <div className="flex flex-col md:flex-row gap-12 items-start">
-                <div className="flex-1 space-y-8">
-                  <div>
-                    <div className="inline-flex items-center gap-3 mb-3">
-                      <div className="p-2 rounded-lg bg-red-500/20 text-red-400"><Shield size={20} /></div>
-                      <h3 className="text-xl font-bold text-white">Global Emergency Radars</h3>
-                    </div>
-                    <p className="text-slate-400 text-sm leading-relaxed">
-                      Continuously scans the global airspace for the universal emergency transponder code (<strong>Squawk 7700</strong>). Any aircraft squawking 7700 instantly gets a dedicated map tracker, fully enriched, with live distance to your home. Also supports <strong>Global Military Radar</strong>.
-                    </p>
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-3 mb-3">
-                      <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400"><Sliders size={20} /></div>
-                      <h3 className="text-xl font-bold text-white">Advanced ADS-B Filters</h3>
-                    </div>
-                    <p className="text-slate-400 text-sm leading-relaxed">
-                      Hardcore enthusiast? Bypass simple checkboxes. Enter raw ADS-B Emitter Categories (e.g., <code className="text-cyan-400">A1, A3, A5</code>) into the Advanced Filter box. The integration will strictly fetch FR24 data ONLY for aircraft broadcasting those exact codes!
-                    </p>
-                  </div>
-                  <div>
-                    <div className="inline-flex items-center gap-3 mb-3">
-                      <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400"><ImageIcon size={20} /></div>
-                      <h3 className="text-xl font-bold text-white">Local Liveries (Custom Icons)</h3>
-                    </div>
-                    <p className="text-slate-400 text-sm leading-relaxed">
-                      External APIs missing experimental or private jets? Inject your own icons. Drop transparent PNGs into <code className="text-indigo-400 bg-indigo-900/30 px-1 py-0.5 rounded text-xs">/www/planes/</code> matching the uppercase ICAO type signature (e.g., <code className="text-indigo-400 bg-indigo-900/30 px-1 py-0.5 rounded text-xs">B77W.png</code>). Maps will prioritize these custom assets!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* Configuration & Installation */}
-      <section id="installation" className="py-24 relative overflow-hidden bg-slate-900/40 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Installation & Setup</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">Get your airspace monitored in minutes via HACS.</p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-12">
-            
-            {/* HACS Steps */}
-            <FadeIn direction="right">
-              <div className="bg-slate-800/30 rounded-2xl border border-slate-700/50 p-8 h-full">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <Database className="text-blue-400"/> Step-by-Step HACS Install
-                </h3>
-                <ol className="space-y-5">
-                  {[
-                    "Open HACS in your sidebar and navigate to the Integrations panel.",
-                    "Click the three dots (...) in the upper right corner and select Custom repositories.",
-                    "Input the repository web link (GitHub URL).",
-                    "Set the Category selector dropdown to Integration and hit Add.",
-                    "Locate the SkyRadar Fusion repository card and hit Download.",
-                    "⚠️ Restart your Home Assistant instance. (Crucial for loading new Python modules).",
-                    "Navigate to Settings > Devices & Services > Add Integration and search for SkyRadar Fusion."
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">
-                        {i + 1}
-                      </div>
-                      <span className="text-slate-300 text-sm leading-relaxed pt-1">{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </FadeIn>
-
-            {/* Config & DB Rules */}
-            <FadeIn direction="left" delay={200}>
-              <div className="space-y-6 h-full flex flex-col">
-                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-8 shadow-xl">
-                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
-                    <Target className="text-emerald-400"/> Tracking Modes
-                  </h3>
-                  <div className="space-y-4 text-sm text-slate-300">
-                    <div>
-                      <strong className="text-emerald-400">1. Zone Tracking (Recommended):</strong> Monitor airspace around your home. Set your Latitude, Longitude, and a metric Radius (e.g., 5000 = 5km). Aircraft are counted but don't clutter your map.
+    <!-- Massive Overhaul Announcement -->
+    <section class="max-w-5xl mx-auto px-6 -mt-10 relative z-20 mb-24">
+        <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out">
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-orange-500/30 p-8 backdrop-blur-md shadow-[0_0_40px_rgba(249,115,22,0.1)]">
+                <div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-orange-500/20 rounded-lg text-orange-400">
+                        <i data-lucide="alert-triangle" class="w-7 h-7"></i>
                     </div>
                     <div>
-                      <strong className="text-emerald-400">2. Target Tracking:</strong> Deploy a dedicated instance to track ONE unique airframe globally using Callsign, Registration, or ICAO Hex.
+                        <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            MASSIVE OVERHAUL ANNOUNCEMENT
+                            <span class="px-2 py-0.5 rounded text-[10px] font-black bg-orange-500 text-white uppercase tracking-wider">Hybrid Engine</span>
+                        </h3>
+                        <p class="text-slate-300 leading-relaxed">
+                            We have released a gigantic core rewrite! This integration now features a <strong>Hybrid Engine</strong>, combining the ultra-fast Airplanes.Live radar feed with rich <strong>FlightRadar24 API enrichment</strong> (live routes, high-res photos, and scheduled times). Welcome to the SkyRadar Fusion era!
+                        </p>
                     </div>
-                  </div>
                 </div>
-
-                <div className="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-2xl border border-orange-500/30 p-8 shadow-xl flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <AlertTriangle className="text-orange-400" />
-                    <h3 className="text-xl font-bold text-white">Crucial Database Step</h3>
-                  </div>
-                  <p className="text-sm text-slate-300 mb-4">
-                    SkyRadar uses a "Zero-Bloat Memory Buffer" (50 overhead aircraft). To prevent 16KB limit errors in your SQL database, you <strong>must</strong> exclude the main sensor in your <code className="bg-slate-800 px-1.5 py-0.5 rounded text-blue-300">configuration.yaml</code>.
-                  </p>
-                  <CodeBlock 
-                    language="yaml"
-                    code={`recorder:\n  exclude:\n    entities:\n      - sensor.skyradar_fusion_current_in_area`}
-                  />
-                  <p className="text-xs text-orange-300/80 mt-2 italic">
-                    * Don't worry! Your historical data will survive reboots as it is safely backed up to the hidden .storage folder.
-                  </p>
-                </div>
-              </div>
-            </FadeIn>
-          </div>
+            </div>
         </div>
-      </section>
+    </section>
 
-      {/* Dashboards Section */}
-      <section id="dashboards" className="py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-400 text-sm font-medium mb-6">
-              New v2.0.3 Layout
+    <!-- The Hybrid Engine Architecture -->
+    <section id="features" class="py-20 bg-slate-900/50 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">The Hybrid Engine Architecture</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Engineered with a strict optimization-first mindset. Pulls raw telemetric data locally and enriches specific targets with high-res data from FR24.</p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Lovelace Dashboard Configurations</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto">Build complete aviation control panels directly inside your Home Assistant dashboards. Features dynamic tracking, photos, and zero-bloat state retention.</p>
-          </div>
 
-          {/* V2.0.3 Screenshot Highlight */}
-          <FadeIn direction="up">
-            <div className="mb-16 bg-slate-800/40 border border-slate-700 rounded-2xl p-4 overflow-hidden relative group">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] to-transparent z-10 opacity-60"></div>
-              <img 
-                src="https://github.com/user-attachments/assets/d8e3b5dd-6b2e-47ef-b15a-537162b26f19" 
-                alt="SkyRadar V2.0.3 Dashboard" 
-                className="w-full rounded-xl shadow-2xl object-cover border border-slate-600/50 relative z-0"
-              />
-              <div className="absolute bottom-6 left-6 right-6 z-20 flex justify-between items-end">
-                <div>
-                  <h3 className="text-2xl font-bold text-white drop-shadow-md">The Awesome Dashboard</h3>
-                  <p className="text-slate-300 text-sm drop-shadow-md max-w-lg">
-                    Look at the first plane entry! You can now see the <strong className="text-purple-400">spotted time in purple</strong>. Uses the latest zero bloat config so you keep data after a reboot!
-                  </p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out">
+                    <div class="group h-full bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/80 hover:border-blue-500/50 transition-all duration-300 relative overflow-hidden">
+                        <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center mb-6 shadow-inner border border-slate-700">
+                            <i data-lucide="database" class="text-blue-400 w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Zero-Bloat Cleanup</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Standard integrations corrupt your DB. We enforce a strict force_remove policy. No lingering 'Unknown' states in your Home Assistant database.</p>
+                    </div>
                 </div>
-              </div>
-            </div>
-          </FadeIn>
 
-          <div className="grid lg:grid-cols-12 gap-8">
-            {/* The Massive Flex Table Config */}
-            <FadeIn direction="right" delay={100} className="lg:col-span-8">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <Database size={20} className="text-blue-400"/> 1. The Zero-Bloat Flex Table Card
-              </h3>
-              <p className="text-sm text-slate-400 mb-4">Requires `flex-table-card` and `card-mod` from HACS. This config generates the beautiful dynamic list above.</p>
-              <CodeBlock 
-                title="Lovelace YAML (Custom Card)"
-                language="yaml"
-                code={`type: custom:flex-table-card
+                <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out delay-[100ms]">
+                    <div class="group h-full bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/80 hover:border-blue-500/50 transition-all duration-300 relative overflow-hidden">
+                        <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center mb-6 shadow-inner border border-slate-700">
+                            <i data-lucide="activity" class="text-amber-400 w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Timeout 'Freezer' Logic</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">No flashing entities! If upstream APIs experience load, we instantly freeze data on the last known good state until a fresh payload arrives.</p>
+                    </div>
+                </div>
+
+                <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out delay-[200ms]">
+                    <div class="group h-full bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-800/80 hover:border-blue-500/50 transition-all duration-300 relative overflow-hidden">
+                        <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center mb-6 shadow-inner border border-slate-700">
+                            <i data-lucide="server" class="text-rose-400 w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Safe State Restoration</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">Tracking lists live in fast memory. On server reboots, the specialized RestoreSensor instantly rebuilds your watchlist from encrypted arrays.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Capabilities -->
+    <section id="capabilities" class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Advanced Capabilities</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Surgical precision, global reach, and endless customization options.</p>
+            </div>
+
+            <div class="space-y-24">
+                <!-- Feature 1 -->
+                <div class="fade-in opacity-0 -translate-x-8 transition-all duration-[800ms] ease-out">
+                    <div class="flex flex-col md:flex-row gap-12 items-center">
+                        <div class="flex-1 space-y-6">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                <i data-lucide="map" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white">The FR24 Overhead Bubble</h3>
+                            <p class="text-slate-400 leading-relaxed">
+                                Because FR24 limits API calls, we developed the Overhead Bubble to protect your IP. Define a tight secondary radius (e.g., 3000m) inside your primary zone. 
+                                When aircraft breach this bubble, the Hybrid Engine wakes up and requests rich data (Origin, Destination, Airline, Photos) <strong>without</strong> creating map trackers!
+                            </p>
+                            <ul class="space-y-3 text-sm text-slate-300">
+                                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="text-emerald-400 w-4 h-4"></i> Enrich Commercial Flights (Recommended)</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="text-emerald-400 w-4 h-4"></i> Enrich Private Aircraft (Business Jets)</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check-circle-2" class="text-emerald-400 w-4 h-4"></i> Enrich Helicopters</li>
+                            </ul>
+                        </div>
+                        <div class="flex-1 w-full bg-slate-800/50 rounded-2xl border border-slate-700/50 p-8 flex items-center justify-center relative overflow-hidden">
+                            <div class="w-64 h-64 rounded-full border-2 border-slate-600/50 flex items-center justify-center relative">
+                                <span class="absolute top-4 text-xs text-slate-500">10km Tracking Zone</span>
+                                <div class="w-32 h-32 rounded-full border-2 border-emerald-500/50 bg-emerald-500/10 flex items-center justify-center relative">
+                                    <span class="absolute -top-6 text-xs text-emerald-400 font-bold">3km FR24 Bubble</span>
+                                    <i data-lucide="map-pin" class="text-blue-500 w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="fade-in opacity-0 translate-x-8 transition-all duration-[800ms] ease-out">
+                    <div class="flex flex-col md:flex-row-reverse gap-12 items-center">
+                        <div class="flex-1 space-y-6">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                <i data-lucide="ghost" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white">Offline Ghost Tracking</h3>
+                            <p class="text-slate-400 leading-relaxed">
+                                Want to track a flight before it even takes off? Type a callsign into the Target Lock entity while it's sitting at the gate. 
+                                SkyRadar Fusion creates a "Dummy" entity and instructs FR24 to fetch data anyway.
+                            </p>
+                            <p class="text-slate-400 leading-relaxed">
+                                Before takeoff, your dashboard populates with photos, routes, and scheduled times alongside an <code class="text-purple-400 bg-purple-900/30 px-1 rounded">mdi:airplane-off</code> icon. 
+                                Once transponders turn on, it seamlessly merges into live ADS-B coordinates!
+                            </p>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <div class="bg-[#0B1120] rounded-xl border border-slate-700 p-6 shadow-2xl relative">
+                                <div class="flex items-center gap-4 mb-4 pb-4 border-b border-slate-800">
+                                    <i data-lucide="plane-takeoff" class="text-slate-500 w-6 h-6"></i>
+                                    <div>
+                                        <h4 class="text-white font-bold tracking-wide">KLM1036 <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-normal ml-2">Ghost Entity</span></h4>
+                                        <p class="text-xs text-slate-500">Scheduled Departure: 14:30</p>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-sm text-slate-400">
+                                    <span>Status: <span class="text-amber-500 font-medium">On Ground</span></span>
+                                    <span>Route: AMS ➔ LHR</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="fade-in opacity-0 -translate-x-8 transition-all duration-[800ms] ease-out">
+                    <div class="flex flex-col md:flex-row gap-12 items-start">
+                        <div class="flex-1 space-y-8">
+                            <div>
+                                <div class="inline-flex items-center gap-3 mb-3">
+                                    <div class="p-2 rounded-lg bg-red-500/20 text-red-400"><i data-lucide="shield" class="w-5 h-5"></i></div>
+                                    <h3 class="text-xl font-bold text-white">Global Emergency Radars</h3>
+                                </div>
+                                <p class="text-slate-400 text-sm leading-relaxed">
+                                    Continuously scans the global airspace for the universal emergency transponder code (<strong>Squawk 7700</strong>). Any aircraft squawking 7700 instantly gets a dedicated map tracker, fully enriched, with live distance to your home. Also supports <strong>Global Military Radar</strong>.
+                                </p>
+                            </div>
+                            <div>
+                                <div class="inline-flex items-center gap-3 mb-3">
+                                    <div class="p-2 rounded-lg bg-cyan-500/20 text-cyan-400"><i data-lucide="sliders" class="w-5 h-5"></i></div>
+                                    <h3 class="text-xl font-bold text-white">Advanced ADS-B Filters</h3>
+                                </div>
+                                <p class="text-slate-400 text-sm leading-relaxed">
+                                    Hardcore enthusiast? Bypass simple checkboxes. Enter raw ADS-B Emitter Categories (e.g., <code class="text-cyan-400">A1, A3, A5</code>) into the Advanced Filter box. The integration will strictly fetch FR24 data ONLY for aircraft broadcasting those exact codes!
+                                </p>
+                            </div>
+                            <div>
+                                <div class="inline-flex items-center gap-3 mb-3">
+                                    <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400"><i data-lucide="image" class="w-5 h-5"></i></div>
+                                    <h3 class="text-xl font-bold text-white">Local Liveries (Custom Icons)</h3>
+                                </div>
+                                <p class="text-slate-400 text-sm leading-relaxed">
+                                    External APIs missing experimental or private jets? Inject your own icons. Drop transparent PNGs into <code class="text-indigo-400 bg-indigo-900/30 px-1 py-0.5 rounded text-xs">/www/planes/</code> matching the uppercase ICAO type signature (e.g., <code class="text-indigo-400 bg-indigo-900/30 px-1 py-0.5 rounded text-xs">B77W.png</code>). Maps will prioritize these custom assets!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation & Setup -->
+    <section id="installation" class="py-24 relative overflow-hidden bg-slate-900/40 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Installation & Setup</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Get your airspace monitored in minutes via HACS.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <div class="fade-in opacity-0 -translate-x-8 transition-all duration-[800ms] ease-out">
+                    <div class="bg-slate-800/30 rounded-2xl border border-slate-700/50 p-8 h-full">
+                        <h3 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                            <i data-lucide="database" class="text-blue-400 w-6 h-6"></i> Step-by-Step HACS Install
+                        </h3>
+                        <ol class="space-y-5">
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">1</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Open HACS in your sidebar and navigate to the Integrations panel.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">2</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Click the three dots (...) in the upper right corner and select Custom repositories.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">3</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Input the repository web link (GitHub URL).</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">4</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Set the Category selector dropdown to Integration and hit Add.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">5</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Locate the SkyRadar Fusion repository card and hit Download.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">6</div><span class="text-slate-300 text-sm leading-relaxed pt-1">⚠️ Restart your Home Assistant instance. (Crucial for loading new Python modules).</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">7</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Navigate to Settings > Devices & Services > Add Integration and search for SkyRadar Fusion.</span></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="fade-in opacity-0 translate-x-8 transition-all duration-[800ms] ease-out delay-[200ms] space-y-6 h-full flex flex-col">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 p-8 shadow-xl">
+                        <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-3">
+                            <i data-lucide="target" class="text-emerald-400 w-6 h-6"></i> Tracking Modes
+                        </h3>
+                        <div class="space-y-4 text-sm text-slate-300">
+                            <div><strong class="text-emerald-400">1. Zone Tracking (Recommended):</strong> Monitor airspace around your home. Set your Latitude, Longitude, and a metric Radius. Aircraft are counted but don't clutter your map.</div>
+                            <div><strong class="text-emerald-400">2. Target Tracking:</strong> Deploy a dedicated instance to track ONE unique airframe globally using Callsign, Registration, or ICAO Hex.</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-orange-900/20 to-red-900/20 rounded-2xl border border-orange-500/30 p-8 shadow-xl flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i data-lucide="alert-triangle" class="text-orange-400"></i>
+                            <h3 class="text-xl font-bold text-white">Crucial Database Step</h3>
+                        </div>
+                        <p class="text-sm text-slate-300 mb-4">
+                            SkyRadar uses a "Zero-Bloat Memory Buffer". To prevent SQL limits, you <strong>must</strong> exclude the main sensor in your <code class="bg-slate-800 px-1.5 py-0.5 rounded text-blue-300">configuration.yaml</code>.
+                        </p>
+                        
+                        <!-- YAML Code Block -->
+                        <div class="code-block relative group rounded-xl overflow-hidden bg-[#0d1326] border border-slate-700/50 shadow-2xl flex flex-col">
+                            <div class="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-700/50">
+                                <span class="text-xs font-mono text-slate-400">yaml</span>
+                                <button onclick="copyCode(this)" class="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                                </button>
+                            </div>
+                            <div class="p-4 overflow-x-auto"><pre class="text-sm font-mono text-slate-300"><code>recorder:
+  exclude:
+    entities:
+      - sensor.skyradar_fusion_current_in_area</code></pre></div>
+                        </div>
+
+                        <p class="text-xs text-orange-300/80 mt-4 italic">* Historical data survives reboots backed up to .storage folder.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboards Section -->
+    <section id="dashboards" class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-400 text-sm font-medium mb-6">
+                    New v2.0.3 Layout
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Lovelace Dashboard Configurations</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Build complete aviation control panels directly inside your Home Assistant dashboards.</p>
+            </div>
+
+            <div class="fade-in opacity-0 translate-y-8 transition-all duration-[800ms] ease-out mb-16 bg-slate-800/40 border border-slate-700 rounded-2xl p-4 overflow-hidden relative group">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0B1120] to-transparent z-10 opacity-60"></div>
+                <img src="https://github.com/user-attachments/assets/d8e3b5dd-6b2e-47ef-b15a-537162b26f19" alt="SkyRadar V2.0.3 Dashboard" class="w-full rounded-xl shadow-2xl object-cover border border-slate-600/50 relative z-0" />
+                <div class="absolute bottom-6 left-6 right-6 z-20 flex justify-between items-end">
+                    <div>
+                        <h3 class="text-2xl font-bold text-white drop-shadow-md">The Awesome Dashboard</h3>
+                        <p class="text-slate-300 text-sm drop-shadow-md max-w-lg">
+                            Look at the first plane entry! You can now see the <strong class="text-purple-400">spotted time in purple</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Big Table Code -->
+                <div class="fade-in opacity-0 -translate-x-8 transition-all duration-[800ms] ease-out lg:col-span-8">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <i data-lucide="database" class="text-blue-400 w-5 h-5"></i> 1. The Zero-Bloat Flex Table Card
+                    </h3>
+                    <p class="text-sm text-slate-400 mb-4">Requires `flex-table-card` and `card-mod` from HACS.</p>
+                    
+                    <div class="code-block relative group rounded-xl overflow-hidden bg-[#0d1326] border border-slate-700/50 my-4 shadow-2xl flex flex-col">
+                        <div class="flex items-center justify-between px-4 py-3 bg-slate-800/80 border-b border-slate-700/50">
+                            <div class="flex flex-col"><span class="text-sm font-semibold text-slate-200">Lovelace YAML (Custom Card)</span><span class="text-xs font-mono text-slate-400">yaml</span></div>
+                            <button onclick="copyCode(this)" class="p-2 rounded-md bg-slate-700/50 hover:bg-blue-600 text-slate-300 hover:text-white transition-all flex items-center gap-2 text-xs font-medium">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                            </button>
+                        </div>
+                        <div class="p-4 overflow-auto max-h-[450px] custom-scrollbar">
+                            <pre class="text-sm font-mono text-slate-300 whitespace-pre"><code>type: custom:flex-table-card
 title: 📡 SkyRadar Fusion
 icon: mdi:airplane-clock
 strict: false
@@ -533,252 +436,192 @@ columns:
     data: recent_aircraft
     align: center
     modify: |
-      x.api_photo_url ? \`<img src="\${x.api_photo_url}"
+      x.api_photo_url ? `<img src="${x.api_photo_url}"
           style="
             width:72px;
             height:48px;
             object-fit:cover;
             border-radius:10px;
             box-shadow:0 2px 8px rgba(0,0,0,.45);
-          ">\`
-      : \`<div style="
-            font-size:28px;
-            opacity:.7;
-          ">✈️</div>\`
+          ">`
+      : `<div style="font-size:28px;opacity:.7;">✈️</div>`
   - name: Flight
     data: recent_aircraft
     modify: |
-      \` <div style="line-height:1.3;">
-        <div style="
-          font-weight:700;
-          font-size:15px;
-          color:var(--primary-text-color);
-        ">
-          \${x.flight ? x.flight.trim() : "Unknown"}
+      ` <div style="line-height:1.3;">
+        <div style="font-weight:700;font-size:15px;color:var(--primary-text-color);">
+          ${x.flight ? x.flight.trim() : "Unknown"}
         </div>
-
-        <div style="
-          font-size:12px;
-          color:var(--secondary-text-color);
-        ">
-          \${x.r || "N/A"} • \${x.hex || ""}
+        <div style="font-size:12px;color:var(--secondary-text-color);">
+          ${x.r || "N/A"} • ${x.hex || ""}
         </div>
-      </div> \`
+      </div> `
   - name: Aircraft
     data: recent_aircraft
     modify: |
-      \` <div style="line-height:1.35;">
-        <span style="
-          background:rgba(0,150,255,.15);
-          color:#4db8ff;
-          padding:3px 8px;
-          border-radius:999px;
-          font-family:monospace;
-          font-size:12px;
-          font-weight:600;
-        ">
-          \${x.t || "UNK"}
+      ` <div style="line-height:1.35;">
+        <span style="background:rgba(0,150,255,.15);color:#4db8ff;padding:3px 8px;border-radius:999px;font-family:monospace;font-size:12px;font-weight:600;">
+          ${x.t || "UNK"}
         </span>
-
-        <div style="
-          margin-top:4px;
-          font-size:12px;
-          color:var(--secondary-text-color);
-        ">
-          \${x.desc || "Unknown aircraft"}
+        <div style="margin-top:4px;font-size:12px;color:var(--secondary-text-color);">
+          ${x.desc || "Unknown aircraft"}
         </div>
-      </div> \`
+      </div> `
   - name: Route
     data: recent_aircraft
     modify: |
-      \` <div style="line-height:1.35;">
-        <div style="
-          font-weight:600;
-          color:#7dd3fc;
-        ">
-          \${x.fr24_route || "Unknown Route"}
+      ` <div style="line-height:1.35;">
+        <div style="font-weight:600;color:#7dd3fc;">${x.fr24_route || "Unknown Route"}</div>
+        <div style="font-size:12px;color:var(--secondary-text-color);margin-top:3px;">
+          🛫 ${x.airport_origin_name || "Unknown"}
         </div>
-
-        <div style="
-          font-size:12px;
-          color:var(--secondary-text-color);
-          margin-top:3px;
-        ">
-          🛫 \${x.airport_origin_name || "Unknown"}
+        <div style="font-size:12px;color:var(--secondary-text-color);">
+          🛬 ${x.airport_destination_name || "Unknown"}
         </div>
-
-        <div style="
-          font-size:12px;
-          color:var(--secondary-text-color);
-        ">
-          🛬 \${x.airport_destination_name || "Unknown"}
-        </div>
-      </div> \`
+      </div> `
   - name: Airline
     data: recent_aircraft
     modify: |
-      \` <div style="line-height:1.3;">
-        <div style="
-          font-weight:600;
-          color:#facc15;
-        ">
-          \${x.airline || "Private"}
-        </div>
-
-        <div style="
-          font-size:11px;
-          color:var(--secondary-text-color);
-        ">
-          \${x.air_category || ""}
-        </div>
-      </div> \`
+      ` <div style="line-height:1.3;"><div style="font-weight:600;color:#facc15;">${x.airline || "Private"}</div><div style="font-size:11px;color:var(--secondary-text-color);">${x.air_category || ""}</div></div> `
   - name: Flight Data
     data: recent_aircraft
     modify: |
-      \` <div style="line-height:1.4;">
-        <div>
-          ✈️ \${x.alt_baro
-            ? Math.round(x.alt_baro * 0.3048).toLocaleString() + " m"
-            : "Ground"}
-        </div>
-
-        <div style="font-size:12px;color:var(--secondary-text-color);">
-          🚀 \${x.gs
-            ? Math.round(x.gs * 1.852) + " km/h"
-            : "0 km/h"}
-        </div>
-
-        <div style="font-size:12px;color:var(--secondary-text-color);">
-          📍 \${x.distance_meter
-            ? (x.distance_meter / 1000).toFixed(1) + " km"
-            : "-"}
-        </div>
-        
-        <div style="font-size:11px;color:#a855f7;font-weight:600;margin-top:2px;">
-          🕒 \${x.spotted_time ? new Date(x.spotted_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : "N/A"}
-        </div>
-      </div> \`
+      ` <div style="line-height:1.4;">
+        <div>✈️ ${x.alt_baro ? Math.round(x.alt_baro * 0.3048).toLocaleString() + " m" : "Ground"}</div>
+        <div style="font-size:12px;color:var(--secondary-text-color);">🚀 ${x.gs ? Math.round(x.gs * 1.852) + " km/h" : "0 km/h"}</div>
+        <div style="font-size:12px;color:var(--secondary-text-color);">📍 ${x.distance_meter ? (x.distance_meter / 1000).toFixed(1) + " km" : "-"}</div>
+        <div style="font-size:11px;color:#a855f7;font-weight:600;margin-top:2px;">🕒 ${x.spotted_time ? new Date(x.spotted_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : "N/A"}</div>
+      </div> `
   - name: V/S
     data: recent_aircraft
     align: center
     modify: |
-      x.baro_rate ? \`
-        <div style="
-          color:\${x.baro_rate > 0 ? "#22c55e" : "#ef4444"};
-          font-weight:700;
-        ">
-          \${x.baro_rate > 0 ? "▲" : "▼"}
-          \${Math.abs(x.baro_rate)}
+      x.baro_rate ? `
+        <div style="color:${x.baro_rate > 0 ? "#22c55e" : "#ef4444"};font-weight:700;">
+          ${x.baro_rate > 0 ? "▲" : "▼"} ${Math.abs(x.baro_rate)}
         </div>
-        <div style="
-          font-size:11px;
-          color:var(--secondary-text-color);
-        ">
-          fpm
-        </div>
-      \` : "-"
+        <div style="font-size:11px;color:var(--secondary-text-color);">fpm</div>
+      ` : "-"
   - name: Arrival
     data: recent_aircraft
     modify: |
-      \` <div style="line-height:1.35;">
-        <div style="font-size:13px;">
-          ⏱️ \${x.fr24_estimated_arrival
-            ? x.fr24_estimated_arrival.split(' ')[1]
-            : "N/A"}
-        </div>
-
-        <div style="
-          font-size:11px;
-          color:var(--secondary-text-color);
-        ">
-          STD \${x.fr24_scheduled_arrival
-            ? x.fr24_scheduled_arrival.split(' ')[1]
-            : "-"}
-        </div>
-      </div> \`
+      ` <div style="line-height:1.35;">
+        <div style="font-size:13px;">⏱️ ${x.fr24_estimated_arrival ? x.fr24_estimated_arrival.split(' ')[1] : "N/A"}</div>
+        <div style="font-size:11px;color:var(--secondary-text-color);">STD ${x.fr24_scheduled_arrival ? x.fr24_scheduled_arrival.split(' ')[1] : "-"}</div>
+      </div> `
   - name: SQK
     data: recent_aircraft
     align: center
     modify: |
-      x.emergency && x.emergency !== "none" ? \`<span style="
-          color:white;
-          background:#dc2626;
-          padding:4px 8px;
-          border-radius:8px;
-          font-weight:700;
-        ">
-          \${x.squawk}
-        </span>\`
-      : \`<span style="
-          background:rgba(255,255,255,.08);
-          padding:4px 8px;
-          border-radius:8px;
-          font-family:monospace;
-        ">
-          \${x.squawk || "-"}
-        </span>\``}
-              />
-            </FadeIn>
+      x.emergency && x.emergency !== "none" ? `<span style="color:white;background:#dc2626;padding:4px 8px;border-radius:8px;font-weight:700;">${x.squawk}</span>`
+      : `<span style="background:rgba(255,255,255,.08);padding:4px 8px;border-radius:8px;font-family:monospace;">${x.squawk || "-"}</span>`</code></pre>
+                        </div>
+                    </div>
+                </div>
 
-            {/* Smaller Controls */}
-            <div className="lg:col-span-4 space-y-8 mt-4 lg:mt-0">
-              <FadeIn direction="left" delay={200}>
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                  <Sliders size={20} className="text-emerald-400"/> 2. Watchlist Controls
-                </h3>
-                <p className="text-sm text-slate-400 mb-4">Add or remove flights from your tracked list on the fly.</p>
-                <CodeBlock 
-                  title="Entities Card"
-                  language="yaml"
-                  code={`type: entities\ntitle: "Airspace Watchlist"\nshow_header_toggle: false\nentities:\n  - entity: text.skyradar_fusion_tracker_add_to_track\n    name: "🚀 Target Flight Lock"\n  - entity: text.skyradar_fusion_tracker_remove_from_track\n    name: "🗑️ Release Flight Lock"\n  - entity: button.skyradar_fusion_tracker_clear_additional_tracked\n    name: "🧹 Wipe Target Registry"`}
-                />
-              </FadeIn>
+                <div class="lg:col-span-4 space-y-8 mt-4 lg:mt-0">
+                    <div class="fade-in opacity-0 translate-x-8 transition-all duration-[800ms] ease-out delay-[200ms]">
+                        <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            <i data-lucide="sliders" class="text-emerald-400 w-5 h-5"></i> 2. Watchlist Controls
+                        </h3>
+                        <p class="text-sm text-slate-400 mb-4">Add or remove flights from your tracked list.</p>
+                        
+                        <div class="code-block relative group rounded-xl overflow-hidden bg-[#0d1326] border border-slate-700/50 shadow-2xl flex flex-col">
+                            <div class="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-700/50">
+                                <span class="text-xs font-mono text-slate-400">yaml</span>
+                                <button onclick="copyCode(this)" class="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button>
+                            </div>
+                            <div class="p-4 overflow-x-auto"><pre class="text-sm font-mono text-slate-300"><code>type: entities
+title: "Airspace Watchlist"
+show_header_toggle: false
+entities:
+  - entity: text.skyradar_fusion_tracker_add
+    name: "🚀 Target Flight Lock"
+  - entity: text.skyradar_fusion_tracker_remove
+    name: "🗑️ Release Flight Lock"
+  - entity: button.skyradar_fusion_tracker_clear
+    name: "🧹 Wipe Target Registry"</code></pre></div>
+                        </div>
+                    </div>
 
-              <FadeIn direction="left" delay={300}>
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                  <Map size={20} className="text-orange-400"/> 3. Live Tracking Map
-                </h3>
-                <p className="text-sm text-slate-400 mb-4">Map cleans itself up automatically when planes land/leave!</p>
-                <CodeBlock 
-                  title="Map Card"
-                  language="yaml"
-                  code={`type: map\ntitle: Live Radar\nentities:\n  - device_tracker.skyradar_fusion_klm1410\n  - device_tracker.skyradar_fusion_afr123`}
-                />
-              </FadeIn>
+                    <div class="fade-in opacity-0 translate-x-8 transition-all duration-[800ms] ease-out delay-[300ms]">
+                        <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            <i data-lucide="map" class="text-orange-400 w-5 h-5"></i> 3. Live Tracking Map
+                        </h3>
+                        <p class="text-sm text-slate-400 mb-4">Map cleans itself up automatically!</p>
+                        
+                        <div class="code-block relative group rounded-xl overflow-hidden bg-[#0d1326] border border-slate-700/50 shadow-2xl flex flex-col">
+                            <div class="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-700/50">
+                                <span class="text-xs font-mono text-slate-400">yaml</span>
+                                <button onclick="copyCode(this)" class="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button>
+                            </div>
+                            <div class="p-4 overflow-x-auto"><pre class="text-sm font-mono text-slate-300"><code>type: map
+title: Live Radar
+entities:
+  - device_tracker.skyradar_fusion_klm1410
+  - device_tracker.skyradar_fusion_afr123</code></pre></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </section>
+    </section>
 
-      {/* Footer / Credits */}
-      <footer className="bg-[#050810] border-t border-slate-800 py-12 pb-24 md:pb-12 text-sm text-slate-500">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center">
-          <div>
-            <div className="flex items-center gap-2 text-slate-300 font-bold text-lg mb-4">
-              <Radar className="text-blue-500" size={20} />
-              SkyRadar Fusion
+    <!-- Footer -->
+    <footer class="bg-[#050810] border-t border-slate-800 py-12 pb-24 md:pb-12 text-sm text-slate-500">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center">
+            <div>
+                <div class="flex items-center gap-2 text-slate-300 font-bold text-lg mb-4">
+                    <i data-lucide="radar" class="text-blue-500 w-5 h-5"></i> SkyRadar Fusion
+                </div>
+                <p class="max-w-sm mb-4">Built for Home Assistant. Providing high-performance airspace intelligence without compromises.</p>
+                <div class="flex gap-4">
+                    <a href="https://github.com/DonTranQuiL/ADSB-For-Home-assistant" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                    <a href="https://community.home-assistant.io/t/ads-b-tracker-for-home-assistant/1011081" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="globe" class="w-5 h-5"></i></a>
+                </div>
             </div>
-            <p className="max-w-sm mb-4">
-              Built for Home Assistant. Providing high-performance airspace intelligence to your smart home without compromises.
-            </p>
-            <div className="flex gap-4">
-              <a href="https://github.com/DonTranQuiL/ADSB-For-Home-assistant" className="text-slate-400 hover:text-white transition-colors">
-                <Github size={20} />
-              </a>
-              <a href="https://community.home-assistant.io/t/ads-b-tracker-for-home-assistant/1011081" className="text-slate-400 hover:text-white transition-colors">
-                <Globe size={20} />
-              </a>
+            <div class="md:text-right space-y-2">
+                <h4 class="text-slate-300 font-semibold mb-2">Special Acknowledgements</h4>
+                <p><strong>JeanExtreme002</strong> - FlightRadarAPI maintenance</p>
+                <p><strong>api.airplanes.live</strong> - Core ADS-B telemetry data</p>
+                <p><strong>AlexandrErohin</strong> - Inspiration from HA Flightradar24</p>
             </div>
-          </div>
-          
-          <div className="md:text-right space-y-2">
-            <h4 className="text-slate-300 font-semibold mb-2">Special Acknowledgements</h4>
-            <p><strong>JeanExtreme002</strong> - FlightRadarAPI maintenance</p>
-            <p><strong>api.airplanes.live</strong> - Core ADS-B telemetry data</p>
-            <p><strong>AlexandrErohin</strong> - Inspiration from HA Flightradar24</p>
-          </div>
         </div>
-      </footer>
-    </div>
-  );
-}
+    </footer>
+
+    <!-- Animation & Interactions Script -->
+    <script>
+        // Copy Code Functionality
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('code');
+            navigator.clipboard.writeText(pre.innerText);
+            
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i> <span class="text-white">Copied</span>';
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                lucide.createIcons();
+            }, 2000);
+        }
+
+        // Initialize Icons and Scroll Animations
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('opacity-0', 'translate-y-8', '-translate-x-8', 'translate-x-8');
+                        entry.target.classList.add('opacity-100', 'translate-y-0', 'translate-x-0');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
