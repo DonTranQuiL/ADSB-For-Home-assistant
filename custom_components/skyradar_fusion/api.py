@@ -128,11 +128,13 @@ class SkyRadarFusionAPI:
                 .get("country", {})
                 .get("name", "Unknown"),
                 "fr24_photo": photo_large,
-                "fr24_scheduled_departure": format_unix_time(
-                    scheduled.get("departure")
-                ),
+                "fr24_scheduled_departure": format_unix_time(scheduled.get("departure")),
+                "fr24_scheduled_departure_epoch": scheduled.get("departure"),
+                "fr24_real_departure_epoch": real.get("departure"),
                 "fr24_real_departure": format_unix_time(real.get("departure")),
+                "fr24_scheduled_arrival_epoch": scheduled.get("arrival"),
                 "fr24_scheduled_arrival": format_unix_time(scheduled.get("arrival")),
+                "fr24_estimated_arrival_epoch": estimated.get("arrival"),
                 "fr24_estimated_arrival": format_unix_time(estimated.get("arrival")),
                 "fr24_flight_number": fr24_flight_number,
                 "fr24_aircraft_code": fr24_aircraft_code,
