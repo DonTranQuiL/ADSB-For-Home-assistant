@@ -38,7 +38,7 @@ Diff:
 
 completion = client.chat.completions.create(
     model="meta-llama/llama-3-8b-instruct:free",
-    messages=[{"role": "user", "content": prompt}]
+    messages=[{"role": "user", "content": prompt}],
 )
 
 review_comment = completion.choices[0].message.content.strip()
@@ -48,9 +48,16 @@ if review_comment != "APPROVED":
     repo = os.getenv("GITHUB_REPOSITORY")
     pr_number = os.getenv("PR_NUMBER")
     token = os.getenv("GITHUB_TOKEN")
-    
+
     url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.v3+json"}
-    requests.post(url, headers=headers, json={"body": f"?? **AI Architecture Review:**\n\n{review_comment}"})
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    requests.post(
+        url,
+        headers=headers,
+        json={"body": f"?? **AI Architecture Review:**\n\n{review_comment}"},
+    )
 else:
     print("Code looks good! No comment needed.")
