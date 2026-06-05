@@ -25,7 +25,7 @@ prompt = f"""
     You are the gatekeeper keeping the codebase fresh, clean, and tight.
     
     Here is the Pull Request diff:
-    {pr_diff}
+    {diff}
     
     1. Review the code for bugs, efficiency, architecture, and cleanliness.
     2. Write your review summary in Snoop Dogg's voice. If it's fly, give it some praise. If it needs work or has security holes, point out the flaws smoothly and tell the dev how to fix it.
