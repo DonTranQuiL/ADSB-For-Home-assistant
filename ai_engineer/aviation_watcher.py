@@ -44,7 +44,7 @@ def get_airplanes_live_keys():
         response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
         response.raise_for_status()
         data = response.json()
-        
+
         aircraft_list = data.get("ac", [])
         if not aircraft_list:
             print("Airplanes.live warning: No aircraft in payload zone.")
@@ -56,7 +56,7 @@ def get_airplanes_live_keys():
             live_fields.update(aircraft.keys())
 
         return sorted(list(live_fields))
-        
+
     except Exception as e:
         print(f"Airplanes.live check failed: {e}")
         return None
