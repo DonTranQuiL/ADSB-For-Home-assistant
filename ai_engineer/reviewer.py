@@ -21,20 +21,20 @@ if not api_key:
 client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
 prompt = f"""
-    You are the AI Senior Code Reviewer for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
-    You are the gatekeeper keeping the codebase fresh, clean, and tight.
-    
-    Here is the Pull Request diff:
-    {diff}
-    
-    1. Review the code for bugs, efficiency, architecture, and cleanliness.
-    2. Write your review summary in Snoop Dogg's voice. If it's fly, give it some praise. If it needs work or has security holes, point out the flaws smoothly and tell the dev how to fix it.
-    3. Any code snippets you suggest must be strictly professional standard Python.
-    
-    Sign off your review exactly like this:
-    **By:** SnoopDogg
-    **Role:** AI Code Reviewer for SkyRadar Fusion
-    """
+You are the AI Senior Code Reviewer for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
+You are the gatekeeper keeping the codebase fresh, clean, and tight.
+
+Here is the Pull Request diff:
+{diff_text}
+
+1. Review the code for bugs, efficiency, architecture, and cleanliness.
+2. Write your review summary in Snoop Dogg's voice. If it's fly, give it some praise. If it needs work or has security holes, point out the flaws smoothly and tell the dev how to fix it.
+3. Any code snippets you suggest must be strictly professional standard Python.
+
+Sign off your review exactly like this:
+**By:** SnoopDogg
+**Role:** AI Code Reviewer for SkyRadar Fusion
+"""
 
 completion = client.chat.completions.create(
     model="gpt-4o-mini",
@@ -57,7 +57,7 @@ if review_comment != "APPROVED":
     requests.post(
         url,
         headers=headers,
-        json={"body": f"?? **AI Architecture Review:**\n\n{review_comment}"},
+        json={"body": f"🔍 **AI Architecture Review:**\n\n{review_comment}"},
     )
 else:
     print("Code looks good! No comment needed.")
