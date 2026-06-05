@@ -19,14 +19,14 @@ def get_fr24_keys():
     try:
         # Try a broader area to guarantee results
         flights = FR24_API.get_flights(bounds="40,60,-10,20")
-        
+
         if not flights:
             print("FR24 warning: No flights found in bounding box.")
             return None
-            
+
         # Success: return keys from the first flight found
         return list(flights[0].__dict__.keys())
-        
+
     except Exception as e:
         print(f"FR24 critical failure: {str(e)}")
         return None
