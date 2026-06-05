@@ -2,82 +2,98 @@ import os
 import requests
 import json
 from openai import OpenAI
+from FlightRadar24 import FlightRadar24API
 
-# The endpoints your integration relies on
-FEEDS = {
-    "airplanes_live": "https://api.airplanes.live/v2/point/50.86/6.08/25",  # Example coordinates
-    # Add your FR24 endpoint here if it has a public unauthenticated test route, or handle auth
-}
+# 1. Configuration
+FR24_API = FlightRadar24API()
+AIRPLANES_LIVE_URL = "https://api.airplanes.live/v2/point/50.86/6.08/25"
+MEMORY_DIR = ".memory"
+os.makedirs(MEMORY_DIR, exist_ok=True)
 
 schema_drift_detected = False
 report_details = []
 
-os.makedirs(".memory", exist_ok=True)
-
-for name, url in FEEDS.items():
+def get_fr24_keys():
+    """Fetch sample keys using the library."""
     try:
-        response = requests.get(url, timeout=10)
-        data = response.json()
-
-        # Extract a sample aircraft to check the schema keys
-        # Adjust the path ['ac'][0] depending on the exact JSON structure
-        sample_keys = list(data.get("ac", [{}])[0].keys())
-
-        memory_file = f".memory/{name}_schema.json"
-
-        try:
-            with open(memory_file, "r") as f:
-                known_schema = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            with open(memory_file, "w") as f:
-                json.dump(sample_keys, f)
-            continue
-
-        added = [k for k in sample_keys if k not in known_schema]
-        missing = [k for k in known_schema if k not in sample_keys]
-
-        if added or missing:
-            schema_drift_detected = True
-            report_details.append(
-                f"**{name.upper()} API Changes:**\nMissing: {missing}\nAdded: {added}\n"
-            )
-
-            # Update memory to the new broken/changed schema so it doesn't alert twice
-            with open(memory_file, "w") as f:
-                json.dump(sample_keys, f)
-
+        # Fetching a small bounding box to get a sample aircraft
+        flights = FR24_API.get_flights(bounds="50,51,5,7")
+        if flights:
+            return list(flights[0].__dict__.keys())
     except Exception as e:
-        print(f"Failed to check {name}: {e}")
+        print(f"FR24 check failed: {e}")
+    return None
 
-if not schema_drift_detected:
-    print("Both aviation APIs are stable.")
-    exit(0)
+def get_airplanes_live_keys():
+    """Fetch sample keys using the REST API."""
+    try:
+        response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
+        data = response.json()
+        sample_data = data.get("ac", [{}])[0]
+        return list(sample_data.keys())
+    except Exception as e:
+        print(f"Airplanes.live check failed: {e}")
+    return None
 
-# If we get here, an API broke. Let's write the report.
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY")
-)
+# 2. Monitor Loop
+sources = {
+    "flightradar24": get_fr24_keys,
+    "airplanes_live": get_airplanes_live_keys
+}
 
-prompt = f"""
-You are the AI maintainer for SkyRadar Fusion, a Home Assistant ADSB integration.
-One of our upstream flight data APIs just changed its schema.
+for name, fetch_func in sources.items():
+    current_keys = fetch_func()
+    if not current_keys:
+        print(f"Could not fetch data for {name}, skipping.")
+        continue
+    
+    memory_file = os.path.join(MEMORY_DIR, f"{name}_schema.json")
+    
+    # Load previous memory
+    try:
+        with open(memory_file, "r") as f:
+            known_keys = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        # First run: Save and skip
+        with open(memory_file, "w") as f:
+            json.dump(current_keys, f)
+        print(f"Baseline created for {name}")
+        continue
+        
+    # Detect Drift
+    added = [k for k in current_keys if k not in known_keys]
+    missing = [k for k in known_keys if k not in current_keys]
+    
+    if added or missing:
+        schema_drift_detected = True
+        report_details.append(f"**{name.upper()} API Changes:**\nMissing: {missing}\nAdded: {added}\n")
+        
+        # Update memory
+        with open(memory_file, "w") as f:
+            json.dump(current_keys, f)
 
-Changes detected:
-{chr(10).join(report_details)}
-
-Write a highly technical GitHub Issue report for the maintainer. 
-1. Note the specific fields that changed.
-2. Warn about which Home Assistant sensors might break (e.g., altitude, heading, speed).
-3. Suggest the Python fix required in the data coordinator.
-"""
-
-completion = client.chat.completions.create(
-    model="meta-llama/llama-3-8b-instruct:free",
-    messages=[{"role": "user", "content": prompt}],
-)
-
-with open("ai_report.md", "w") as f:
-    f.write(completion.choices[0].message.content)
-
-with open(os.environ["GITHUB_ENV"], "a") as f:
-    f.write("SCHEMA_CHANGED=true\n")
+# 3. Report if needed
+if schema_drift_detected:
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1", 
+        api_key=os.getenv("OPENROUTER_API_KEY")
+    )
+    
+    prompt = f"""
+    You are the AI maintainer for SkyRadar Fusion. One of our flight data APIs changed its schema.
+    Changes:
+    {chr(10).join(report_details)}
+    
+    Write a technical GitHub Issue report. Identify the changes and potential impact on Home Assistant sensors.
+    """
+    
+    completion = client.chat.completions.create(
+        model="meta-llama/llama-3-8b-instruct:free",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    with open("ai_report.md", "w") as f:
+        f.write(completion.choices[0].message.content)
+        
+    with open(os.environ['GITHUB_ENV'], 'a') as f:
+        f.write("SCHEMA_CHANGED=true\n")
