@@ -32,7 +32,7 @@ Here is the new code diff that needs testing:
 
 IMPORTANT INSTRUCTIONS:
 You must start your response with the exact line:
-FILEPATH: tests/test_generated.py (or another appropriate test filename)
+FILEPATH: tests/test_generated.py
 Then write your Snoop intro.
 Then output the tests exactly starting with CODE: and then the 
 ```python block.
