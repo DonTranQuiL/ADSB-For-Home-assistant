@@ -14,7 +14,10 @@ api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     exit(0)
 
-client = OpenAI(base_url="[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)", api_key=api_key)
+client = OpenAI(
+    base_url="[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)",
+    api_key=api_key,
+)
 
 prompt = f"""
 You are an AI Staff Engineer for SkyRadar Fusion. A PR was just merged.
@@ -35,14 +38,14 @@ Diff:
 try:
     completion = client.chat.completions.create(
         model="meta-llama/llama-3-8b-instruct:free",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
-    
+
     lines = completion.choices[0].message.content.strip().splitlines()
     file_path = None
     code_lines = []
     is_code = False
-    
+
     for line in lines:
         if line.startswith("FILEPATH:"):
             file_path = line.replace("FILEPATH:", "").strip()
@@ -50,12 +53,12 @@ try:
             is_code = True
         elif is_code and not line.startswith("```"):
             code_lines.append(line)
-            
+
     if file_path and code_lines:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w") as f:
             f.write("\n".join(code_lines))
         print(f"Wrote test to {file_path}")
-        
+
 except Exception as e:
     print(f"Test generation failed: {e}")
