@@ -43,7 +43,7 @@ try:
     for line in lines:
         if line.startswith("LABELS:"):
             labels_str = line.replace("LABELS:", "").strip()
-            labels = [l.strip() for l in labels_str.split(",") if l.strip()]
+            labels = [label.strip() for label in labels_str.split(",") if label.strip()]
         elif line.startswith("COMMENT:"):
             comment = line.replace("COMMENT:", "").strip()
             
