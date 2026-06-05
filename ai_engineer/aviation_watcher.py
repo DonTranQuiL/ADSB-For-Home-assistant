@@ -22,17 +22,18 @@ def get_fr24_keys():
         if not zones:
             print("FR24 warning: Could not fetch zones.")
             return None
-            
+
         # 2. Use a specific zone instead of arbitrary bounds
         # 'europe' is usually well-populated
-        flights = FR24_API.get_flights(zone=zones['europe'])
-        
+        flights = FR24_API.get_flights(zone=zones["europe"])
+
         if flights:
             return list(flights[0].__dict__.keys())
-            
+
     except Exception as e:
         print(f"FR24 error: {str(e)}")
     return None
+
 
 def get_airplanes_live_keys():
     """Fetch sample keys using the REST API."""
