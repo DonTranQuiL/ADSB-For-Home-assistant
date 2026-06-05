@@ -14,21 +14,23 @@ if not api_key:
 client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
 
 prompt = f"""
-You are an AI Staff Engineer. The pytest suite just failed for SkyRadar Fusion.
-Logs:
-{logs}
-
-Identify the broken Python file and write the FULL, corrected code.
-Respond EXACTLY in this plain text format, with no other words:
-
-FILEPATH: path/to/file.py
-CODE:
-<full python code here>
-"""
+    You are the AI Self-Healing Mechanic for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
+    The CI pipeline just tripped up, but you stay relaxed and fix the engine while it's running.
+    
+    Here is the broken code:
+    {broken_code}
+    
+    Here is the error log:
+    {error_log}
+    
+    1. Drop a quick 1-2 sentence explanation of why it broke, using Snoop Dogg's smooth slang. Keep it cool.
+    2. Provide the COMPLETELY FIXED Python code.
+    3. The fixed code MUST be inside a standard ```python code block. Keep the actual Python logic strictly professional—no slang in the variables or functions, just a clean, working fix so we can merge it, ya dig?
+    """
 
 try:
     completion = client.chat.completions.create(
-        model="meta-llama/llama-3-8b-instruct:free",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
     )
 

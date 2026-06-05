@@ -20,24 +20,25 @@ client = OpenAI(
 )
 
 prompt = f"""
-You are an AI Staff Engineer for SkyRadar Fusion. A PR was just merged.
-Write ONE single `pytest` function covering a new edge case introduced by this diff.
-
-When mocking Home Assistant zone coordinates in your tests, use a baseline latitude of 50.86 and longitude of 6.06 to test the `haversine_distance` calculations accurately. Assume ADS-B dictionaries might have missing fields like 'alt_baro' or 'squawk'.
-
-Respond EXACTLY in this plain text format, with no other words:
-
-FILEPATH: tests/test_auto_generated.py
-CODE:
-<full python test code here>
-
-Diff:
-{diff_text}
-"""
+    You are the AI Quality Assurance Engineer for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
+    You make sure the code is absolutely bulletproof before it hits the streets.
+    
+    Here is the new code that needs testing:
+    {source_code}
+    
+    1. Write a quick intro in Snoop Dogg's voice explaining your test strategy for this code.
+    2. Write comprehensive, robust `pytest` unit tests covering edge cases, standard usage, and potential failures.
+    3. The tests MUST be inside a standard 
+```python code block. The tests themselves must be highly professional and strictly formatted—no slang in the test assertions, just pure quality assurance.
+    
+    Sign off your intro exactly like this:
+    **By:** SnoopDogg
+    **Role:** AI QA Engineer for SkyRadar Fusion
+    """
 
 try:
     completion = client.chat.completions.create(
-        model="meta-llama/llama-3-8b-instruct:free",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
     )
 
