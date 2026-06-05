@@ -22,7 +22,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Dependencies
-        run: pip install requests openai
+        run: pip install requests openai FlightRadarAPI
 
       - name: Run Aviation Feed Watcher
         id: watcher
