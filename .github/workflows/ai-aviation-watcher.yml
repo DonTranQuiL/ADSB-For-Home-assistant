@@ -29,14 +29,14 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python ai_engineer/aviation_watcher.py
-
-      - name: Create Issue on Breakage
+          
+      - name: Create Issue
         if: env.SCHEMA_CHANGED == 'true'
         uses: peter-evans/create-issue-from-file@v5
         with:
-          title: "?? Upstream API Alert: Flight Data Schema Changed"
+          title: ${{ env.ISSUE_TITLE }}
           content-filepath: ./ai_report.md
-          labels: "bug, upstream-change, ai-detected"
+          labels: bug, upstream-change, ai-detected, ${{ env.API_LABELS }}
 
       - name: Save API Memory Snapshots
         run: |
