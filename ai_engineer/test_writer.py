@@ -24,7 +24,7 @@ prompt = f"""
     You make sure the code is absolutely bulletproof before it hits the streets.
     
     Here is the new code that needs testing:
-    {source_code}
+    {file_content}
     
     1. Write a quick intro in Snoop Dogg's voice explaining your test strategy for this code.
     2. Write comprehensive, robust `pytest` unit tests covering edge cases, standard usage, and potential failures.
