@@ -41,14 +41,18 @@ class SkyRadarFusionAPI:
                 "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
             }
             try:
-                async with self._session.get(url, headers=headers, timeout=10) as response:
+                async with self._session.get(
+                    url, headers=headers, timeout=10
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
                         # Strictly wait 1.2 seconds before the next call is allowed to fire
                         await asyncio.sleep(1.2)
                         return data
                     elif response.status == 429:
-                        _LOGGER.warning("Rate limited by Airplanes.live! Slowing down...")
+                        _LOGGER.warning(
+                            "Rate limited by Airplanes.live! Slowing down..."
+                        )
                         await asyncio.sleep(5.0)
                         return None
                     else:
@@ -235,20 +239,22 @@ class SkyRadarFusionAPI:
     async def get_planespotters_photo(
         self, registration: str, hex_code: str = None
     ) -> Optional[str]:
-        
+
         async def fetch_photo_from_url(url: str):
             headers = {
                 "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
             }
             try:
-                async with self._session.get(url, headers=headers, timeout=10) as response:
+                async with self._session.get(
+                    url, headers=headers, timeout=10
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
                         if data and "photos" in data and len(data["photos"]) > 0:
                             photo = data["photos"][0]
-                            return photo.get("thumbnail_large", {}).get("src") or photo.get(
-                                "thumbnail", {}
-                            ).get("src")
+                            return photo.get("thumbnail_large", {}).get(
+                                "src"
+                            ) or photo.get("thumbnail", {}).get("src")
                     return None
             except Exception:
                 return None
