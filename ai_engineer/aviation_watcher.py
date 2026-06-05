@@ -45,7 +45,7 @@ def get_airplanes_live_keys():
         response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
         response.raise_for_status()
         data = response.json()
-        
+
         aircraft_list = data.get("ac", [])
         if not aircraft_list:
             print("Airplanes.live warning: No aircraft in payload zone.")
@@ -57,7 +57,7 @@ def get_airplanes_live_keys():
             live_fields.update(aircraft.keys())
 
         return sorted(list(live_fields))
-        
+
     except Exception as e:
         print(f"Airplanes.live check failed: {e}")
         return None
@@ -67,10 +67,7 @@ def get_airplanes_live_keys():
 sources = {"flightradar24": get_fr24_keys, "airplanes_live": get_airplanes_live_keys}
 
 # Map the internal names to the clean labels you want on GitHub
-LABEL_MAP = {
-    "flightradar24": "FR24",
-    "airplanes_live": "Airplanes Live"
-}
+LABEL_MAP = {"flightradar24": "FR24", "airplanes_live": "Airplanes Live"}
 
 schema_drift_detected = False
 report_details = []
@@ -101,7 +98,7 @@ for name, fetch_func in sources.items():
     # We only trigger alerts if a completely new field is introduced by the API provider.
     if added:
         schema_drift_detected = True
-        affected_apis.append(LABEL_MAP[name]) # Track which API changed
+        affected_apis.append(LABEL_MAP[name])  # Track which API changed
         report_details.append(
             f"**{LABEL_MAP[name]} Upstream Update Detected:**\nNew Fields Added: {added}\n"
         )
