@@ -15,22 +15,24 @@ report_details = []
 
 
 def get_fr24_keys():
-    """Fetch sample keys using the library with better error reporting."""
+    """Fetch sample keys using the library properly."""
     try:
-        # Try a broader area to guarantee results
-        flights = FR24_API.get_flights(bounds="40,60,-10,20")
-
-        if not flights:
-            print("FR24 warning: No flights found in bounding box.")
+        # 1. Warm up the API by fetching zones
+        zones = FR24_API.get_zones()
+        if not zones:
+            print("FR24 warning: Could not fetch zones.")
             return None
-
-        # Success: return keys from the first flight found
-        return list(flights[0].__dict__.keys())
-
+            
+        # 2. Use a specific zone instead of arbitrary bounds
+        # 'europe' is usually well-populated
+        flights = FR24_API.get_flights(zone=zones['europe'])
+        
+        if flights:
+            return list(flights[0].__dict__.keys())
+            
     except Exception as e:
-        print(f"FR24 critical failure: {str(e)}")
-        return None
-
+        print(f"FR24 error: {str(e)}")
+    return None
 
 def get_airplanes_live_keys():
     """Fetch sample keys using the REST API."""
