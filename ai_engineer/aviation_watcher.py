@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+import datetime
 from openai import OpenAI
 from FlightRadarAPI import FlightRadar24API
 
@@ -44,7 +45,7 @@ def get_airplanes_live_keys():
         response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
         response.raise_for_status()
         data = response.json()
-
+        
         aircraft_list = data.get("ac", [])
         if not aircraft_list:
             print("Airplanes.live warning: No aircraft in payload zone.")
@@ -56,7 +57,7 @@ def get_airplanes_live_keys():
             live_fields.update(aircraft.keys())
 
         return sorted(list(live_fields))
-
+        
     except Exception as e:
         print(f"Airplanes.live check failed: {e}")
         return None
@@ -89,10 +90,8 @@ for name, fetch_func in sources.items():
 
     # Detect actual changes between the live aggregate and our baseline
     added = [k for k in current_keys if k not in known_keys]
-    missing = [k for k in known_keys if k not in current_keys]
 
-    # To protect against midnight drops (when zero commercial jets are flying),
-    # we only trigger alerts if a completely new field is introduced by the API provider.
+    # We only trigger alerts if a completely new field is introduced by the API provider.
     if added:
         schema_drift_detected = True
         report_details.append(
@@ -109,18 +108,44 @@ if schema_drift_detected:
         base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY")
     )
 
+    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+
     prompt = f"""
-    You are the AI Maintainer for 'SkyRadar Fusion', and you talk exactly like Snoop Dogg.
-    Smooth, relaxed, but sharp as a tactician.
+    You are the AI Maintainer for 'SkyRadar Fusion', and your persona is Snoop Dogg. 
+    You are smooth and relaxed, but you are also a highly competent, sharp technical engineer.
     
-    We got a situation with the API schema:
+    We have a situation with the API schema:
     {chr(10).join(report_details)}
     
-    Break it down for me, Snoop. 
-    1. Tell me what changed.
-    2. Tell me if the Home Assistant sensors are gonna catch a vibe or if they're gonna crash.
-    3. Keep it cool, keep it real, and help me smooth out these bumps.
-    4. Sign off as 'By: SnoopDogg, AI Maintainer'.
+    You MUST format your response EXACTLY as the structured GitHub Issue template below. Fill in the technical details accurately based on the changes provided above, but write the descriptions and explanations using Snoop Dogg's slang and relaxed tone. Do not deviate from this layout.
+    
+    TEMPLATE:
+    ### GitHub Issue Report: API Schema Changes
+    **Issue Title:** [Create a technical but slightly Snoop-styled title]
+    
+    **Description:**
+    [Write a greeting and brief explanation of the situation in Snoop's voice]
+    
+    **Changes:**
+    **Missing Fields:**
+    [List the exact missing fields as bullet points. If none, write "None"]
+    
+    **Added Fields:**
+    [List the exact added fields as bullet points. If none, write "None"]
+    
+    **Potential Impact on Home Assistant Sensors:**
+    * **Data Availability:** [Explain the technical impact of these specific fields using Snoop's voice]
+    * **Sensor State and Attributes:** [Explain the technical impact on HA states using Snoop's voice]
+    * **Integration Logic:** [Explain the technical impact on the integration code using Snoop's voice]
+    
+    **Next Steps:**
+    [Provide an actionable bulleted list of technical steps the team needs to take to fix the issue, written in Snoop's voice]
+    
+    [A cool sign-off]
+    
+    **By:** SnoopDogg
+    **Role:** AI Maintainer for SkyRadar Fusion
+    **Date:** {current_date}
     """
 
     completion = client.chat.completions.create(
