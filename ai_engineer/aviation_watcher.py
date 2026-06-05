@@ -13,6 +13,7 @@ os.makedirs(MEMORY_DIR, exist_ok=True)
 schema_drift_detected = False
 report_details = []
 
+
 def get_fr24_keys():
     """Fetch sample keys using the library."""
     try:
@@ -23,6 +24,7 @@ def get_fr24_keys():
     except Exception as e:
         print(f"FR24 check failed: {e}")
     return None
+
 
 def get_airplanes_live_keys():
     """Fetch sample keys using the REST API."""
@@ -35,20 +37,18 @@ def get_airplanes_live_keys():
         print(f"Airplanes.live check failed: {e}")
     return None
 
+
 # 2. Monitor Loop
-sources = {
-    "flightradar24": get_fr24_keys,
-    "airplanes_live": get_airplanes_live_keys
-}
+sources = {"flightradar24": get_fr24_keys, "airplanes_live": get_airplanes_live_keys}
 
 for name, fetch_func in sources.items():
     current_keys = fetch_func()
     if not current_keys:
         print(f"Could not fetch data for {name}, skipping.")
         continue
-    
+
     memory_file = os.path.join(MEMORY_DIR, f"{name}_schema.json")
-    
+
     # Load previous memory
     try:
         with open(memory_file, "r") as f:
@@ -59,15 +59,17 @@ for name, fetch_func in sources.items():
             json.dump(current_keys, f)
         print(f"Baseline created for {name}")
         continue
-        
+
     # Detect Drift
     added = [k for k in current_keys if k not in known_keys]
     missing = [k for k in known_keys if k not in current_keys]
-    
+
     if added or missing:
         schema_drift_detected = True
-        report_details.append(f"**{name.upper()} API Changes:**\nMissing: {missing}\nAdded: {added}\n")
-        
+        report_details.append(
+            f"**{name.upper()} API Changes:**\nMissing: {missing}\nAdded: {added}\n"
+        )
+
         # Update memory
         with open(memory_file, "w") as f:
             json.dump(current_keys, f)
@@ -75,10 +77,9 @@ for name, fetch_func in sources.items():
 # 3. Report if needed
 if schema_drift_detected:
     client = OpenAI(
-        base_url="https://openrouter.ai/api/v1", 
-        api_key=os.getenv("OPENROUTER_API_KEY")
+        base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY")
     )
-    
+
     prompt = f"""
     You are the AI maintainer for SkyRadar Fusion. One of our flight data APIs changed its schema.
     Changes:
@@ -86,14 +87,14 @@ if schema_drift_detected:
     
     Write a technical GitHub Issue report. Identify the changes and potential impact on Home Assistant sensors.
     """
-    
+
     completion = client.chat.completions.create(
         model="meta-llama/llama-3-8b-instruct:free",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
     )
-    
+
     with open("ai_report.md", "w") as f:
         f.write(completion.choices[0].message.content)
-        
-    with open(os.environ['GITHUB_ENV'], 'a') as f:
+
+    with open(os.environ["GITHUB_ENV"], "a") as f:
         f.write("SCHEMA_CHANGED=true\n")
