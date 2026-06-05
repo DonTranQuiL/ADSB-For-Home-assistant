@@ -12,6 +12,10 @@ from .const import API_BASE_URL
 _LOGGER = logging.getLogger(__name__)
 logging.getLogger("FlightRadarAPI").setLevel(logging.ERROR)
 
+# --- TRAFFIC CONTROLLERS (ANTI-RATE LIMIT) ---
+# Enforces a strict 1-by-1 queue for Airplanes.live to prevent IP bans
+_airplanes_semaphore = asyncio.Semaphore(1)
+
 
 def format_unix_time(unix_ts):
     if not unix_ts:
@@ -30,17 +34,30 @@ class SkyRadarFusionAPI:
         self.fr24 = FlightRadar24API()
 
     async def _request(self, url: str) -> Optional[dict]:
-        headers = {
-            "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
-        }
-        try:
-            async with self._session.get(url, headers=headers, timeout=10) as response:
-                if response.status == 200:
-                    return await response.json()
+        # --- THE AIRPLANES.LIVE RATE LIMITER ---
+        # This queue ensures we NEVER hit airplanes.live faster than 1 request per 1.2 seconds.
+        async with _airplanes_semaphore:
+            headers = {
+                "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
+            }
+            try:
+                async with self._session.get(url, headers=headers, timeout=10) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        # Strictly wait 1.2 seconds before the next call is allowed to fire
+                        await asyncio.sleep(1.2)
+                        return data
+                    elif response.status == 429:
+                        _LOGGER.warning("Rate limited by Airplanes.live! Slowing down...")
+                        await asyncio.sleep(5.0)
+                        return None
+                    else:
+                        await asyncio.sleep(1.2)
+                        return None
+            except Exception as err:
+                _LOGGER.debug("Error during Airplanes.live request %s: %s", url, err)
+                await asyncio.sleep(1.2)
                 return None
-        except Exception as err:
-            _LOGGER.debug("Error during request %s: %s", url, err)
-            return None
 
     def _get_fr24_data_sync(
         self,
@@ -215,28 +232,4 @@ class SkyRadarFusionAPI:
         res = await self._request(f"{API_BASE_URL}/mil")
         return res.get("ac", []) if res else []
 
-    async def get_planespotters_photo(
-        self, registration: str, hex_code: str = None
-    ) -> Optional[str]:
-        async def fetch_photo_from_url(url: str):
-            data = await self._request(url)
-            if data and "photos" in data and len(data["photos"]) > 0:
-                photo = data["photos"][0]
-                return photo.get("thumbnail_large", {}).get("src") or photo.get(
-                    "thumbnail", {}
-                ).get("src")
-            return None
-
-        if registration and registration != "Unknown":
-            url = f"https://api.planespotters.net/pub/photos/reg/{registration.strip()}"
-            photo_url = await fetch_photo_from_url(url)
-            if photo_url:
-                return photo_url
-
-        if hex_code and hex_code != "Unknown":
-            url = f"https://api.planespotters.net/pub/photos/hex/{hex_code.strip()}"
-            photo_url = await fetch_photo_from_url(url)
-            if photo_url:
-                return photo_url
-
-        return None
+    async def get_planespot
