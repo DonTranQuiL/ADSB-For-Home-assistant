@@ -1,0 +1,42 @@
+name: AI PR Reviewer
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'custom_components/global_earthquakes/**'
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # We need history to get the diff
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install requests openai
+
+      - name: Fetch PR Diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr view ${{ github.event.pull_request.number }} --diff > pr_diff.txt
+
+      - name: Run AI Reviewer
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python ai_engineer/reviewer.py
