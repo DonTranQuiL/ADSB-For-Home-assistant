@@ -63,7 +63,7 @@ try:
     )
 
     response_text = completion.choices[0].message.content.strip()
-    
+
     # 7. Print Snoop's explanation to the GitHub Actions terminal so you can read it!
     print("\n--- AI MECHANIC REPORT ---")
     print(response_text)
@@ -80,10 +80,10 @@ try:
             target_file = line.replace("FILEPATH:", "").strip()
         elif line.startswith("CODE:") or line.startswith("```python"):
             is_code = True
-            continue # skip the marker line
+            continue  # skip the marker line
         elif is_code:
             if line.startswith("```"):
-                is_code = False # End of block
+                is_code = False  # End of block
             else:
                 code_lines.append(line)
 
