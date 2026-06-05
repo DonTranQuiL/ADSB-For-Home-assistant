@@ -44,8 +44,11 @@ jobs:
       - name: Create Pull Request with Fix
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "??? AI Auto-Fix: CI Test Failure"
+          token: ${{ secrets.REPO_PAT }} # <--- Use the new PAT here
+          title: "🤖 AI Auto-Fix: CI Test Failure"
           body: "The AI Staff Engineer detected a CI failure, read the logs, and generated this patch to fix the build."
           branch: "ai/auto-heal-${{ github.event.workflow_run.id }}"
+          labels: "ai-fix, automated pr"
+          commit-message: "🤖 Fix failing tests"
           labels: "ai-fix, automated pr"
           commit-message: "?? Fix failing tests"
