@@ -45,7 +45,7 @@ def get_airplanes_live_keys():
         response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
         response.raise_for_status()
         data = response.json()
-
+        
         aircraft_list = data.get("ac", [])
         if not aircraft_list:
             print("Airplanes.live warning: No aircraft in payload zone.")
@@ -57,7 +57,7 @@ def get_airplanes_live_keys():
             live_fields.update(aircraft.keys())
 
         return sorted(list(live_fields))
-
+        
     except Exception as e:
         print(f"Airplanes.live check failed: {e}")
         return None
@@ -66,8 +66,15 @@ def get_airplanes_live_keys():
 # 2. Monitoring Logic
 sources = {"flightradar24": get_fr24_keys, "airplanes_live": get_airplanes_live_keys}
 
+# Map the internal names to the clean labels you want on GitHub
+LABEL_MAP = {
+    "flightradar24": "FR24",
+    "airplanes_live": "Airplanes Live"
+}
+
 schema_drift_detected = False
 report_details = []
+affected_apis = []
 
 for name, fetch_func in sources.items():
     current_keys = fetch_func()
@@ -94,8 +101,9 @@ for name, fetch_func in sources.items():
     # We only trigger alerts if a completely new field is introduced by the API provider.
     if added:
         schema_drift_detected = True
+        affected_apis.append(LABEL_MAP[name]) # Track which API changed
         report_details.append(
-            f"**{name.upper()} API Upstream Update Detected:**\nNew Fields Added: {added}\n"
+            f"**{LABEL_MAP[name]} Upstream Update Detected:**\nNew Fields Added: {added}\n"
         )
         # Update the baseline with the newly discovered fields
         updated_keys = sorted(list(set(known_keys + added)))
@@ -121,21 +129,15 @@ if schema_drift_detected:
     
     TEMPLATE:
     ### GitHub Issue Report: API Schema Changes
-    **Issue Title:** [Create a technical but slightly Snoop-styled title]
-    
     **Description:**
     [Write a greeting and brief explanation of the situation in Snoop's voice]
     
     **Changes:**
-    **Missing Fields:**
-    [List the exact missing fields as bullet points. If none, write "None"]
-    
     **Added Fields:**
     [List the exact added fields as bullet points. If none, write "None"]
     
     **Potential Impact on Home Assistant Sensors:**
     * **Data Availability:** [Explain the technical impact of these specific fields using Snoop's voice]
-    * **Sensor State and Attributes:** [Explain the technical impact on HA states using Snoop's voice]
     * **Integration Logic:** [Explain the technical impact on the integration code using Snoop's voice]
     
     **Next Steps:**
@@ -156,5 +158,12 @@ if schema_drift_detected:
     with open("ai_report.md", "w") as f:
         f.write(completion.choices[0].message.content)
 
+    # Export dynamic Title and Labels to GitHub Actions
+    api_names = " & ".join(affected_apis)
+    dynamic_labels = ",".join(affected_apis)
+    dynamic_title = f"📡 Upstream API Alert: {api_names} Schema Changed"
+
     with open(os.environ["GITHUB_ENV"], "a") as f:
         f.write("SCHEMA_CHANGED=true\n")
+        f.write(f"ISSUE_TITLE={dynamic_title}\n")
+        f.write(f"API_LABELS={dynamic_labels}\n")
