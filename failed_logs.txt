@@ -1,0 +1,141 @@
+pytest	Run Pytest and generate coverage	﻿2026-06-05T16:57:29.9021999Z ##[group]Run pytest tests/ -v --cov=custom_components/ --cov-report=xml
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9022807Z ^[[36;1mpytest tests/ -v --cov=custom_components/ --cov-report=xml^[[0m
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9050911Z shell: /usr/bin/bash -e {0}
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9051179Z env:
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9051467Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.13/x64
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9051923Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.13/x64/lib/pkgconfig
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9052535Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.13/x64
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9052952Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.13/x64
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9053391Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.13/x64
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9053805Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.13/x64/lib
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:29.9054147Z ##[endgroup]
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1120933Z ============================= test session starts ==============================
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1122639Z platform linux -- Python 3.13.13, pytest-9.0.0, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.13.13/x64/bin/python
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1123912Z cachedir: .pytest_cache
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1124675Z rootdir: /home/runner/work/ADSB-For-Home-assistant/ADSB-For-Home-assistant
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1125727Z configfile: pytest.ini
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1127883Z plugins: asyncio-1.3.0, socket-0.7.0, homeassistant-custom-component-0.13.316, unordered-0.7.0, aiohttp-1.1.0, pytest_freezer-0.4.9, syrupy-5.0.0, github-actions-annotate-failures-0.3.0, sugar-1.0.0, timeout-2.4.0, respx-0.22.0, anyio-4.13.0, requests-mock-1.12.1, picked-0.5.1, xdist-3.8.0, cov-7.0.0
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:34.1130065Z asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6891786Z collecting ... collected 1 item / 4 errors
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6893023Z 
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6893411Z ==================================== ERRORS ====================================
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6894557Z __________________ ERROR collecting tests/test_config_flow.py __________________
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6895987Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/python.py:507: in importtestmodule
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6897155Z     mod = import_path(
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6898259Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6899569Z     importlib.import_module(module_name)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6900264Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/importlib/__init__.py:88: in import_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6901077Z     return _bootstrap._gcd_import(name[level:], package, level)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6901615Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6902096Z <frozen importlib._bootstrap>:1395: in _gcd_import
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6902703Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6903053Z <frozen importlib._bootstrap>:1360: in _find_and_load
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6903493Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6903883Z <frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6904374Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6904709Z <frozen importlib._bootstrap>:935: in _load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6905138Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6905812Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6906630Z     exec(co, module.__dict__)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6907011Z tests/test_config_flow.py:6: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6907506Z     from custom_components.skyradar_fusion.const import (
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6908493Z custom_components/skyradar_fusion/__init__.py:8: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6909079Z     from .coordinator import SkyRadarFusionCoordinator
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6909519Z custom_components/skyradar_fusion/coordinator.py:11: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6909902Z     from .api import SkyRadarFusionAPI
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6910502Z E     File "/home/runner/work/ADSB-For-Home-assistant/ADSB-For-Home-assistant/custom_components/skyradar_fusion/api.py", line 235
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6911322Z E       async def get_planespot
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6911574Z E                              ^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6911827Z E   SyntaxError: expected '('
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6912187Z __________________ ERROR collecting tests/test_coordinator.py __________________
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6913076Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/python.py:507: in importtestmodule
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6913598Z     mod = import_path(
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6914048Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6914603Z     importlib.import_module(module_name)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6915063Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/importlib/__init__.py:88: in import_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6915598Z     return _bootstrap._gcd_import(name[level:], package, level)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6915966Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6916298Z <frozen importlib._bootstrap>:1395: in _gcd_import
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6916595Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6916836Z <frozen importlib._bootstrap>:1360: in _find_and_load
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6917138Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6917398Z <frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6917725Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6917957Z <frozen importlib._bootstrap>:935: in _load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6918260Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6918709Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6919255Z     exec(co, module.__dict__)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6919517Z tests/test_coordinator.py:8: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6919872Z     from custom_components.skyradar_fusion.coordinator import (
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6920284Z custom_components/skyradar_fusion/__init__.py:8: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6920685Z     from .coordinator import SkyRadarFusionCoordinator
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6921095Z custom_components/skyradar_fusion/coordinator.py:11: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6921462Z     from .api import SkyRadarFusionAPI
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6922041Z E     File "/home/runner/work/ADSB-For-Home-assistant/ADSB-For-Home-assistant/custom_components/skyradar_fusion/api.py", line 235
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6922749Z E       async def get_planespot
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6923000Z E                              ^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6923250Z E   SyntaxError: expected '('
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6923605Z ________________ ERROR collecting tests/test_device_tracker.py _________________
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6924244Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/python.py:507: in importtestmodule
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6924765Z     mod = import_path(
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6925220Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6925739Z     importlib.import_module(module_name)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6926200Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/importlib/__init__.py:88: in import_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6926735Z     return _bootstrap._gcd_import(name[level:], package, level)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6927105Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6927431Z <frozen importlib._bootstrap>:1395: in _gcd_import
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6927749Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6927991Z <frozen importlib._bootstrap>:1360: in _find_and_load
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6928296Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6928698Z <frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6929035Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6929271Z <frozen importlib._bootstrap>:935: in _load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6929570Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6930022Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6930696Z     exec(co, module.__dict__)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6930963Z tests/test_device_tracker.py:7: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6931347Z     from custom_components.skyradar_fusion.device_tracker import (
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6931770Z custom_components/skyradar_fusion/__init__.py:8: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6932163Z     from .coordinator import SkyRadarFusionCoordinator
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6932726Z custom_components/skyradar_fusion/coordinator.py:11: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6933099Z     from .api import SkyRadarFusionAPI
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6933680Z E     File "/home/runner/work/ADSB-For-Home-assistant/ADSB-For-Home-assistant/custom_components/skyradar_fusion/api.py", line 235
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6934277Z E       async def get_planespot
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6934520Z E                              ^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6934776Z E   SyntaxError: expected '('
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6935129Z ____________________ ERROR collecting tests/test_sensor.py _____________________
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6935751Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/python.py:507: in importtestmodule
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6936275Z     mod = import_path(
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6936721Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6937242Z     importlib.import_module(module_name)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6937701Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/importlib/__init__.py:88: in import_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6938233Z     return _bootstrap._gcd_import(name[level:], package, level)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6938604Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6938931Z <frozen importlib._bootstrap>:1395: in _gcd_import
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6939230Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6939469Z <frozen importlib._bootstrap>:1360: in _find_and_load
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6939774Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6940036Z <frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6940370Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6940604Z <frozen importlib._bootstrap>:935: in _load_unlocked
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6940901Z     ???
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6941369Z /opt/hostedtoolcache/Python/3.13.13/x64/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:197: in exec_module
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6941915Z     exec(co, module.__dict__)
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6942175Z tests/test_sensor.py:6: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6942645Z     from custom_components.skyradar_fusion.sensor import (
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6943058Z custom_components/skyradar_fusion/__init__.py:8: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6943458Z     from .coordinator import SkyRadarFusionCoordinator
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6943864Z custom_components/skyradar_fusion/coordinator.py:11: in <module>
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6944236Z     from .api import SkyRadarFusionAPI
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6944825Z E     File "/home/runner/work/ADSB-For-Home-assistant/ADSB-For-Home-assistant/custom_components/skyradar_fusion/api.py", line 235
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6945423Z E       async def get_planespot
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6945678Z E                              ^
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6945930Z E   SyntaxError: expected '('
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6946240Z =========================== short test summary info ============================
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6946593Z ERROR tests/test_config_flow.py
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6946846Z ERROR tests/test_coordinator.py
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6947107Z ERROR tests/test_device_tracker.py
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6947374Z ERROR tests/test_sensor.py
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6947703Z !!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!!
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:35.6948250Z ============================== 4 errors in 1.06s ===============================
+pytest	Run Pytest and generate coverage	2026-06-05T16:57:36.2396222Z ##[error]Process completed with exit code 2.
