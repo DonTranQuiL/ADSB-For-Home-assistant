@@ -98,7 +98,7 @@ if schema_drift_detected:
     """
 
     completion = client.chat.completions.create(
-        model="meta-llama/llama-3-8b-instruct:free",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
     )
 
