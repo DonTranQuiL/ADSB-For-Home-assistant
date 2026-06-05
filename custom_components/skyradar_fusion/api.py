@@ -42,12 +42,20 @@ class SkyRadarFusionAPI:
             _LOGGER.debug("Error during request %s: %s", url, err)
             return None
 
-    def _get_fr24_data_sync(self, identifier: str, lat: float = None, lon: float = None, hex_code: str = None) -> dict | None:
+    def _get_fr24_data_sync(
+        self,
+        identifier: str,
+        lat: float = None,
+        lon: float = None,
+        hex_code: str = None,
+    ) -> dict | None:
         try:
             flight_id = None
             dummy_flight = None
             clean_id = identifier.strip().upper()
-            clean_hex = hex_code.strip().upper() if hex_code and hex_code != "Unknown" else None
+            clean_hex = (
+                hex_code.strip().upper() if hex_code and hex_code != "Unknown" else None
+            )
 
             try:
                 flights = self.fr24.get_flights(registration=clean_id)
@@ -74,8 +82,11 @@ class SkyRadarFusionAPI:
                         f_hex = f.icao_24bit.strip().upper() if f.icao_24bit else ""
                         f_reg = f.registration.strip().upper() if f.registration else ""
                         f_call = f.callsign.strip().upper() if f.callsign else ""
-                        
-                        if (clean_hex and clean_hex == f_hex) or clean_id in (f_reg, f_call):
+
+                        if (clean_hex and clean_hex == f_hex) or clean_id in (
+                            f_reg,
+                            f_call,
+                        ):
                             dummy_flight = f
                             flight_id = f.id
                             break
@@ -95,13 +106,13 @@ class SkyRadarFusionAPI:
             airport = safe_dict(details.get("airport"))
             origin = safe_dict(airport.get("origin"))
             destination = safe_dict(airport.get("destination"))
-            
+
             origin_code = safe_dict(origin.get("code"))
             dest_code = safe_dict(destination.get("code"))
             origin_pos = safe_dict(origin.get("position"))
             origin_reg = safe_dict(origin_pos.get("region"))
             origin_country = safe_dict(origin_pos.get("country"))
-            
+
             dest_pos = safe_dict(destination.get("position"))
             dest_country = safe_dict(dest_pos.get("country"))
 
@@ -116,7 +127,7 @@ class SkyRadarFusionAPI:
             aircraft = safe_dict(details.get("aircraft"))
             aircraft_model = safe_dict(aircraft.get("model"))
             images = safe_dict(aircraft.get("images"))
-            
+
             identification = safe_dict(details.get("identification"))
             number_info = safe_dict(identification.get("number"))
 
@@ -137,9 +148,12 @@ class SkyRadarFusionAPI:
                 "airport_destination_code_iata": dest_code.get("iata") or "N/A",
                 "airport_destination_code_icao": dest_code.get("icao") or "N/A",
                 "airport_destination_name": destination.get("name") or "Unknown",
-                "airport_destination_country_name": dest_country.get("name") or "Unknown",
+                "airport_destination_country_name": dest_country.get("name")
+                or "Unknown",
                 "fr24_photo": photo_large,
-                "fr24_scheduled_departure": format_unix_time(scheduled.get("departure")),
+                "fr24_scheduled_departure": format_unix_time(
+                    scheduled.get("departure")
+                ),
                 "fr24_scheduled_departure_epoch": scheduled.get("departure"),
                 "fr24_real_departure": format_unix_time(real.get("departure")),
                 "fr24_real_departure_epoch": real.get("departure"),
@@ -149,7 +163,6 @@ class SkyRadarFusionAPI:
                 "fr24_estimated_arrival_epoch": estimated.get("arrival"),
                 "fr24_flight_number": number_info.get("default") or "Unknown",
                 "fr24_aircraft_code": aircraft_model.get("code") or "Unknown",
-                
                 # --- Dynamic Telemetry & ON GROUND FLAG ---
                 "fr24_lat": getattr(dummy_flight, "latitude", None),
                 "fr24_lon": getattr(dummy_flight, "longitude", None),
@@ -165,7 +178,13 @@ class SkyRadarFusionAPI:
             _LOGGER.debug("FR24 Full Sync Lookup failed: %s", err)
             return None
 
-    async def get_fr24_enrichment(self, identifier: str, lat: float = None, lon: float = None, hex_code: str = None):
+    async def get_fr24_enrichment(
+        self,
+        identifier: str,
+        lat: float = None,
+        lon: float = None,
+        hex_code: str = None,
+    ):
         if not self.hass:
             return None
         return await self.hass.async_add_executor_job(
