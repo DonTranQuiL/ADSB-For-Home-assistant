@@ -18,10 +18,10 @@ prompt = f"""
     The CI pipeline just tripped up, but you stay relaxed and fix the engine while it's running.
     
     Here is the broken code:
-    {broken_code}
+    {file_content}
     
     Here is the error log:
-    {error_log}
+    {logs}
     
     1. Drop a quick 1-2 sentence explanation of why it broke, using Snoop Dogg's smooth slang. Keep it cool.
     2. Provide the COMPLETELY FIXED Python code.
