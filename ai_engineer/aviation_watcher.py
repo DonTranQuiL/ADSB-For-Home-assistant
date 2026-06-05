@@ -12,21 +12,26 @@ os.makedirs(MEMORY_DIR, exist_ok=True)
 
 
 def get_fr24_keys():
-    """Fetch sample keys using the library correctly."""
+    """Fetch live data and aggregate unique keys across ALL visible flights."""
     try:
-        # Fetch zones and convert 'europe' to bounds
         zones = FR24_API.get_zones()
         if not zones or "europe" not in zones:
             print("FR24 warning: Could not fetch zones.")
             return None
 
-        # Use get_bounds to convert the zone to the correct format for get_flights
         bounds = FR24_API.get_bounds(zones["europe"])
         flights = FR24_API.get_flights(bounds=bounds)
 
-        if flights:
-            # Flight object attributes are stored in __dict__
-            return list(flights[0].__dict__.keys())
+        if not flights:
+            print("FR24 warning: No flights in area to analyze.")
+            return None
+
+        # Loop through ALL flights to find every unique attribute available right now
+        fr24_fields = set()
+        for flight in flights:
+            fr24_fields.update(flight.__dict__.keys())
+
+        return sorted(list(fr24_fields))
 
     except Exception as e:
         print(f"FR24 error: {str(e)}")
@@ -34,22 +39,24 @@ def get_fr24_keys():
 
 
 def get_airplanes_live_keys():
-    """Check against a static contract, not dynamic live data."""
-    # Define every field we actually care about based on API docs
-    EXPECTED_CONTRACT = {
-        "hex", "type", "flight", "alt_baro", "alt_geom", "gs", "ias", 
-        "tas", "mach", "track", "mag_heading", "squawk", "lat", "lon",
-        "nic", "rc", "seen", "rssi"
-    }
-    
+    """Fetch live data and aggregate unique keys across ALL aircraft in the payload."""
     try:
         response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
+        response.raise_for_status()
         data = response.json()
         
-        # Instead of taking the keys of the first plane, 
-        # we check the whole set of keys present in the response
-        # or simply validate against our contract
-        return sorted(list(EXPECTED_CONTRACT))
+        aircraft_list = data.get("ac", [])
+        if not aircraft_list:
+            print("Airplanes.live warning: No aircraft in payload zone.")
+            return None
+
+        # Loop through EVERY plane in the response and collect all unique keys
+        live_fields = set()
+        for aircraft in aircraft_list:
+            live_fields.update(aircraft.keys())
+
+        return sorted(list(live_fields))
+        
     except Exception as e:
         print(f"Airplanes.live check failed: {e}")
         return None
@@ -64,33 +71,37 @@ report_details = []
 for name, fetch_func in sources.items():
     current_keys = fetch_func()
     if not current_keys:
-        print(f"Skipping {name}: No data returned.")
+        print(f"Skipping {name}: Environment empty or API unreachable.")
         continue
 
     memory_file = os.path.join(MEMORY_DIR, f"{name}_schema.json")
 
-    # Load previous memory
+    # Load previous memory baseline
     try:
         with open(memory_file, "r") as f:
             known_keys = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        # Baseline creation
+        # First-time setup: save the aggregated baseline and continue
         with open(memory_file, "w") as f:
             json.dump(current_keys, f)
         print(f"Baseline created for {name}")
         continue
 
-    # Detect Drift
+    # Detect actual changes between the live aggregate and our baseline
     added = [k for k in current_keys if k not in known_keys]
     missing = [k for k in known_keys if k not in current_keys]
 
-    if added or missing:
+    # To protect against midnight drops (when zero commercial jets are flying),
+    # we only trigger alerts if a completely new field is introduced by the API provider.
+    if added:
         schema_drift_detected = True
         report_details.append(
-            f"**{name.upper()} API Changes:**\nMissing: {missing}\nAdded: {added}\n"
+            f"**{name.upper()} API Upstream Update Detected:**\nNew Fields Added: {added}\n"
         )
+        # Update the baseline with the newly discovered fields
+        updated_keys = sorted(list(set(known_keys + added)))
         with open(memory_file, "w") as f:
-            json.dump(current_keys, f)
+            json.dump(updated_keys, f)
 
 # 3. Report Generation
 if schema_drift_detected:
@@ -100,7 +111,7 @@ if schema_drift_detected:
 
     prompt = f"""
     You are the AI Maintainer for 'SkyRadar Fusion', and you talk exactly like Snoop Dogg.
-    Smooth, relaxed, but sharp as a tack.
+    Smooth, relaxed, but sharp as a tactician.
     
     We got a situation with the API schema:
     {chr(10).join(report_details)}
@@ -120,6 +131,5 @@ if schema_drift_detected:
     with open("ai_report.md", "w") as f:
         f.write(completion.choices[0].message.content)
 
-    # Signal GitHub Actions that a change was detected
     with open(os.environ["GITHUB_ENV"], "a") as f:
         f.write("SCHEMA_CHANGED=true\n")
