@@ -28,14 +28,13 @@ Here is the new code diff that needs testing:
 
 1. Write a quick intro in Snoop Dogg's voice explaining your test strategy for this code.
 2. Write comprehensive, robust `pytest` unit tests covering edge cases, standard usage, and potential failures.
-3. The tests MUST be inside a standard ```python code block. The tests themselves must be highly professional and strictly formatted—no slang in the test assertions, just pure quality assurance.
+3. The tests MUST be inside a standard python code block (using triple backticks). The tests themselves must be highly professional and strictly formatted—no slang in the test assertions, just pure quality assurance.
 
 IMPORTANT INSTRUCTIONS:
 You must start your response with the exact line:
 FILEPATH: tests/test_generated.py
 Then write your Snoop intro.
-Then output the tests exactly starting with CODE: and then the 
-```python block.
+Then output the tests exactly starting with CODE: and then the python code block.
 
 Sign off your intro exactly like this:
 **By:** SnoopDogg
@@ -53,15 +52,18 @@ try:
     code_lines = []
     is_code = False
 
+    # Anti-markdown-break trick
+    BACKTICKS = "`" * 3
+    PY_BACKTICKS = BACKTICKS + "python"
+
     for line in lines:
         if line.startswith("FILEPATH:"):
             file_path = line.replace("FILEPATH:", "").strip()
-        elif line.startswith("CODE:") or line.startswith("```python"):
+        elif line.startswith("CODE:") or line.startswith(PY_BACKTICKS):
             is_code = True
             continue
         elif is_code:
-            if line.startswith("
-```"):
+            if line.startswith(BACKTICKS):
                 is_code = False
             else:
                 code_lines.append(line)
