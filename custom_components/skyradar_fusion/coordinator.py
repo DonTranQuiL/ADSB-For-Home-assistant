@@ -58,9 +58,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         self.last_update_time = None
         self.photo_cache = {}
         self.fr24_cache = {}
-        self.recent_history = []  
-        self.tracker_memory = {}  
-        
+        self.recent_history = []
+        self.tracker_memory = {}
+
         self.store = Store(hass, 1, f"{DOMAIN}_history_{config_entry.entry_id}")
         self._history_loaded = False
 
@@ -133,7 +133,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             "tat",
         ]
         cleaned = {
-            k: ac.get(k) for k in keys_to_keep if k in ac and ac.get(k) is not None and str(ac.get(k)).strip() != ""
+            k: ac.get(k)
+            for k in keys_to_keep
+            if k in ac and ac.get(k) is not None and str(ac.get(k)).strip() != ""
         }
         cleaned["air_category"] = self.classify_aircraft(ac)
         return cleaned
@@ -144,7 +146,14 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         cat = ac.get("category", "").strip().upper()
         t_code = ac.get("t", "").strip().upper()
 
-        if "heli" in desc or "rotor" in desc or "ecureuil" in desc or cat == "A7" or t_code in ["AS50", "EC30", "EC35", "R44", "R66", "B06", "H60", "H64", "A189"]:
+        if (
+            "heli" in desc
+            or "rotor" in desc
+            or "ecureuil" in desc
+            or cat == "A7"
+            or t_code
+            in ["AS50", "EC30", "EC35", "R44", "R66", "B06", "H60", "H64", "A189"]
+        ):
             return "helicopter"
         if "military" in desc or "mil" in desc or cat == "A6":
             return "military"
@@ -153,21 +162,134 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             if re.match(r"^[A-Z]{3}\d", flight):
                 return "commercial"
             commercial_prefixes = (
-                "AAL", "AAR", "ACA", "AEE", "AFR", "AHO", "AIC", "ALK", "AMX",
-                "ANA", "ASA", "AUA", "AVA", "AWC", "BAW", "BCS", "BEL", "BOX",
-                "BTI", "CAL", "CBJ", "CCA", "CCX", "CHH", "CKS", "CLA", "CLX",
-                "CLY", "CMP", "CND", "CPA", "CSH", "CSN", "DAL", "DCS", "DHK",
-                "DHL", "DLH", "EIN", "EJA", "EJM", "ETD", "EVA", "EWE", "EWG",
-                "EWL", "EXS", "EZS", "EZY", "FBA", "FDX", "FFT", "FIN", "FLX",
-                "FLY", "FYG", "GAC", "GFA", "GTI", "HAL", "HFY", "HVN", "IBE",
-                "ICE", "IGO", "ITY", "JAL", "JAS", "JBU", "JFA", "JSX", "KAL",
-                "KLM", "KMM", "KQA", "KZR", "LAN", "LOG", "LOT", "LUX", "LXJ",
-                "LYX", "LZB", "MAS", "MPH", "MXY", "NJE", "NKS", "OMA", "PAC",
-                "PH", "PIA", "QFA", "QQE", "QTR", "QXE", "RJA", "RYA", "SAS",
-                "SCW", "SCX", "SIA", "SKW", "SLR", "SRU", "SVA", "SVW", "SWA",
-                "SWR", "TAG", "TAP", "TAY", "THA", "THY", "TOM", "TRA", "TUI",
-                "TVS", "UAE", "UAL", "UPS", "VIR", "VIV", "VJT", "VOI", "WJA",
-                "WUP", "XGO",            
+                "AAL",
+                "AAR",
+                "ACA",
+                "AEE",
+                "AFR",
+                "AHO",
+                "AIC",
+                "ALK",
+                "AMX",
+                "ANA",
+                "ASA",
+                "AUA",
+                "AVA",
+                "AWC",
+                "BAW",
+                "BCS",
+                "BEL",
+                "BOX",
+                "BTI",
+                "CAL",
+                "CBJ",
+                "CCA",
+                "CCX",
+                "CHH",
+                "CKS",
+                "CLA",
+                "CLX",
+                "CLY",
+                "CMP",
+                "CND",
+                "CPA",
+                "CSH",
+                "CSN",
+                "DAL",
+                "DCS",
+                "DHK",
+                "DHL",
+                "DLH",
+                "EIN",
+                "EJA",
+                "EJM",
+                "ETD",
+                "EVA",
+                "EWE",
+                "EWG",
+                "EWL",
+                "EXS",
+                "EZS",
+                "EZY",
+                "FBA",
+                "FDX",
+                "FFT",
+                "FIN",
+                "FLX",
+                "FLY",
+                "FYG",
+                "GAC",
+                "GFA",
+                "GTI",
+                "HAL",
+                "HFY",
+                "HVN",
+                "IBE",
+                "ICE",
+                "IGO",
+                "ITY",
+                "JAL",
+                "JAS",
+                "JBU",
+                "JFA",
+                "JSX",
+                "KAL",
+                "KLM",
+                "KMM",
+                "KQA",
+                "KZR",
+                "LAN",
+                "LOG",
+                "LOT",
+                "LUX",
+                "LXJ",
+                "LYX",
+                "LZB",
+                "MAS",
+                "MPH",
+                "MXY",
+                "NJE",
+                "NKS",
+                "OMA",
+                "PAC",
+                "PH",
+                "PIA",
+                "QFA",
+                "QQE",
+                "QTR",
+                "QXE",
+                "RJA",
+                "RYA",
+                "SAS",
+                "SCW",
+                "SCX",
+                "SIA",
+                "SKW",
+                "SLR",
+                "SRU",
+                "SVA",
+                "SVW",
+                "SWA",
+                "SWR",
+                "TAG",
+                "TAP",
+                "TAY",
+                "THA",
+                "THY",
+                "TOM",
+                "TRA",
+                "TUI",
+                "TVS",
+                "UAE",
+                "UAL",
+                "UPS",
+                "VIR",
+                "VIV",
+                "VJT",
+                "VOI",
+                "WJA",
+                "WUP",
+                "XGO",
             )
             if flight.startswith(commercial_prefixes):
                 return "commercial"
@@ -184,9 +306,13 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         else:
             self.photo_cache[cache_key] = "None"
 
-    async def _fetch_fr24_background(self, search_id, lat=None, lon=None, hex_code=None):
+    async def _fetch_fr24_background(
+        self, search_id, lat=None, lon=None, hex_code=None
+    ):
         try:
-            fr24_data = await self.api.get_fr24_enrichment(search_id, lat, lon, hex_code)
+            fr24_data = await self.api.get_fr24_enrichment(
+                search_id, lat, lon, hex_code
+            )
             if fr24_data:
                 self.fr24_cache[search_id] = fr24_data
             else:
@@ -321,32 +447,35 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             tracked_aircraft_data = []
             for identifier in self.tracked_list:
                 clean_id = identifier.strip().upper()
-                
+
                 found = next(
                     (
-                        ac for ac in filtered_aircraft + global_emergencies_data + global_military_data
+                        ac
+                        for ac in filtered_aircraft
+                        + global_emergencies_data
+                        + global_military_data
                         if ac.get("flight", "").strip().upper() == clean_id
                         or ac.get("hex", "").upper() == clean_id
                         or ac.get("r", "").strip().upper() == clean_id
                     ),
                     None,
                 )
-                
+
                 if found:
                     ac_copy = found.copy()
                     ac_copy["raw_hex"] = ac_copy.get("hex")
-                    ac_copy["hex"] = clean_id  
+                    ac_copy["hex"] = clean_id
                     tracked_aircraft_data.append(ac_copy)
                 else:
                     res = (
-                        await self.api.get_aircraft_by_callsign(clean_id) 
+                        await self.api.get_aircraft_by_callsign(clean_id)
                         or await self.api.get_aircraft_by_hex(clean_id)
                         or await self.api.get_aircraft_by_reg(clean_id)
                     )
                     if res:
                         ac_clean = self.clean_aircraft_data(res[0])
                         ac_clean["raw_hex"] = ac_clean.get("hex")
-                        ac_clean["hex"] = clean_id 
+                        ac_clean["hex"] = clean_id
                         tracked_aircraft_data.append(ac_clean)
                     else:
                         tracked_aircraft_data.append(
@@ -357,7 +486,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                                 "r": clean_id,
                                 "air_category": "Offline",
                                 "distance_meter": "N/A",
-                                "is_offline": True
+                                "is_offline": True,
                             }
                         )
 
@@ -423,7 +552,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                     if search_id not in self.fr24_cache:
                         self.fr24_cache[search_id] = "Loading"
                         self.hass.async_create_task(
-                            self._fetch_fr24_background(search_id, ac_lat, ac_lon, hex_code)
+                            self._fetch_fr24_background(
+                                search_id, ac_lat, ac_lon, hex_code
+                            )
                         )
 
             for target in filtered_aircraft + list(unique_map_targets):
@@ -436,8 +567,10 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                     search_id = hex_code
 
                 cache_key = hex_code if hex_code != "Unknown" else search_id
-                
-                if self.photo_cache.get(cache_key) and self.photo_cache[cache_key] not in ["None", "Loading"]:
+
+                if self.photo_cache.get(cache_key) and self.photo_cache[
+                    cache_key
+                ] not in ["None", "Loading"]:
                     target["api_photo_url"] = self.photo_cache[cache_key]
 
                 target_on_ground = False
@@ -450,27 +583,40 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         target.update(fr24_data)
                         if fr24_data.get("fr24_photo"):
                             target["api_photo_url"] = fr24_data["fr24_photo"]
-                        
+
                         if fr24_data.get("fr24_on_ground") in [1, "1", True]:
                             target_on_ground = True
-                        
-                        if target.get("lat") is None and fr24_data.get("fr24_lat") is not None:
+
+                        if (
+                            target.get("lat") is None
+                            and fr24_data.get("fr24_lat") is not None
+                        ):
                             target["lat"] = fr24_data["fr24_lat"]
                             target["lon"] = fr24_data["fr24_lon"]
                             target["track"] = fr24_data["fr24_track"]
                             target["alt_baro"] = fr24_data["fr24_alt"]
                             target["gs"] = fr24_data["fr24_gs"]
-                            
+
                             sq = fr24_data.get("fr24_squawk")
                             if sq and str(sq).strip() != "":
                                 target["squawk"] = sq
 
-                            if target.get("t", "Unknown") == "Unknown" and fr24_data.get("fr24_aircraft_code") not in [None, "Unknown"]:
+                            if target.get(
+                                "t", "Unknown"
+                            ) == "Unknown" and fr24_data.get(
+                                "fr24_aircraft_code"
+                            ) not in [None, "Unknown"]:
                                 target["t"] = fr24_data["fr24_aircraft_code"]
-                                target["air_category"] = self.classify_aircraft({"flight": target.get("flight", ""), "category": "", "desc": target["t"]})
+                                target["air_category"] = self.classify_aircraft(
+                                    {
+                                        "flight": target.get("flight", ""),
+                                        "category": "",
+                                        "desc": target["t"],
+                                    }
+                                )
 
                             # --- DE CRUCIALE FIX ---
-                            # Als FR24 het vliegtuig alsnog heeft gevonden en gered, trekken we direct 
+                            # Als FR24 het vliegtuig alsnog heeft gevonden en gered, trekken we direct
                             # het Offline label eraf, zodat hij netjes het geheugen in kan stromen!
                             if target.get("is_offline"):
                                 target.pop("is_offline", None)
@@ -485,41 +631,60 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
 
             # --- START ANTI-FLICKER & COASTING MEMORY ---
             current_time = dt_util.now().timestamp()
-            
+
             for target in filtered_aircraft + list(unique_map_targets):
                 tid = target.get("raw_hex") or target.get("hex")
                 if not tid or tid == "Unknown":
                     continue
-                    
+
                 is_placeholder = target.get("is_offline", False)
-                
+
                 # 1. Update memory ONLY if we actually received real live data
                 if not is_placeholder:
                     if tid not in self.tracker_memory:
                         self.tracker_memory[tid] = {"data": {}}
                     self.tracker_memory[tid]["last_seen"] = current_time
                     for k, v in target.items():
-                        if v is not None and str(v).strip() != "" and str(v).lower() not in ["unknown", "n/a", "none"]:
+                        if (
+                            v is not None
+                            and str(v).strip() != ""
+                            and str(v).lower() not in ["unknown", "n/a", "none"]
+                        ):
                             self.tracker_memory[tid]["data"][k] = v
-                            
+
                 # 2. Apply Coasting ONLY if memory actually exists and is fresh
                 if tid in self.tracker_memory:
-                    time_since_seen = current_time - self.tracker_memory[tid]["last_seen"]
-                    
+                    time_since_seen = (
+                        current_time - self.tracker_memory[tid]["last_seen"]
+                    )
+
                     if time_since_seen < 300:
                         # Revive the placeholder into a tracked aircraft!
                         if is_placeholder:
                             target.pop("is_offline", None)
-                            target["flight"] = self.tracker_memory[tid]["data"].get("flight", target.get("flight"))
-                            target["air_category"] = self.tracker_memory[tid]["data"].get("air_category", "Unknown")
-                            target["r"] = self.tracker_memory[tid]["data"].get("r", target.get("r"))
-                            target["on_ground"] = self.tracker_memory[tid]["data"].get("on_ground", False)
-                        
+                            target["flight"] = self.tracker_memory[tid]["data"].get(
+                                "flight", target.get("flight")
+                            )
+                            target["air_category"] = self.tracker_memory[tid][
+                                "data"
+                            ].get("air_category", "Unknown")
+                            target["r"] = self.tracker_memory[tid]["data"].get(
+                                "r", target.get("r")
+                            )
+                            target["on_ground"] = self.tracker_memory[tid]["data"].get(
+                                "on_ground", False
+                            )
+
                         # Smooth out flickering fields
                         for k, v in self.tracker_memory[tid]["data"].items():
-                            if target.get(k) is None or str(target.get(k)).strip() == "" or str(target.get(k)).lower() in ["unknown", "n/a", "none"]:
+                            if (
+                                target.get(k) is None
+                                or str(target.get(k)).strip() == ""
+                                or str(target.get(k)).lower()
+                                in ["unknown", "n/a", "none"]
+                            ):
                                 target[k] = v
-                                
+
             # 3. Garbage Collection for long offline targets
             expired_keys = []
             for tid, mem in self.tracker_memory.items():
@@ -533,11 +698,15 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             for ac in filtered_aircraft:
                 hex_code = ac.get("hex")
                 if hex_code:
-                    self.recent_history = [item for item in self.recent_history if item.get("hex") != hex_code]
+                    self.recent_history = [
+                        item
+                        for item in self.recent_history
+                        if item.get("hex") != hex_code
+                    ]
                     ac_copy = ac.copy()
                     ac_copy["spotted_time"] = dt_util.now().isoformat()
                     self.recent_history.insert(0, ac_copy)
-            
+
             self.recent_history = self.recent_history[:50]
             self.store.async_delay_save(lambda: self.recent_history, 60)
             # --- END MEMORY BUFFER ---
@@ -551,10 +720,13 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 self.exited_area = len(exited_hexes)
 
                 for hex_code in new_hexes:
-                    ac_data = next((ac for ac in filtered_aircraft if ac.get("hex") == hex_code), None)
+                    ac_data = next(
+                        (ac for ac in filtered_aircraft if ac.get("hex") == hex_code),
+                        None,
+                    )
                     if ac_data:
                         self.hass.bus.async_fire("skyradar_fusion_entry", ac_data)
-                
+
                 for hex_code in exited_hexes:
                     self.hass.bus.async_fire("skyradar_fusion_exit", {"hex": hex_code})
             else:
@@ -579,7 +751,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 "entered": self.entered_area,
                 "exited": self.exited_area,
                 "additional_tracked": len(self.tracked_list),
-                "tracking_list": ",".join(self.tracked_list) if self.tracked_list else "",
+                "tracking_list": ",".join(self.tracked_list)
+                if self.tracked_list
+                else "",
             }
 
         except Exception as err:
