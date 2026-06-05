@@ -2,7 +2,7 @@ import os
 import requests
 import json
 from openai import OpenAI
-from FlightRadar24 import FlightRadar24API
+from FlightRadarAPI import FlightRadar24API
 
 # 1. Configuration
 FR24_API = FlightRadar24API()
