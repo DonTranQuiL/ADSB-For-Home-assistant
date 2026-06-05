@@ -1,0 +1,48 @@
+name: AI Auto-Test Writer
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  generate-tests:
+    # Only run this if the PR was actually merged, not just closed
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install requests openai
+
+      - name: Fetch Merged PR Diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr view ${{ github.event.pull_request.number }} --diff > merged_diff.txt || echo "Could not fetch diff"
+
+      - name: Run AI Test Writer Agent
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python ai_engineer/test_writer.py
+
+      - name: Create Pull Request with New Tests
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "?? AI Auto-Test: Expanded Coverage"
+          body: "The AI Staff Engineer detected a merged PR and generated this test to cover new edge cases."
+          branch: "ai/auto-test-${{ github.event.pull_request.number }}"
+          labels: "ai-generated, tests"
+          commit-message: "?? Add AI-generated tests"

@@ -1,0 +1,50 @@
+name: SkYRADAR FUSION Feed Watcher
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Runs daily at 2:00 AM UTC
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
+
+jobs:
+  schema-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install AI Engineer Dependencies
+        run: pip install requests openai
+
+      - name: Run Feed Watcher Agent
+        id: watcher
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python ai_engineer/feed_watcher.py
+
+      - name: Create Issue on Breakage
+        if: env.SCHEMA_CHANGED == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "?? Upstream Breakage Detected: Earthquake Feed Schema Changed"
+          content-filepath: ./ai_report.md
+          labels: |
+            bug
+            ai-detected
+            upstream-change
+
+      - name: Save AI Memory
+        run: |
+          git config --global user.name "AI Staff Engineer"
+          git config --global user.email "secret@github.com"
+          git add .memory/
+          git commit -m "?? Update earthquake schema baseline" || echo "Memory is already up to date"
+          git push

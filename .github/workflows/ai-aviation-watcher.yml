@@ -1,0 +1,47 @@
+name: AI Aviation API Watcher
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # Runs daily
+  workflow_dispatch:
+
+jobs:
+  schema-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install requests openai
+
+      - name: Run Aviation Feed Watcher
+        id: watcher
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python ai_engineer/aviation_watcher.py
+
+      - name: Create Issue on Breakage
+        if: env.SCHEMA_CHANGED == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "?? Upstream API Alert: Flight Data Schema Changed"
+          content-filepath: ./ai_report.md
+          labels: "bug, upstream-change, ai-detected"
+
+      - name: Save API Memory Snapshots
+        run: |
+          git config --global user.name "AI Staff Engineer"
+          git config --global user.email "ai@github.com"
+          git add .memory/
+          git commit -m "?? Update aviation API baselines" || echo "Memory is already up to date"
+          git push

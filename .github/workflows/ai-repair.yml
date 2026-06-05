@@ -1,0 +1,51 @@
+name: AI Self-Healing CI
+
+on:
+  workflow_run:
+    # IMPORTANT: Change "Tests" to whatever the exact name of your testing workflow is in your other .yml files.
+    workflows: ["Python Tests"] 
+    types:
+      - completed
+
+jobs:
+  auto-heal:
+    # Only run this if the tests actually failed
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install requests openai
+
+      - name: Download Failed Logs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # We use the built-in GitHub CLI to easily grab the error logs
+        run: |
+          gh run view ${{ github.event.workflow_run.id }} --log-failed > failed_logs.txt || echo "Could not fetch logs"
+
+      - name: Run AI Repair Agent
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python ai_engineer/repair.py
+
+      - name: Create Pull Request with Fix
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "??? AI Auto-Fix: CI Test Failure"
+          body: "The AI Staff Engineer detected a CI failure, read the logs, and generated this patch to fix the build."
+          branch: "ai/auto-heal-${{ github.event.workflow_run.id }}"
+          labels: "ai-fix, automated pr"
+          commit-message: "?? Fix failing tests"
