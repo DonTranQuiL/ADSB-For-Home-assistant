@@ -49,12 +49,8 @@ try:
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
     }
-    
-    response = requests.patch(
-        url, 
-        headers=headers, 
-        json={"body": release_notes}
-    )
+
+    response = requests.patch(url, headers=headers, json={"body": release_notes})
 
     if response.status_code == 200:
         print("Successfully dropped the new release notes!")
