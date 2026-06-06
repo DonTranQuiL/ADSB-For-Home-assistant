@@ -1,0 +1,45 @@
+name: AI Release Notes Manager
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  generate-notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install requests openai
+
+      - name: Get commit messages and descriptions
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          # %s is the title, %b is the extended description
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release. Grabbing all history."
+            git log --pretty=format:"TITLE: %s%nDESCRIPTION: %b%n---" > changelog.txt
+          else
+            echo "Comparing changes between $PREV_TAG and current release."
+            git log $PREV_TAG..HEAD --pretty=format:"TITLE: %s%nDESCRIPTION: %b%n---" > changelog.txt
+          fi
+
+      - name: Run AI Release Writer
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ github.event.release.id }}
+          REPO: ${{ github.repository }}
+        run: python ai_engineer/release_writer.py
