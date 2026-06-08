@@ -65,7 +65,7 @@ try:
     lines = response_text.splitlines()
     code_lines = []
     is_code = False
-    
+
     BACKTICKS = "`" * 3
     PY_BACKTICKS = BACKTICKS + "python"
 
