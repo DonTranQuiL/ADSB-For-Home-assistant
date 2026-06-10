@@ -39,7 +39,7 @@ jobs:
         run: python ai_engineer/test_writer.py
 
       - name: Create Pull Request with New Tests
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           title: "?? AI Auto-Test: Expanded Coverage"
           body: "The AI Staff Engineer detected a merged PR and generated this test to cover new edge cases."
