@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 from openai import OpenAI
 
@@ -28,7 +29,7 @@ Here are the commit titles and extended descriptions since the last release:
    - 🛠️ Changed & Fixed (Bug fixes, deprecated lines, updates)
    - ⚙️ Under the Hood (Backend stuff, dependency updates)
 2. Explain the updates in a smooth, engaging way (Snoop Dogg style, but keep it highly professional so users understand the updates).
-3. ONLY output the Markdown text for the release notes. No intro, no outro.
+3. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks (```) or a code block. Just output the raw text directly.
 """
 
 try:
@@ -39,23 +40,5 @@ try:
 
     release_notes = completion.choices[0].message.content.strip()
 
-    # Update GitHub Release
-    repo = os.getenv("REPO")
-    release_id = os.getenv("RELEASE_ID")
-    token = os.getenv("GITHUB_TOKEN")
-
-    url = f"https://api.github.com/repos/{repo}/releases/{release_id}"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github.v3+json",
-    }
-
-    response = requests.patch(url, headers=headers, json={"body": release_notes})
-
-    if response.status_code == 200:
-        print("Successfully dropped the new release notes!")
-    else:
-        print(f"Failed to update release notes. API Response: {response.text}")
-
-except Exception as e:
-    print(f"Release generation failed: {e}")
+    # Clean up any accidental code block wrappers
+    release_notes = re.sub(r"^
