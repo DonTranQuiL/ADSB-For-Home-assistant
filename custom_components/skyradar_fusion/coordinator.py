@@ -29,6 +29,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 3440.065
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
@@ -39,6 +40,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
         + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
     )
     return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
 
 class SkyRadarFusionCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry):
@@ -130,8 +132,8 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             "oat",
             "tat",
             "dbFlags",  # Added new field
-            "ownOp",    # Added new field
-            "year",     # Added new field
+            "ownOp",  # Added new field
+            "year",  # Added new field
         ]
         cleaned = {
             k: ac.get(k)
