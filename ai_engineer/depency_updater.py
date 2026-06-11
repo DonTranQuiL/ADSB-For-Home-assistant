@@ -36,19 +36,17 @@ print(f"🚨 New Version Detected! Updating {current_version} -> {latest_version
 files_to_update = {
     "requirements.txt": f"FlightRadarAPI=={latest_version}",
     "requirements_test.txt": f"FlightRadarAPI=={latest_version}",
-    "custom_components/skyradar_fusion/manifest.json": f"FlightRadarAPI>={latest_version}"
+    "custom_components/skyradar_fusion/manifest.json": f"FlightRadarAPI>={latest_version}",
 }
 
 for file_path, replacement_string in files_to_update.items():
     try:
         with open(file_path, "r") as f:
             content = f.read()
-        
+
         # Replace the old version string with the new one
         new_content = re.sub(
-            r"FlightRadarAPI[=<>]+[\d\.]+", 
-            replacement_string, 
-            content
+            r"FlightRadarAPI[=<>]+[\d\.]+", replacement_string, content
         )
 
         with open(file_path, "w") as f:
