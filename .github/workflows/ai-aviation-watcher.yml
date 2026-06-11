@@ -32,7 +32,7 @@ jobs:
           
       - name: Create Issue
         if: env.SCHEMA_CHANGED == 'true'
-        uses: peter-evans/create-issue-from-file@v5
+        uses: peter-evans/create-issue-from-file@v6
         with:
           title: ${{ env.ISSUE_TITLE }}
           content-filepath: ./ai_report.md
