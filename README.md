@@ -96,6 +96,19 @@ Standard aviation integrations spin up permanent entities for every flying hull,
 Tracking lists are stored dynamically in memory for maximum speed. On server reboots or system crashes, the specialized **`RestoreSensor` (`sensor.additional_tracked`)** reads the encrypted historical database arrays and instantly rebuilds your watchlist on startup.
 
 ---
+## JS Dashboard card 
+Check the video below its in the wiki 
+https://github.com/DonTranQuiL/ADSB-For-Home-assistant/wiki/Lovelace-Examples
+
+1. Download it from the root folder of this repo and put it into www folder then see video below 
+<img width="1877" height="921" alt="addcard" src="https://github.com/user-attachments/assets/f311e84d-36b7-4868-a461-697a96d81f40" />
+
+2. Go to your dashboard and add a custom card, go to yaml mode and copy this code and you good to go 
+<img width="582" height="262" alt="{18BF4530-35C4-424A-BC3C-02FDF2C2A3E9}" src="https://github.com/user-attachments/assets/73f541db-9c7a-448e-9185-214d6e4811e3" />
+
+
+
+
 
 ## 📍 Tracking features and live maps
 
