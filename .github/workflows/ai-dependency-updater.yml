@@ -1,0 +1,50 @@
+name: AI Dependency Updater
+
+on:
+  schedule:
+    # Runs automatically every Monday morning at 8:00 AM UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch: # Allows you to click "Run workflow" manually to test it!
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install requests openai
+
+      - name: Run Dependency Updater
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python ai_engineer/dependency_updater.py
+
+      - name: Check for modified files
+        id: git-check
+        run: git diff --quiet || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Read PR Title
+        if: steps.git-check.outputs.changed == 'true'
+        id: pr_data
+        run: echo "PR_TITLE=$(cat pr_title.txt)" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        if: steps.git-check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          title: ${{ env.PR_TITLE }}
+          body-path: pr_body.txt
+          branch: "ai/dependency-update"
+          labels: "dependencies, automated pr"
+          commit-message: "build: update FlightRadarAPI dependency"
