@@ -15,7 +15,10 @@ if not api_key:
     print("No API key found. Exiting.")
     exit(0)
 
-client = OpenAI(base_url="[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)", api_key=api_key)
+client = OpenAI(
+    base_url="[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)",
+    api_key=api_key,
+)
 
 # Anti-markdown-break trick
 BACKTICKS = "`" * 3
