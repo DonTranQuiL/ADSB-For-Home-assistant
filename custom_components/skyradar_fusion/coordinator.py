@@ -29,7 +29,6 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 3440.065
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
@@ -40,7 +39,6 @@ def haversine_distance(lat1, lon1, lat2, lon2):
         + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
     )
     return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
 
 class SkyRadarFusionCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry):
@@ -131,9 +129,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             "lon",
             "oat",
             "tat",
-            "dbFlags",  # Added new field
-            "ownOp",  # Added new field
-            "year",  # Added new field
+            "dbFlags",
+            "ownOp",
+            "year",
         ]
         cleaned = {
             k: ac.get(k)
@@ -165,134 +163,21 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             if re.match(r"^[A-Z]{3}\d", flight):
                 return "commercial"
             commercial_prefixes = (
-                "AAL",
-                "AAR",
-                "ACA",
-                "AEE",
-                "AFR",
-                "AHO",
-                "AIC",
-                "ALK",
-                "AMX",
-                "ANA",
-                "ASA",
-                "AUA",
-                "AVA",
-                "AWC",
-                "BAW",
-                "BCS",
-                "BEL",
-                "BOX",
-                "BTI",
-                "CAL",
-                "CBJ",
-                "CCA",
-                "CCX",
-                "CHH",
-                "CKS",
-                "CLA",
-                "CLX",
-                "CLY",
-                "CMP",
-                "CND",
-                "CPA",
-                "CSH",
-                "CSN",
-                "DAL",
-                "DCS",
-                "DHK",
-                "DHL",
-                "DLH",
-                "EIN",
-                "EJA",
-                "EJM",
-                "ETD",
-                "EVA",
-                "EWE",
-                "EWG",
-                "EWL",
-                "EXS",
-                "EZS",
-                "EZY",
-                "FBA",
-                "FDX",
-                "FFT",
-                "FIN",
-                "FLX",
-                "FLY",
-                "FYG",
-                "GAC",
-                "GFA",
-                "GTI",
-                "HAL",
-                "HFY",
-                "HVN",
-                "IBE",
-                "ICE",
-                "IGO",
-                "ITY",
-                "JAL",
-                "JAS",
-                "JBU",
-                "JFA",
-                "JSX",
-                "KAL",
-                "KLM",
-                "KMM",
-                "KQA",
-                "KZR",
-                "LAN",
-                "LOG",
-                "LOT",
-                "LUX",
-                "LXJ",
-                "LYX",
-                "LZB",
-                "MAS",
-                "MPH",
-                "MXY",
-                "NJE",
-                "NKS",
-                "OMA",
-                "PAC",
-                "PH",
-                "PIA",
-                "QFA",
-                "QQE",
-                "QTR",
-                "QXE",
-                "RJA",
-                "RYA",
-                "SAS",
-                "SCW",
-                "SCX",
-                "SIA",
-                "SKW",
-                "SLR",
-                "SRU",
-                "SVA",
-                "SVW",
-                "SWA",
-                "SWR",
-                "TAG",
-                "TAP",
-                "TAY",
-                "THA",
-                "THY",
-                "TOM",
-                "TRA",
-                "TUI",
-                "TVS",
-                "UAE",
-                "UAL",
-                "UPS",
-                "VIR",
-                "VIV",
-                "VJT",
-                "VOI",
-                "WJA",
-                "WUP",
-                "XGO",
+                "AAL", "AAR", "ACA", "AEE", "AFR", "AHO", "AIC", "ALK", "AMX",
+                "ANA", "ASA", "AUA", "AVA", "AWC", "BAW", "BCS", "BEL", "BOX",
+                "BTI", "CAL", "CBJ", "CCA", "CCX", "CHH", "CKS", "CLA", "CLX",
+                "CLY", "CMP", "CND", "CPA", "CSH", "CSN", "DAL", "DCS", "DHK",
+                "DHL", "DLH", "EIN", "EJA", "EJM", "ETD", "EVA", "EWE", "EWG",
+                "EWL", "EXS", "EZS", "EZY", "FBA", "FDX", "FFT", "FIN", "FLX",
+                "FLY", "FYG", "GAC", "GFA", "GTI", "HAL", "HFY", "HVN", "IBE",
+                "ICE", "IGO", "ITY", "JAL", "JAS", "JBU", "JFA", "JSX", "KAL",
+                "KLM", "KMM", "KQA", "KZR", "LAN", "LOG", "LOT", "LUX", "LXJ",
+                "LYX", "LZB", "MAS", "MPH", "MXY", "NJE", "NKS", "OMA", "PAC",
+                "PH", "PIA", "QFA", "QQE", "QTR", "QXE", "RJA", "RYA", "SAS",
+                "SCW", "SCX", "SIA", "SKW", "SLR", "SRU", "SVA", "SVW", "SWA",
+                "SWR", "TAG", "TAP", "TAY", "THA", "THY", "TOM", "TRA", "TUI",
+                "TVS", "UAE", "UAL", "UPS", "VIR", "VIV", "VJT", "VOI", "WJA",
+                "WUP", "XGO",
             )
             if flight.startswith(commercial_prefixes):
                 return "commercial"
@@ -560,6 +445,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             )
                         )
 
+            current_time = dt_util.now().timestamp()
+            formatted_now = dt_util.now().strftime("%Y-%m-%d %H:%M:%S")
+
             for target in filtered_aircraft + list(unique_map_targets):
                 reg = target.get("r") or "Unknown"
                 hex_code = target.get("raw_hex") or target.get("hex") or "Unknown"
@@ -629,8 +517,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                     target["gs"] = 0
                     target["baro_rate"] = 0
 
-            current_time = dt_util.now().timestamp()
-
+            # --- START ANTI-FLICKER & LOCAL TELEMETRY MEMORY ---
             for target in filtered_aircraft + list(unique_map_targets):
                 tid = target.get("raw_hex") or target.get("hex")
                 if not tid or tid == "Unknown":
@@ -640,8 +527,22 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
 
                 if not is_placeholder:
                     if tid not in self.tracker_memory:
-                        self.tracker_memory[tid] = {"data": {}}
+                        self.tracker_memory[tid] = {
+                            "data": {},
+                            "local_actual_departure": None,
+                            "local_actual_arrival": None
+                        }
+                        
                     self.tracker_memory[tid]["last_seen"] = current_time
+                    
+                    # Log Local Departure if Airborne
+                    if not target.get("on_ground") and not self.tracker_memory[tid]["local_actual_departure"]:
+                        self.tracker_memory[tid]["local_actual_departure"] = formatted_now
+                        
+                    # Log Local Arrival if On Ground
+                    if target.get("on_ground") and self.tracker_memory[tid]["local_actual_departure"] and not self.tracker_memory[tid]["local_actual_arrival"]:
+                        self.tracker_memory[tid]["local_actual_arrival"] = formatted_now
+
                     for k, v in target.items():
                         if (
                             v is not None
@@ -679,6 +580,10 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                                 in ["unknown", "n/a", "none"]
                             ):
                                 target[k] = v
+                                
+                        # Attach Local Telemetry for device_tracker.py
+                        target["local_actual_departure"] = self.tracker_memory[tid]["local_actual_departure"]
+                        target["local_actual_arrival"] = self.tracker_memory[tid]["local_actual_arrival"]
 
             expired_keys = []
             for tid, mem in self.tracker_memory.items():
@@ -686,6 +591,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                     expired_keys.append(tid)
             for tid in expired_keys:
                 del self.tracker_memory[tid]
+            # --- END ANTI-FLICKER & LOCAL TELEMETRY MEMORY ---
 
             for ac in filtered_aircraft:
                 hex_code = ac.get("hex")
