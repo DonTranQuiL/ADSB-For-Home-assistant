@@ -2,7 +2,6 @@ import os
 import re
 import time
 import requests
-from openai import OpenAI
 
 try:
     with open("changelog.txt", "r") as f:
@@ -15,11 +14,6 @@ api_key = os.getenv("OPENROUTER_API_KEY")
 if not api_key:
     print("No API key found. Exiting.")
     exit(0)
-
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=api_key,
-)
 
 # Detect the project name automatically from the repo path
 repo_env = os.getenv("REPO", "")
@@ -50,29 +44,63 @@ CRITICAL INSTRUCTIONS:
 4. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks ({BACKTICKS}) or a code block. Just output the raw text directly.
 """
 
-# Try calling the API with exponential backoff retries (up to 5 times)
-max_retries = 5
-delay = 1
-completion = None
-
-for attempt in range(max_retries):
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            timeout=30.0,  # 30-second timeout
-        )
-        break  # Success! Break out of the retry loop.
-    except Exception as e:
-        if attempt == max_retries - 1:
-            print(f"All {max_retries} connection attempts failed. Crash details: {e}")
-            raise e
-        print(f"Connection attempt {attempt + 1} failed. Retrying in {delay}s...")
-        time.sleep(delay)
-        delay *= 2  # Exponential backoff
+def send_request_with_retry(method, url, headers, json_data, timeout, max_retries=5):
+    """Performs HTTP requests with exponential backoff retries and detailed logs."""
+    delay = 1
+    for attempt in range(max_retries):
+        try:
+            print(f"Sending {method} request to {url} (Attempt {attempt + 1}/{max_retries})...")
+            if method == "POST":
+                response = requests.post(url, headers=headers, json=json_data, timeout=timeout)
+            elif method == "PATCH":
+                response = requests.patch(url, headers=headers, json=json_data, timeout=timeout)
+            else:
+                raise ValueError(f"Unsupported method: {method}")
+            
+            # Check for success status codes
+            if response.status_code in [200, 201]:
+                return response
+            else:
+                print(f"Server returned status code {response.status_code}: {response.text}")
+        except Exception as e:
+            print(f"Attempt {attempt + 1} failed with error: {e}")
+            
+        if attempt < max_retries - 1:
+            print(f"Retrying in {delay} seconds...")
+            time.sleep(delay)
+            delay *= 2
+            
+    raise Exception(f"Failed to complete {method} request to {url} after {max_retries} attempts.")
 
 try:
-    release_notes = completion.choices[0].message.content.strip()
+    # Direct requests call bypasses any OpenAI library proxy/connection pool bugs
+    openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
+    openrouter_headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
+        "X-Title": "SkyRadar Release Notes Bot",
+    }
+    openrouter_payload = {
+        "model": "gpt-4o-mini",
+        "messages": [{"role": "user", "content": prompt}],
+    }
+
+    # Connect to OpenRouter to write the release notes
+    api_response = send_request_with_retry(
+        method="POST",
+        url=openrouter_url,
+        headers=openrouter_headers,
+        json_data=openrouter_payload,
+        timeout=45.0,
+        max_retries=5
+    )
+    
+    result = api_response.json()
+    if "choices" not in result or not result["choices"]:
+        raise Exception(f"Invalid API response structure: {result}")
+        
+    release_notes = result["choices"][0]["message"]["content"].strip()
 
     # Clean up any accidental code block wrappers without breaking Ruff/Markdown
     pattern = rf"^{BACKTICKS}(?:markdown)?\n|\n{BACKTICKS}$"
@@ -83,21 +111,24 @@ try:
     release_id = os.getenv("RELEASE_ID")
     token = os.getenv("GITHUB_TOKEN")
 
-    url = f"https://api.github.com/repos/{repo}/releases/{release_id}"
-    headers = {
+    github_url = f"https://api.github.com/repos/{repo}/releases/{release_id}"
+    github_headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
     }
 
-    # Add timeout to GitHub API call as well
-    response = requests.patch(
-        url, headers=headers, json={"body": release_notes}, timeout=15.0
+    # Patch the release notes directly onto your GitHub Release page
+    github_response = send_request_with_retry(
+        method="PATCH",
+        url=github_url,
+        headers=github_headers,
+        json_data={"body": release_notes},
+        timeout=20.0,
+        max_retries=3
     )
 
-    if response.status_code == 200:
-        print(f"Successfully dropped the new release notes for {project_name}!")
-    else:
-        print(f"Failed to update release notes. API Response: {response.text}")
+    print(f"Successfully dropped the new release notes for {project_name}!")
 
 except Exception as e:
     print(f"Release generation failed: {e}")
