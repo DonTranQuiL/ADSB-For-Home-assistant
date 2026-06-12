@@ -29,6 +29,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 3440.065
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
@@ -39,6 +40,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
         + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
     )
     return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
 
 class SkyRadarFusionCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry):
@@ -163,21 +165,134 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             if re.match(r"^[A-Z]{3}\d", flight):
                 return "commercial"
             commercial_prefixes = (
-                "AAL", "AAR", "ACA", "AEE", "AFR", "AHO", "AIC", "ALK", "AMX",
-                "ANA", "ASA", "AUA", "AVA", "AWC", "BAW", "BCS", "BEL", "BOX",
-                "BTI", "CAL", "CBJ", "CCA", "CCX", "CHH", "CKS", "CLA", "CLX",
-                "CLY", "CMP", "CND", "CPA", "CSH", "CSN", "DAL", "DCS", "DHK",
-                "DHL", "DLH", "EIN", "EJA", "EJM", "ETD", "EVA", "EWE", "EWG",
-                "EWL", "EXS", "EZS", "EZY", "FBA", "FDX", "FFT", "FIN", "FLX",
-                "FLY", "FYG", "GAC", "GFA", "GTI", "HAL", "HFY", "HVN", "IBE",
-                "ICE", "IGO", "ITY", "JAL", "JAS", "JBU", "JFA", "JSX", "KAL",
-                "KLM", "KMM", "KQA", "KZR", "LAN", "LOG", "LOT", "LUX", "LXJ",
-                "LYX", "LZB", "MAS", "MPH", "MXY", "NJE", "NKS", "OMA", "PAC",
-                "PH", "PIA", "QFA", "QQE", "QTR", "QXE", "RJA", "RYA", "SAS",
-                "SCW", "SCX", "SIA", "SKW", "SLR", "SRU", "SVA", "SVW", "SWA",
-                "SWR", "TAG", "TAP", "TAY", "THA", "THY", "TOM", "TRA", "TUI",
-                "TVS", "UAE", "UAL", "UPS", "VIR", "VIV", "VJT", "VOI", "WJA",
-                "WUP", "XGO",
+                "AAL",
+                "AAR",
+                "ACA",
+                "AEE",
+                "AFR",
+                "AHO",
+                "AIC",
+                "ALK",
+                "AMX",
+                "ANA",
+                "ASA",
+                "AUA",
+                "AVA",
+                "AWC",
+                "BAW",
+                "BCS",
+                "BEL",
+                "BOX",
+                "BTI",
+                "CAL",
+                "CBJ",
+                "CCA",
+                "CCX",
+                "CHH",
+                "CKS",
+                "CLA",
+                "CLX",
+                "CLY",
+                "CMP",
+                "CND",
+                "CPA",
+                "CSH",
+                "CSN",
+                "DAL",
+                "DCS",
+                "DHK",
+                "DHL",
+                "DLH",
+                "EIN",
+                "EJA",
+                "EJM",
+                "ETD",
+                "EVA",
+                "EWE",
+                "EWG",
+                "EWL",
+                "EXS",
+                "EZS",
+                "EZY",
+                "FBA",
+                "FDX",
+                "FFT",
+                "FIN",
+                "FLX",
+                "FLY",
+                "FYG",
+                "GAC",
+                "GFA",
+                "GTI",
+                "HAL",
+                "HFY",
+                "HVN",
+                "IBE",
+                "ICE",
+                "IGO",
+                "ITY",
+                "JAL",
+                "JAS",
+                "JBU",
+                "JFA",
+                "JSX",
+                "KAL",
+                "KLM",
+                "KMM",
+                "KQA",
+                "KZR",
+                "LAN",
+                "LOG",
+                "LOT",
+                "LUX",
+                "LXJ",
+                "LYX",
+                "LZB",
+                "MAS",
+                "MPH",
+                "MXY",
+                "NJE",
+                "NKS",
+                "OMA",
+                "PAC",
+                "PH",
+                "PIA",
+                "QFA",
+                "QQE",
+                "QTR",
+                "QXE",
+                "RJA",
+                "RYA",
+                "SAS",
+                "SCW",
+                "SCX",
+                "SIA",
+                "SKW",
+                "SLR",
+                "SRU",
+                "SVA",
+                "SVW",
+                "SWA",
+                "SWR",
+                "TAG",
+                "TAP",
+                "TAY",
+                "THA",
+                "THY",
+                "TOM",
+                "TRA",
+                "TUI",
+                "TVS",
+                "UAE",
+                "UAL",
+                "UPS",
+                "VIR",
+                "VIV",
+                "VJT",
+                "VOI",
+                "WJA",
+                "WUP",
+                "XGO",
             )
             if flight.startswith(commercial_prefixes):
                 return "commercial"
@@ -530,17 +645,26 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         self.tracker_memory[tid] = {
                             "data": {},
                             "local_actual_departure": None,
-                            "local_actual_arrival": None
+                            "local_actual_arrival": None,
                         }
-                        
+
                     self.tracker_memory[tid]["last_seen"] = current_time
-                    
+
                     # Log Local Departure if Airborne
-                    if not target.get("on_ground") and not self.tracker_memory[tid]["local_actual_departure"]:
-                        self.tracker_memory[tid]["local_actual_departure"] = formatted_now
-                        
+                    if (
+                        not target.get("on_ground")
+                        and not self.tracker_memory[tid]["local_actual_departure"]
+                    ):
+                        self.tracker_memory[tid]["local_actual_departure"] = (
+                            formatted_now
+                        )
+
                     # Log Local Arrival if On Ground
-                    if target.get("on_ground") and self.tracker_memory[tid]["local_actual_departure"] and not self.tracker_memory[tid]["local_actual_arrival"]:
+                    if (
+                        target.get("on_ground")
+                        and self.tracker_memory[tid]["local_actual_departure"]
+                        and not self.tracker_memory[tid]["local_actual_arrival"]
+                    ):
                         self.tracker_memory[tid]["local_actual_arrival"] = formatted_now
 
                     for k, v in target.items():
@@ -580,10 +704,14 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                                 in ["unknown", "n/a", "none"]
                             ):
                                 target[k] = v
-                                
+
                         # Attach Local Telemetry for device_tracker.py
-                        target["local_actual_departure"] = self.tracker_memory[tid]["local_actual_departure"]
-                        target["local_actual_arrival"] = self.tracker_memory[tid]["local_actual_arrival"]
+                        target["local_actual_departure"] = self.tracker_memory[tid][
+                            "local_actual_departure"
+                        ]
+                        target["local_actual_arrival"] = self.tracker_memory[tid][
+                            "local_actual_arrival"
+                        ]
 
             expired_keys = []
             for tid, mem in self.tracker_memory.items():

@@ -191,8 +191,10 @@ class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
             attrs["Actual Departure"] = actual_dep
         # If FR24 is empty, but our tracker caught it locally, show the Local Approx.
         elif ac.get("local_actual_departure"):
-            attrs["Actual Departure"] = f"{ac.get('local_actual_departure')} (Local Appx.)"
-            
+            attrs["Actual Departure"] = (
+                f"{ac.get('local_actual_departure')} (Local Appx.)"
+            )
+
         # First try to use the official FR24 Actual Arrival time.
         # But wait, FR24 rarely sets this. So if it landed, show the Local Approx Arrival!
         actual_arr = ac.get("fr24_real_arrival")
