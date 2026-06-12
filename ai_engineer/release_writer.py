@@ -44,33 +44,45 @@ CRITICAL INSTRUCTIONS:
 4. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks ({BACKTICKS}) or a code block. Just output the raw text directly.
 """
 
+
 def send_request_with_retry(method, url, headers, json_data, timeout, max_retries=5):
     """Performs HTTP requests with exponential backoff retries and detailed logs."""
     delay = 1
     for attempt in range(max_retries):
         try:
-            print(f"Sending {method} request to {url} (Attempt {attempt + 1}/{max_retries})...")
+            print(
+                f"Sending {method} request to {url} (Attempt {attempt + 1}/{max_retries})..."
+            )
             if method == "POST":
-                response = requests.post(url, headers=headers, json=json_data, timeout=timeout)
+                response = requests.post(
+                    url, headers=headers, json=json_data, timeout=timeout
+                )
             elif method == "PATCH":
-                response = requests.patch(url, headers=headers, json=json_data, timeout=timeout)
+                response = requests.patch(
+                    url, headers=headers, json=json_data, timeout=timeout
+                )
             else:
                 raise ValueError(f"Unsupported method: {method}")
-            
+
             # Check for success status codes
             if response.status_code in [200, 201]:
                 return response
             else:
-                print(f"Server returned status code {response.status_code}: {response.text}")
+                print(
+                    f"Server returned status code {response.status_code}: {response.text}"
+                )
         except Exception as e:
             print(f"Attempt {attempt + 1} failed with error: {e}")
-            
+
         if attempt < max_retries - 1:
             print(f"Retrying in {delay} seconds...")
             time.sleep(delay)
             delay *= 2
-            
-    raise Exception(f"Failed to complete {method} request to {url} after {max_retries} attempts.")
+
+    raise Exception(
+        f"Failed to complete {method} request to {url} after {max_retries} attempts."
+    )
+
 
 try:
     # Direct requests call bypasses any OpenAI library proxy/connection pool bugs
@@ -93,13 +105,13 @@ try:
         headers=openrouter_headers,
         json_data=openrouter_payload,
         timeout=45.0,
-        max_retries=5
+        max_retries=5,
     )
-    
+
     result = api_response.json()
     if "choices" not in result or not result["choices"]:
         raise Exception(f"Invalid API response structure: {result}")
-        
+
     release_notes = result["choices"][0]["message"]["content"].strip()
 
     # Clean up any accidental code block wrappers without breaking Ruff/Markdown
@@ -125,7 +137,7 @@ try:
         headers=github_headers,
         json_data={"body": release_notes},
         timeout=20.0,
-        max_retries=3
+        max_retries=3,
     )
 
     print(f"Successfully dropped the new release notes for {project_name}!")
