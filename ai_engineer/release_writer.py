@@ -90,7 +90,9 @@ try:
     }
 
     # Add timeout to GitHub API call as well
-    response = requests.patch(url, headers=headers, json={"body": release_notes}, timeout=15.0)
+    response = requests.patch(
+        url, headers=headers, json={"body": release_notes}, timeout=15.0
+    )
 
     if response.status_code == 200:
         print(f"Successfully dropped the new release notes for {project_name}!")
