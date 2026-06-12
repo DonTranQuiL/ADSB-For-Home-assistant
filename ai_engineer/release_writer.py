@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import requests
 from openai import OpenAI
 
@@ -16,34 +17,61 @@ if not api_key:
     exit(0)
 
 client = OpenAI(
-    base_url="[https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)",
+    base_url="https://openrouter.ai/api/v1",
     api_key=api_key,
 )
+
+# Detect the project name automatically from the repo path
+repo_env = os.getenv("REPO", "")
+project_name = "SkyRadar Fusion"
+if "grocy" in repo_env.lower():
+    project_name = "Grocy"
+elif repo_env:
+    # E.g. "ADSB-For-Home-assistant" -> "ADSB For Home Assistant"
+    project_name = repo_env.split("/")[-1].replace("-", " ").replace("_", " ").title()
 
 # Anti-markdown-break trick
 BACKTICKS = "`" * 3
 
 prompt = f"""
-You are the AI Release Manager for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
+You are the AI Release Manager for '{project_name}'. Your persona is Snoop Dogg.
 We are dropping a brand new release, and your job is to write the official GitHub Release Notes based on the commit history.
 
 Here are the commit titles and extended descriptions since the last release:
 {changelog}
 
-1. Analyze these commit messages and organize them into clean, professional markdown categories:
-   - 🚀 What's New (New features)
-   - 🛠️ Changed & Fixed (Bug fixes, deprecated lines, updates)
-   - ⚙️ Under the Hood (Backend stuff, dependency updates)
-2. Explain the updates in a smooth, engaging way (Snoop Dogg style, but keep it highly professional so users understand the updates).
-3. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks ({BACKTICKS}) or a code block. Just output the raw text directly.
+CRITICAL INSTRUCTIONS:
+1. Even if there is only ONE tiny commit (e.g., "Enhance README"), you must expand it into a full, hype, professional release note.
+2. Organize the markdown clearly with these categories (use them even if you have to creatively explain the small changes):
+   - 🚀 What's New & Fly (The main features or updates)
+   - 🛠️ Changed & Fixed (Bug fixes, tweaks)
+   - ⚙️ Under the Hood (Backend, docs, chores)
+3. Explain the updates in a smooth, engaging way (Snoop Dogg style, but keep it highly professional).
+4. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks ({BACKTICKS}) or a code block. Just output the raw text directly.
 """
 
-try:
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-    )
+# Try calling the API with exponential backoff retries (up to 5 times)
+max_retries = 5
+delay = 1
+completion = None
 
+for attempt in range(max_retries):
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            timeout=30.0,  # 30-second timeout
+        )
+        break  # Success! Break out of the retry loop.
+    except Exception as e:
+        if attempt == max_retries - 1:
+            print(f"All {max_retries} connection attempts failed. Crash details: {e}")
+            raise e
+        print(f"Connection attempt {attempt + 1} failed. Retrying in {delay}s...")
+        time.sleep(delay)
+        delay *= 2  # Exponential backoff
+
+try:
     release_notes = completion.choices[0].message.content.strip()
 
     # Clean up any accidental code block wrappers without breaking Ruff/Markdown
@@ -55,16 +83,17 @@ try:
     release_id = os.getenv("RELEASE_ID")
     token = os.getenv("GITHUB_TOKEN")
 
-    url = f"[https://api.github.com/repos/](https://api.github.com/repos/){repo}/releases/{release_id}"
+    url = f"https://api.github.com/repos/{repo}/releases/{release_id}"
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
     }
 
-    response = requests.patch(url, headers=headers, json={"body": release_notes})
+    # Add timeout to GitHub API call as well
+    response = requests.patch(url, headers=headers, json={"body": release_notes}, timeout=15.0)
 
     if response.status_code == 200:
-        print("Successfully dropped the new release notes!")
+        print(f"Successfully dropped the new release notes for {project_name}!")
     else:
         print(f"Failed to update release notes. API Response: {response.text}")
 
