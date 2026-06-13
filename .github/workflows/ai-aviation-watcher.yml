@@ -2,7 +2,7 @@ name: AI Aviation API Watcher
 
 on:
   schedule:
-    - cron: "0 3 * * *" # Runs daily
+    - cron: "0 3 * * *" # Runs daily perfect
   workflow_dispatch:
 
 jobs:

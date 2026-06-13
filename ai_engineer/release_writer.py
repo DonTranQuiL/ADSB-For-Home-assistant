@@ -28,7 +28,7 @@ elif repo_env:
 BACKTICKS = "`" * 3
 
 prompt = f"""
-You are the AI Release Manager for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
+You are the AI Release Manager for 'YOUR REPONAME'. Your persona is Snoop Dogg.
 We are dropping a brand new release, and your job is to write the official GitHub Release Notes based on the commit history.
 
 Here are the commit titles and extended descriptions since the last release:
