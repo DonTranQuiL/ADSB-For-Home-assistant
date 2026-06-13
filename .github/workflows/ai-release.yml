@@ -36,10 +36,27 @@ jobs:
             git log $PREV_TAG..HEAD --pretty=format:"TITLE: %s%nDESCRIPTION: %b%n---" > changelog.txt
           fi
 
-      - name: Run AI Release Writer
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_ID: ${{ github.event.release.id }}
-          REPO: ${{ github.repository }}
-        run: python ai_engineer/release_writer.py
+   #   - name: Run AI Release Writer
+   #     env:
+   #       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+   #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   #       RELEASE_ID: ${{ github.event.release.id }}
+   #       REPO: ${{ github.repository }}
+   #     run: python ai_engineer/release_writer.py
+      - name: Get commit messages and actual code changes
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release. Grabbing all history."
+            git log --pretty=format:"TITLE: %s%nDESCRIPTION: %b%n---" > changelog.txt
+            echo -e "\n\n--- ACTUAL CODE CHANGES ---" >> changelog.txt
+            # Grab all code changes since the beginning of time
+            git diff $(git rev-list --max-parents=0 HEAD)..HEAD -- 'custom_components/**' 'tests/**' >> changelog.txt
+          else
+            echo "Comparing changes between $PREV_TAG and current release."
+            git log $PREV_TAG..HEAD --pretty=format:"TITLE: %s%nDESCRIPTION: %b%n---" > changelog.txt
+            echo -e "\n\n--- ACTUAL CODE CHANGES ---" >> changelog.txt
+            # Grab only the changes made between the last release and now
+            git diff $PREV_TAG..HEAD -- 'custom_components/**' 'tests/**' >> changelog.txt
+          fi
