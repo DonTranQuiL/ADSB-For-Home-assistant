@@ -42,7 +42,7 @@ jobs:
         run: python ai_engineer/repair.py
 
       - name: Create Pull Request with Fix
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.REPO_PAT }}
           title: "🤖 AI Auto-Fix: CI Test Failure"
