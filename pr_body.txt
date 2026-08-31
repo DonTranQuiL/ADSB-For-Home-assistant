@@ -1,0 +1,10 @@
+Yo, what’s crackin’ team?
+
+I just rolled up on the project and gave it a lil’ polish. I checked the latest on the streets, and the ‘FlightRadarAPI’ got an upgrade from version 1.5.1 to 1.6.1. You know we gotta keep our game tight, so I went ahead and bumped that in the manifest and requirements files.
+
+This fresh version brings some dope improvements and fixes that’ll keep our app smoother than a Sunday morning. Let’s keep it fly, so take a look and let me know if you’ve got any questions or thoughts.
+
+Straight up, let’s get it merged and keep pushin’ that innovation.
+
+Peace and code,
+Snoop Dogg
