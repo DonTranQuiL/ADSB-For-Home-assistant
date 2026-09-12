@@ -1,30 +1,31 @@
 import logging
-from datetime import timedelta
 import math
 import re
-from homeassistant.helpers.storage import Store
+from datetime import timedelta
+
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
 from .api import SkyRadarFusionAPI
 from .const import (
-    DOMAIN,
-    CONF_TRACKING_MODE,
-    CONF_RADIUS,
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
-    CONF_GLOBAL_EMERGENCY,
-    CONF_GLOBAL_MILITARY,
-    CONF_FR24_RADIUS,
+    CONF_ADVANCED_ADSB_FILTER,
     CONF_ENABLE_FR24_ENRICHMENT,
     CONF_FR24_COMMERCIAL,
-    CONF_FR24_PRIVATE,
     CONF_FR24_HELICOPTER,
-    CONF_ADVANCED_ADSB_FILTER,
-    MODE_ZONE,
+    CONF_FR24_PRIVATE,
+    CONF_FR24_RADIUS,
+    CONF_GLOBAL_EMERGENCY,
+    CONF_GLOBAL_MILITARY,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_RADIUS,
+    CONF_TRACKING_MODE,
     DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    MODE_ZONE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,10 +36,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lon2 - lon1)
-    a = (
-        math.sin(dphi / 2) ** 2
-        + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
-    )
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
     return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
@@ -91,17 +89,13 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         if identifier:
             clean_id = identifier.strip().upper().replace(" ", "")
             self.tracked_list.add(clean_id)
-            _LOGGER.info(
-                "SkyRadar Fusion: Target '%s' added to tracking list.", clean_id
-            )
+            _LOGGER.info("SkyRadar Fusion: Target '%s' added to tracking list.", clean_id)
 
     def remove_track(self, identifier):
         if identifier:
             clean_id = identifier.strip().upper().replace(" ", "")
             self.tracked_list.discard(clean_id)
-            _LOGGER.info(
-                "SkyRadar Fusion: Target '%s' removed from tracking list.", clean_id
-            )
+            _LOGGER.info("SkyRadar Fusion: Target '%s' removed from tracking list.", clean_id)
 
     def clear_tracks(self):
         self.tracked_list.clear()
@@ -154,8 +148,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             or "rotor" in desc
             or "ecureuil" in desc
             or cat == "A7"
-            or t_code
-            in ["AS50", "EC30", "EC35", "R44", "R66", "B06", "H60", "H64", "A189"]
+            or t_code in ["AS50", "EC30", "EC35", "R44", "R66", "B06", "H60", "H64", "A189"]
         ):
             return "helicopter"
         if "military" in desc or "mil" in desc or cat == "A6":
@@ -309,13 +302,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         else:
             self.photo_cache[cache_key] = "None"
 
-    async def _fetch_fr24_background(
-        self, search_id, lat=None, lon=None, hex_code=None
-    ):
+    async def _fetch_fr24_background(self, search_id, lat=None, lon=None, hex_code=None):
         try:
-            fr24_data = await self.api.get_fr24_enrichment(
-                search_id, lat, lon, hex_code
-            )
+            fr24_data = await self.api.get_fr24_enrichment(search_id, lat, lon, hex_code)
             if fr24_data:
                 self.fr24_cache[search_id] = fr24_data
             else:
@@ -337,13 +326,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             fr24_radius_meters = self.config_entry.options.get(
                 CONF_FR24_RADIUS, self.config_entry.data.get(CONF_FR24_RADIUS, 3000)
             )
-            enable_emergencies = self.config_entry.options.get(
-                CONF_GLOBAL_EMERGENCY, False
-            )
+            enable_emergencies = self.config_entry.options.get(CONF_GLOBAL_EMERGENCY, False)
             enable_military = self.config_entry.options.get(CONF_GLOBAL_MILITARY, False)
-            enable_fr24 = self.config_entry.options.get(
-                CONF_ENABLE_FR24_ENRICHMENT, False
-            )
+            enable_fr24 = self.config_entry.options.get(CONF_ENABLE_FR24_ENRICHMENT, False)
 
             fr24_comm = self.config_entry.options.get(CONF_FR24_COMMERCIAL, True)
             fr24_priv = self.config_entry.options.get(CONF_FR24_PRIVATE, False)
@@ -368,9 +353,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
 
             if self.mode == MODE_ZONE:
                 radius_nm = max(1, math.ceil(radius_meters / 1852.0))
-                aircraft_list = await self.api.get_aircraft_in_zone(
-                    home_lat, home_lon, radius_nm
-                )
+                aircraft_list = await self.api.get_aircraft_in_zone(home_lat, home_lon, radius_nm)
 
                 if aircraft_list is None:
                     if self.data:
@@ -385,8 +368,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             continue
 
                         dist_meters = (
-                            haversine_distance(home_lat, home_lon, ac_lat, ac_lon)
-                            * 1852.0
+                            haversine_distance(home_lat, home_lon, ac_lat, ac_lon) * 1852.0
                         )
 
                         if dist_meters <= radius_meters:
@@ -431,9 +413,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                     and self.data
                     and len(self.data.get("global_military", [])) > 0
                 ):
-                    global_military_data = (
-                        self.data.get("global_military", []) if self.data else []
-                    )
+                    global_military_data = self.data.get("global_military", []) if self.data else []
                 else:
                     for ac in mil_raw:
                         clean_ac = self.clean_aircraft_data(ac)
@@ -454,9 +434,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 found = next(
                     (
                         ac
-                        for ac in filtered_aircraft
-                        + global_emergencies_data
-                        + global_military_data
+                        for ac in filtered_aircraft + global_emergencies_data + global_military_data
                         if ac.get("flight", "").strip().upper() == clean_id
                         or ac.get("hex", "").upper() == clean_id
                         or ac.get("r", "").strip().upper() == clean_id
@@ -500,9 +478,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 target.get("hex"): target for target in map_tracker_targets
             }.values()
 
-            advanced_filter_str = self.config_entry.options.get(
-                CONF_ADVANCED_ADSB_FILTER, ""
-            )
+            advanced_filter_str = self.config_entry.options.get(CONF_ADVANCED_ADSB_FILTER, "")
             advanced_filters = [
                 x.strip().upper() for x in advanced_filter_str.split(",") if x.strip()
             ]
@@ -525,9 +501,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         if ac.get("air_category") in allowed_fr24_cats:
                             overhead_aircraft.append(ac)
 
-            fr24_targets_raw = (
-                tracked_aircraft_data + global_emergencies_data + overhead_aircraft
-            )
+            fr24_targets_raw = tracked_aircraft_data + global_emergencies_data + overhead_aircraft
             unique_fr24_targets = {
                 target.get("hex"): target for target in fr24_targets_raw
             }.values()
@@ -551,14 +525,16 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         self._fetch_photo_background(reg, hex_code, cache_key)
                     )
 
-                if enable_fr24 and search_id and search_id != "Unknown":
-                    if search_id not in self.fr24_cache:
-                        self.fr24_cache[search_id] = "Loading"
-                        self.hass.async_create_task(
-                            self._fetch_fr24_background(
-                                search_id, ac_lat, ac_lon, hex_code
-                            )
-                        )
+                if (
+                    enable_fr24
+                    and search_id
+                    and search_id != "Unknown"
+                    and search_id not in self.fr24_cache
+                ):
+                    self.fr24_cache[search_id] = "Loading"
+                    self.hass.async_create_task(
+                        self._fetch_fr24_background(search_id, ac_lat, ac_lon, hex_code)
+                    )
 
             current_time = dt_util.now().timestamp()
             formatted_now = dt_util.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -574,9 +550,10 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
 
                 cache_key = hex_code if hex_code != "Unknown" else search_id
 
-                if self.photo_cache.get(cache_key) and self.photo_cache[
-                    cache_key
-                ] not in ["None", "Loading"]:
+                if self.photo_cache.get(cache_key) and self.photo_cache[cache_key] not in [
+                    "None",
+                    "Loading",
+                ]:
                     target["api_photo_url"] = self.photo_cache[cache_key]
 
                 target_on_ground = False
@@ -593,10 +570,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         if fr24_data.get("fr24_on_ground") in [1, "1", True]:
                             target_on_ground = True
 
-                        if (
-                            target.get("lat") is None
-                            and fr24_data.get("fr24_lat") is not None
-                        ):
+                        if target.get("lat") is None and fr24_data.get("fr24_lat") is not None:
                             target["lat"] = fr24_data["fr24_lat"]
                             target["lon"] = fr24_data["fr24_lon"]
                             target["track"] = fr24_data["fr24_track"]
@@ -607,9 +581,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             if sq and str(sq).strip() != "":
                                 target["squawk"] = sq
 
-                            if target.get(
-                                "t", "Unknown"
-                            ) == "Unknown" and fr24_data.get(
+                            if target.get("t", "Unknown") == "Unknown" and fr24_data.get(
                                 "fr24_aircraft_code"
                             ) not in [None, "Unknown"]:
                                 target["t"] = fr24_data["fr24_aircraft_code"]
@@ -655,9 +627,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         not target.get("on_ground")
                         and not self.tracker_memory[tid]["local_actual_departure"]
                     ):
-                        self.tracker_memory[tid]["local_actual_departure"] = (
-                            formatted_now
-                        )
+                        self.tracker_memory[tid]["local_actual_departure"] = formatted_now
 
                     # Log Local Arrival if On Ground
                     if (
@@ -676,9 +646,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             self.tracker_memory[tid]["data"][k] = v
 
                 if tid in self.tracker_memory:
-                    time_since_seen = (
-                        current_time - self.tracker_memory[tid]["last_seen"]
-                    )
+                    time_since_seen = current_time - self.tracker_memory[tid]["last_seen"]
 
                     if time_since_seen < 300:
                         if is_placeholder:
@@ -686,12 +654,10 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             target["flight"] = self.tracker_memory[tid]["data"].get(
                                 "flight", target.get("flight")
                             )
-                            target["air_category"] = self.tracker_memory[tid][
-                                "data"
-                            ].get("air_category", "Unknown")
-                            target["r"] = self.tracker_memory[tid]["data"].get(
-                                "r", target.get("r")
+                            target["air_category"] = self.tracker_memory[tid]["data"].get(
+                                "air_category", "Unknown"
                             )
+                            target["r"] = self.tracker_memory[tid]["data"].get("r", target.get("r"))
                             target["on_ground"] = self.tracker_memory[tid]["data"].get(
                                 "on_ground", False
                             )
@@ -700,8 +666,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             if (
                                 target.get(k) is None
                                 or str(target.get(k)).strip() == ""
-                                or str(target.get(k)).lower()
-                                in ["unknown", "n/a", "none"]
+                                or str(target.get(k)).lower() in ["unknown", "n/a", "none"]
                             ):
                                 target[k] = v
 
@@ -725,9 +690,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 hex_code = ac.get("hex")
                 if hex_code:
                     self.recent_history = [
-                        item
-                        for item in self.recent_history
-                        if item.get("hex") != hex_code
+                        item for item in self.recent_history if item.get("hex") != hex_code
                     ]
                     ac_copy = ac.copy()
                     ac_copy["spotted_time"] = dt_util.now().isoformat()
@@ -774,9 +737,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 "entered": self.entered_area,
                 "exited": self.exited_area,
                 "additional_tracked": len(self.tracked_list),
-                "tracking_list": ",".join(self.tracked_list)
-                if self.tracked_list
-                else "",
+                "tracking_list": ",".join(self.tracked_list) if self.tracked_list else "",
             }
 
         except Exception as err:
@@ -785,4 +746,4 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             self.last_update_time = dt_util.now()
             if self.data:
                 return self.data
-            raise UpdateFailed(f"Error fetching data: {err}")
+            raise UpdateFailed(f"Error fetching data: {err}") from err

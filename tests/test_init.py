@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -24,9 +25,7 @@ def mock_coordinator_init():
 
 
 @pytest.mark.asyncio
-async def test_setup_unload_and_reload_lifecycle(
-    hass: HomeAssistant, mock_coordinator_init
-):
+async def test_setup_unload_and_reload_lifecycle(hass: HomeAssistant, mock_coordinator_init):
     # Mock hass.http to bypass the StaticPathConfig registration
     hass.http = AsyncMock()
 
@@ -46,9 +45,7 @@ async def test_setup_unload_and_reload_lifecycle(
     await hass.services.async_call(DOMAIN, "refresh", blocking=True)
     mock_coordinator_init.async_request_refresh.assert_called_once()
 
-    with patch(
-        "homeassistant.config_entries.ConfigEntries.async_reload"
-    ) as mock_reload:
+    with patch("homeassistant.config_entries.ConfigEntries.async_reload") as mock_reload:
         await hass.config_entries.async_reload(entry.entry_id)
         mock_reload.assert_called_once_with(entry.entry_id)
 

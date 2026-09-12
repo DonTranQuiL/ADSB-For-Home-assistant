@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from homeassistant.components.device_tracker.const import SourceType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -13,9 +14,7 @@ from custom_components.skyradar_fusion.device_tracker import (
 @pytest.fixture
 def mock_tracker_coord():
     coord = MagicMock()
-    coord.config_entry = MockConfigEntry(
-        domain=DOMAIN, entry_id="tracker_test", options={}
-    )
+    coord.config_entry = MockConfigEntry(domain=DOMAIN, entry_id="tracker_test", options={})
     coord.data = {
         "tracked_aircraft": [
             {

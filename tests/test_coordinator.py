@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -18,9 +19,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 @pytest.fixture
 def mock_api():
-    with patch(
-        "custom_components.skyradar_fusion.coordinator.SkyRadarFusionAPI"
-    ) as mock_cls:
+    with patch("custom_components.skyradar_fusion.coordinator.SkyRadarFusionAPI") as mock_cls:
         mock_inst = MagicMock()
         mock_inst.get_aircraft_in_zone = AsyncMock(return_value=[])
         mock_inst.get_aircraft_by_callsign = AsyncMock(return_value=[])
@@ -49,9 +48,7 @@ async def test_coordinator_zone_analytics(hass: HomeAssistant, mock_api):
         options={"tracked_list": ["TARGET1"]},
     )
     coord = SkyRadarFusionCoordinator(hass, entry)
-    coord.config_entry = (
-        entry  # FIX: Prevent DataUpdateCoordinator from setting this to None
-    )
+    coord.config_entry = entry  # FIX: Prevent DataUpdateCoordinator from setting this to None
 
     mock_api.get_aircraft_in_zone.return_value = [
         {

@@ -1,14 +1,15 @@
 """Sensor platform for SkyRadar Fusion."""
 
-from homeassistant.components.sensor import SensorEntity, RestoreSensor
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.components.sensor import RestoreSensor, SensorEntity
 from homeassistant.const import EntityCategory
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
-    MODE_ZONE,
     CONF_GLOBAL_EMERGENCY,
     CONF_GLOBAL_MILITARY,
+    DOMAIN,
+    MODE_ZONE,
     VERSION,
 )
 
@@ -20,12 +21,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     entities = [
         SkyRadarFusionOverviewSensor(coordinator),
-        SkyRadarFusionStatSensor(
-            coordinator, "entered", "Entered area", "mdi:airplane-takeoff"
-        ),
-        SkyRadarFusionStatSensor(
-            coordinator, "exited", "Exited area", "mdi:airplane-landing"
-        ),
+        SkyRadarFusionStatSensor(coordinator, "entered", "Entered area", "mdi:airplane-takeoff"),
+        SkyRadarFusionStatSensor(coordinator, "exited", "Exited area", "mdi:airplane-landing"),
         SkyRadarFusionTrackedRestoreSensor(coordinator),
         SkyRadarFusionDiagnosticSensor(
             coordinator,
@@ -98,11 +95,7 @@ class SkyRadarFusionTrackedRestoreSensor(SkyRadarFusionSensorBase, RestoreSensor
 
     @property
     def native_value(self):
-        return (
-            self.coordinator.data.get("additional_tracked", 0)
-            if self.coordinator.data
-            else 0
-        )
+        return self.coordinator.data.get("additional_tracked", 0) if self.coordinator.data else 0
 
     @property
     def extra_state_attributes(self):
@@ -122,9 +115,7 @@ class SkyRadarFusionDiagnosticSensor(SkyRadarFusionSensorBase):
         self._key = key
         self._attr_name = name
         self._attr_icon = icon
-        self._attr_unique_id = (
-            f"skyradar_fusion_{key}_{coordinator.config_entry.entry_id}"
-        )
+        self._attr_unique_id = f"skyradar_fusion_{key}_{coordinator.config_entry.entry_id}"
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         if device_class:
             self._attr_device_class = device_class
@@ -140,17 +131,11 @@ class SkyRadarFusionStatSensor(SkyRadarFusionSensorBase):
         self._stat_type = stat_type
         self._attr_name = name
         self._attr_icon = icon
-        self._attr_unique_id = (
-            f"skyradar_fusion_{stat_type}_{coordinator.config_entry.entry_id}"
-        )
+        self._attr_unique_id = f"skyradar_fusion_{stat_type}_{coordinator.config_entry.entry_id}"
 
     @property
     def native_value(self):
-        return (
-            self.coordinator.data.get(self._stat_type, 0)
-            if self.coordinator.data
-            else 0
-        )
+        return self.coordinator.data.get(self._stat_type, 0) if self.coordinator.data else 0
 
 
 class SkyRadarFusionOverviewSensor(SkyRadarFusionSensorBase):
@@ -192,12 +177,8 @@ class SkyRadarFusionCategorySensor(SkyRadarFusionSensorBase):
         super().__init__(coordinator)
         self._category = category
         self._attr_name = f"{category.capitalize()}s in area"
-        self._attr_unique_id = (
-            f"skyradar_fusion_{category}_{coordinator.config_entry.entry_id}"
-        )
-        self._attr_icon = (
-            "mdi:helicopter" if category == "helicopter" else "mdi:airplane"
-        )
+        self._attr_unique_id = f"skyradar_fusion_{category}_{coordinator.config_entry.entry_id}"
+        self._attr_icon = "mdi:helicopter" if category == "helicopter" else "mdi:airplane"
 
     @property
     def native_value(self):
@@ -214,25 +195,15 @@ class SkyRadarFusionGlobalSensor(SkyRadarFusionSensorBase):
         self._data_key = data_key
         self._attr_name = name
         self._attr_icon = icon
-        self._attr_unique_id = (
-            f"skyradar_fusion_{data_key}_{coordinator.config_entry.entry_id}"
-        )
+        self._attr_unique_id = f"skyradar_fusion_{data_key}_{coordinator.config_entry.entry_id}"
 
     @property
     def native_value(self):
-        return (
-            len(self.coordinator.data.get(self._data_key, []))
-            if self.coordinator.data
-            else 0
-        )
+        return len(self.coordinator.data.get(self._data_key, [])) if self.coordinator.data else 0
 
     @property
     def extra_state_attributes(self):
-        raw_data = (
-            self.coordinator.data.get(self._data_key, [])
-            if self.coordinator.data
-            else []
-        )
+        raw_data = self.coordinator.data.get(self._data_key, []) if self.coordinator.data else []
 
         flight_list = []
         for ac in raw_data:

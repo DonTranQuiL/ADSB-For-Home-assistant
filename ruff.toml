@@ -1,0 +1,21 @@
+# Integration CI lint gate — keep focused on the HA component + tests.
+exclude = [
+  "ai_engineer",
+  ".git",
+  ".venv",
+]
+
+target-version = "py312"
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "BLE", "S", "DTZ"]
+# Intentional patterns in FR24/network lookup code (broad catch + quiet fallbacks).
+ignore = [
+  "BLE001",  # broad Exception around flaky third-party/network calls
+  "S110",    # try/except/pass around optional FR24 lookups
+  "DTZ006",  # legacy fromtimestamp usage in enrichment formatting
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101"]

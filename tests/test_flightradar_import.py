@@ -1,40 +1,51 @@
 """Regression: FlightRadarAPI 1.6+ renamed FlightRadar24 -> FlightRadarAPI."""
 
-import importlib
+from __future__ import annotations
+
 import sys
 import types
 
+import pytest
 
-def test_import_flightradar24_api_prefers_new_module(monkeypatch):
-    # Build a fake FlightRadarAPI package providing FlightRadar24API
-    mod = types.ModuleType("FlightRadarAPI")
-    class FlightRadar24API:  # noqa: N801 - upstream class name
-        pass
+from custom_components.skyradar_fusion.api import (
+    SkyRadarFusionAPI,
+    _import_flightradar24_api,
+)
+
+
+def _install_module(monkeypatch: pytest.MonkeyPatch, module_name: str):
+    mod = types.ModuleType(module_name)
+
+    class FlightRadar24API:
+        def __init__(self):
+            self.ready = True
+
     mod.FlightRadar24API = FlightRadar24API
-    monkeypatch.setitem(sys.modules, "FlightRadarAPI", mod)
+    monkeypatch.setitem(sys.modules, module_name, mod)
+    return FlightRadar24API
+
+
+def test_import_helper_prefers_flightradarapi_module(monkeypatch: pytest.MonkeyPatch):
+    cls = _install_module(monkeypatch, "FlightRadarAPI")
+    monkeypatch.delitem(sys.modules, "FlightRadar24", raising=False)
+    assert _import_flightradar24_api() is cls
+
+
+def test_import_helper_falls_back_to_flightradar24_module(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    # New package present but missing the symbol => ImportError, then legacy path.
+    monkeypatch.setitem(sys.modules, "FlightRadarAPI", types.ModuleType("FlightRadarAPI"))
+    legacy = _install_module(monkeypatch, "FlightRadar24")
+    assert _import_flightradar24_api() is legacy
+
+
+def test_fr24_client_is_lazy(monkeypatch: pytest.MonkeyPatch):
+    cls = _install_module(monkeypatch, "FlightRadarAPI")
     monkeypatch.delitem(sys.modules, "FlightRadar24", raising=False)
 
-    # Import helper from api without pulling Home Assistant
-    # Load module file directly with stubbed relative import
-    import pathlib
-    api_path = pathlib.Path(__file__).resolve().parents[1] / "custom_components/skyradar_fusion/api.py"
-    # Ensure package stubs
-    pkg = types.ModuleType("custom_components")
-    sub = types.ModuleType("custom_components.skyradar_fusion")
-    const = types.ModuleType("custom_components.skyradar_fusion.const")
-    const.API_BASE_URL = "https://example.test"
-    monkeypatch.setitem(sys.modules, "custom_components", pkg)
-    monkeypatch.setitem(sys.modules, "custom_components.skyradar_fusion", sub)
-    monkeypatch.setitem(sys.modules, "custom_components.skyradar_fusion.const", const)
-
-    spec = importlib.util.spec_from_file_location(
-        "custom_components.skyradar_fusion.api", api_path
-    )
-    api = importlib.util.module_from_spec(spec)
-    # stub aiohttp for import
-    monkeypatch.setitem(sys.modules, "aiohttp", types.ModuleType("aiohttp"))
-    sys.modules["aiohttp"].ClientSession = object
-    spec.loader.exec_module(api)
-
-    cls = api._import_flightradar24_api()
-    assert cls is FlightRadar24API
+    api = SkyRadarFusionAPI(session=object())
+    assert api._fr24 is None
+    client = api.fr24
+    assert isinstance(client, cls)
+    assert api.fr24 is client

@@ -1,12 +1,13 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import DOMAIN
 from custom_components.skyradar_fusion.sensor import (
+    SkyRadarFusionCategorySensor,
     SkyRadarFusionOverviewSensor,
     SkyRadarFusionStatSensor,
-    SkyRadarFusionCategorySensor,
 )
 
 
@@ -60,9 +61,7 @@ def test_overview_sensor_no_closest(mock_coord_data):
 
 
 def test_stat_and_category_sensors(mock_coord_data):
-    entered_sensor = SkyRadarFusionStatSensor(
-        mock_coord_data, "entered", "Entered", "mdi:icon"
-    )
+    entered_sensor = SkyRadarFusionStatSensor(mock_coord_data, "entered", "Entered", "mdi:icon")
     heli_sensor = SkyRadarFusionCategorySensor(mock_coord_data, "helicopter")
 
     assert entered_sensor.native_value == 2

@@ -1,9 +1,11 @@
 """The SkyRadar Fusion integration."""
 
 import importlib
+
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.components.http import StaticPathConfig
+
 from .const import DOMAIN, PLATFORMS
 
 

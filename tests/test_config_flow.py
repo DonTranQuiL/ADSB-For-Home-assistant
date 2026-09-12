@@ -1,18 +1,19 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import (
-    DOMAIN,
-    CONF_TRACKING_MODE,
-    CONF_RADIUS,
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
-    CONF_IDENTIFIER_TYPE,
-    CONF_IDENTIFIER,
     CONF_GLOBAL_EMERGENCY,
     CONF_GLOBAL_MILITARY,
+    CONF_IDENTIFIER,
+    CONF_IDENTIFIER_TYPE,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_RADIUS,
+    CONF_TRACKING_MODE,
+    DOMAIN,
     MODE_SINGLE,
     MODE_ZONE,
 )
@@ -27,9 +28,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 @pytest.mark.asyncio
 async def test_form_zone(hass):
     """Test we get the form for zone tracking and create an entry."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "user"}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     assert result["type"] == FlowResultType.FORM
 
     result2 = await hass.config_entries.flow.async_configure(
@@ -38,9 +37,7 @@ async def test_form_zone(hass):
     assert result2["type"] == FlowResultType.FORM
     assert result2["step_id"] == "zone"
 
-    with patch(
-        "custom_components.skyradar_fusion.async_setup_entry", return_value=True
-    ):
+    with patch("custom_components.skyradar_fusion.async_setup_entry", return_value=True):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             user_input={
@@ -56,17 +53,13 @@ async def test_form_zone(hass):
 @pytest.mark.asyncio
 async def test_form_single(hass):
     """Test we get the form for single target tracking and create an entry."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "user"}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={CONF_TRACKING_MODE: MODE_SINGLE}
     )
     assert result2["step_id"] == "single"
 
-    with patch(
-        "custom_components.skyradar_fusion.async_setup_entry", return_value=True
-    ):
+    with patch("custom_components.skyradar_fusion.async_setup_entry", return_value=True):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             user_input={

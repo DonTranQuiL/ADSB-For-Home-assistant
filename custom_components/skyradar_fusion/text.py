@@ -3,14 +3,13 @@
 from homeassistant.components.text import TextEntity
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
+
 from .const import DOMAIN
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
-        [SkyRadarFusionAddText(coordinator), SkyRadarFusionRemoveText(coordinator)]
-    )
+    async_add_entities([SkyRadarFusionAddText(coordinator), SkyRadarFusionRemoveText(coordinator)])
 
 
 class SkyRadarFusionTextBase(TextEntity):
@@ -64,12 +63,11 @@ class SkyRadarFusionRemoveText(SkyRadarFusionTextBase):
             registry, self.coordinator.config_entry.entry_id
         )
         for entry in entries:
-            if entry.domain == "device_tracker":
-                if (
-                    clean_val in entry.entity_id.upper()
-                    or clean_val in (entry.original_name or "").upper()
-                ):
-                    registry.async_remove(entry.entity_id)
+            if entry.domain == "device_tracker" and (
+                clean_val in entry.entity_id.upper()
+                or clean_val in (entry.original_name or "").upper()
+            ):
+                registry.async_remove(entry.entity_id)
 
         self.coordinator.remove_track(clean_val)
         self._attr_native_value = ""

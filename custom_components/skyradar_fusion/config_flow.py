@@ -4,22 +4,23 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
+
 from .const import (
-    DOMAIN,
-    CONF_TRACKING_MODE,
-    CONF_RADIUS,
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
-    CONF_IDENTIFIER_TYPE,
-    CONF_IDENTIFIER,
-    CONF_GLOBAL_EMERGENCY,
-    CONF_GLOBAL_MILITARY,
-    CONF_FR24_RADIUS,
+    CONF_ADVANCED_ADSB_FILTER,
     CONF_ENABLE_FR24_ENRICHMENT,
     CONF_FR24_COMMERCIAL,
-    CONF_FR24_PRIVATE,
     CONF_FR24_HELICOPTER,
-    CONF_ADVANCED_ADSB_FILTER,
+    CONF_FR24_PRIVATE,
+    CONF_FR24_RADIUS,
+    CONF_GLOBAL_EMERGENCY,
+    CONF_GLOBAL_MILITARY,
+    CONF_IDENTIFIER,
+    CONF_IDENTIFIER_TYPE,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_RADIUS,
+    CONF_TRACKING_MODE,
+    DOMAIN,
     MODE_SINGLE,
     MODE_ZONE,
 )
@@ -59,12 +60,8 @@ class SkyRadarFusionConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="zone",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_LATITUDE, default=self.hass.config.latitude
-                    ): cv.latitude,
-                    vol.Required(
-                        CONF_LONGITUDE, default=self.hass.config.longitude
-                    ): cv.longitude,
+                    vol.Required(CONF_LATITUDE, default=self.hass.config.latitude): cv.latitude,
+                    vol.Required(CONF_LONGITUDE, default=self.hass.config.longitude): cv.longitude,
                     vol.Required(CONF_RADIUS, default=5000): int,
                 }
             ),
@@ -103,15 +100,11 @@ class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             options[CONF_LATITUDE] = user_input.get(CONF_LATITUDE)
             options[CONF_LONGITUDE] = user_input.get(CONF_LONGITUDE)
-            options[CONF_RADIUS] = user_input.get(
-                CONF_RADIUS, options.get(CONF_RADIUS, 5000)
-            )
+            options[CONF_RADIUS] = user_input.get(CONF_RADIUS, options.get(CONF_RADIUS, 5000))
             options[CONF_FR24_RADIUS] = user_input.get(
                 CONF_FR24_RADIUS, options.get(CONF_FR24_RADIUS, 3000)
             )
-            options[CONF_GLOBAL_EMERGENCY] = user_input.get(
-                CONF_GLOBAL_EMERGENCY, False
-            )
+            options[CONF_GLOBAL_EMERGENCY] = user_input.get(CONF_GLOBAL_EMERGENCY, False)
             options[CONF_GLOBAL_MILITARY] = user_input.get(CONF_GLOBAL_MILITARY, False)
             options[CONF_ENABLE_FR24_ENRICHMENT] = user_input.get(
                 CONF_ENABLE_FR24_ENRICHMENT, False
@@ -119,9 +112,7 @@ class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
             options[CONF_FR24_COMMERCIAL] = user_input.get(CONF_FR24_COMMERCIAL, True)
             options[CONF_FR24_PRIVATE] = user_input.get(CONF_FR24_PRIVATE, False)
             options[CONF_FR24_HELICOPTER] = user_input.get(CONF_FR24_HELICOPTER, False)
-            options[CONF_ADVANCED_ADSB_FILTER] = user_input.get(
-                CONF_ADVANCED_ADSB_FILTER, ""
-            )
+            options[CONF_ADVANCED_ADSB_FILTER] = user_input.get(CONF_ADVANCED_ADSB_FILTER, "")
 
             return self.async_create_entry(title="", data=options)
 
@@ -134,9 +125,7 @@ class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
             CONF_LONGITUDE, entry.data.get(CONF_LONGITUDE, self.hass.config.longitude)
         )
         current_radius = options.get(CONF_RADIUS, entry.data.get(CONF_RADIUS, 5000))
-        current_fr24_radius = options.get(
-            CONF_FR24_RADIUS, entry.data.get(CONF_FR24_RADIUS, 3000)
-        )
+        current_fr24_radius = options.get(CONF_FR24_RADIUS, entry.data.get(CONF_FR24_RADIUS, 3000))
         current_advanced = options.get(
             CONF_ADVANCED_ADSB_FILTER, entry.data.get(CONF_ADVANCED_ADSB_FILTER, "")
         )
@@ -159,9 +148,7 @@ class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):
             vol.Optional(
                 CONF_FR24_COMMERCIAL, default=options.get(CONF_FR24_COMMERCIAL, True)
             ): bool,
-            vol.Optional(
-                CONF_FR24_PRIVATE, default=options.get(CONF_FR24_PRIVATE, False)
-            ): bool,
+            vol.Optional(CONF_FR24_PRIVATE, default=options.get(CONF_FR24_PRIVATE, False)): bool,
             vol.Optional(
                 CONF_FR24_HELICOPTER, default=options.get(CONF_FR24_HELICOPTER, False)
             ): bool,

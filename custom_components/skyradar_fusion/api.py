@@ -1,10 +1,10 @@
 """API Client for SkyRadar Fusion."""
 
-import logging
-import aiohttp
 import asyncio
 import datetime
-from typing import Optional
+import logging
+
+import aiohttp
 
 from .const import API_BASE_URL
 
@@ -22,10 +22,13 @@ def _import_flightradar24_api():
     """
     try:
         from FlightRadarAPI import FlightRadar24API
+
         return FlightRadar24API
     except ImportError:
         from FlightRadar24 import FlightRadar24API
+
         return FlightRadar24API
+
 
 # --- TRAFFIC CONTROLLERS (ANTI-RATE LIMIT) ---
 # Enforces a strict 1-by-1 queue for Airplanes.live to prevent IP bans
@@ -56,7 +59,7 @@ class SkyRadarFusionAPI:
             self._fr24 = FlightRadar24API()
         return self._fr24
 
-    async def _request(self, url: str) -> Optional[dict]:
+    async def _request(self, url: str) -> dict | None:
         # --- THE AIRPLANES.LIVE RATE LIMITER ---
         # This queue ensures we NEVER hit airplanes.live faster than 1 request per 1.2 seconds.
         async with _airplanes_semaphore:
@@ -64,18 +67,14 @@ class SkyRadarFusionAPI:
                 "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
             }
             try:
-                async with self._session.get(
-                    url, headers=headers, timeout=10
-                ) as response:
+                async with self._session.get(url, headers=headers, timeout=10) as response:
                     if response.status == 200:
                         data = await response.json()
                         # Strictly wait 1.2 seconds before the next call is allowed to fire
                         await asyncio.sleep(1.2)
                         return data
                     elif response.status == 429:
-                        _LOGGER.warning(
-                            "Rate limited by Airplanes.live! Slowing down..."
-                        )
+                        _LOGGER.warning("Rate limited by Airplanes.live! Slowing down...")
                         await asyncio.sleep(5.0)
                         return None
                     else:
@@ -89,17 +88,15 @@ class SkyRadarFusionAPI:
     def _get_fr24_data_sync(
         self,
         identifier: str,
-        lat: float = None,
-        lon: float = None,
-        hex_code: str = None,
+        lat: float | None = None,
+        lon: float | None = None,
+        hex_code: str | None = None,
     ) -> dict | None:
         try:
             flight_id = None
             dummy_flight = None
             clean_id = identifier.strip().upper()
-            clean_hex = (
-                hex_code.strip().upper() if hex_code and hex_code != "Unknown" else None
-            )
+            clean_hex = hex_code.strip().upper() if hex_code and hex_code != "Unknown" else None
 
             try:
                 flights = self.fr24.get_flights(registration=clean_id)
@@ -181,7 +178,9 @@ class SkyRadarFusionAPI:
                 photo_large = safe_dict(large_imgs[0]).get("src")
 
             return {
-                "fr24_route": f"{origin_code.get('iata') or 'N/A'} - {dest_code.get('iata') or 'N/A'}",
+                "fr24_route": (
+                    f"{origin_code.get('iata') or 'N/A'} - {dest_code.get('iata') or 'N/A'}"
+                ),
                 "airline": airline.get("name") or "Unknown",
                 "airline_icao": airline_code.get("icao") or "N/A",
                 "airport_origin_name": origin.get("name") or "Unknown",
@@ -192,12 +191,9 @@ class SkyRadarFusionAPI:
                 "airport_destination_code_iata": dest_code.get("iata") or "N/A",
                 "airport_destination_code_icao": dest_code.get("icao") or "N/A",
                 "airport_destination_name": destination.get("name") or "Unknown",
-                "airport_destination_country_name": dest_country.get("name")
-                or "Unknown",
+                "airport_destination_country_name": dest_country.get("name") or "Unknown",
                 "fr24_photo": photo_large,
-                "fr24_scheduled_departure": format_unix_time(
-                    scheduled.get("departure")
-                ),
+                "fr24_scheduled_departure": format_unix_time(scheduled.get("departure")),
                 "fr24_scheduled_departure_epoch": scheduled.get("departure"),
                 "fr24_real_departure": format_unix_time(real.get("departure")),
                 "fr24_real_departure_epoch": real.get("departure"),
@@ -225,9 +221,9 @@ class SkyRadarFusionAPI:
     async def get_fr24_enrichment(
         self,
         identifier: str,
-        lat: float = None,
-        lon: float = None,
-        hex_code: str = None,
+        lat: float | None = None,
+        lon: float | None = None,
+        hex_code: str | None = None,
     ):
         if not self.hass:
             return None
@@ -260,24 +256,22 @@ class SkyRadarFusionAPI:
         return res.get("ac", []) if res else []
 
     async def get_planespotters_photo(
-        self, registration: str, hex_code: str = None
-    ) -> Optional[str]:
+        self, registration: str, hex_code: str | None = None
+    ) -> str | None:
 
         async def fetch_photo_from_url(url: str):
             headers = {
                 "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
             }
             try:
-                async with self._session.get(
-                    url, headers=headers, timeout=10
-                ) as response:
+                async with self._session.get(url, headers=headers, timeout=10) as response:
                     if response.status == 200:
                         data = await response.json()
                         if data and "photos" in data and len(data["photos"]) > 0:
                             photo = data["photos"][0]
-                            return photo.get("thumbnail_large", {}).get(
-                                "src"
-                            ) or photo.get("thumbnail", {}).get("src")
+                            return photo.get("thumbnail_large", {}).get("src") or photo.get(
+                                "thumbnail", {}
+                            ).get("src")
                     return None
             except Exception:
                 return None
