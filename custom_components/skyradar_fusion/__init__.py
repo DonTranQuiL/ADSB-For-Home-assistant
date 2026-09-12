@@ -5,11 +5,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.components.http import StaticPathConfig
 from .const import DOMAIN, PLATFORMS
-from .coordinator import SkyRadarFusionCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SkyRadar Fusion from a config entry."""
+    # Import coordinator lazily so config flow can load without FlightRadarAPI.
+    from .coordinator import SkyRadarFusionCoordinator
 
     await hass.http.async_register_static_paths(
         [

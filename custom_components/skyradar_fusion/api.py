@@ -5,12 +5,27 @@ import aiohttp
 import asyncio
 import datetime
 from typing import Optional
-from FlightRadar24 import FlightRadar24API
 
 from .const import API_BASE_URL
 
 _LOGGER = logging.getLogger(__name__)
 logging.getLogger("FlightRadarAPI").setLevel(logging.ERROR)
+
+
+def _import_flightradar24_api():
+    """Load FlightRadar24API across FlightRadarAPI package layouts.
+
+    PyPI package FlightRadarAPI renamed its top-level module:
+    - <=1.5.x: FlightRadar24
+    - 1.5.3: both
+    - >=1.6.0: FlightRadarAPI only
+    """
+    try:
+        from FlightRadarAPI import FlightRadar24API
+        return FlightRadar24API
+    except ImportError:
+        from FlightRadar24 import FlightRadar24API
+        return FlightRadar24API
 
 # --- TRAFFIC CONTROLLERS (ANTI-RATE LIMIT) ---
 # Enforces a strict 1-by-1 queue for Airplanes.live to prevent IP bans
@@ -31,7 +46,15 @@ class SkyRadarFusionAPI:
         self._session = session
         self._lock = asyncio.Lock()
         self.hass = hass
-        self.fr24 = FlightRadar24API()
+        self._fr24 = None
+
+    @property
+    def fr24(self):
+        """Lazy FlightRadar24 client so config flow can load before enrichment runs."""
+        if self._fr24 is None:
+            FlightRadar24API = _import_flightradar24_api()
+            self._fr24 = FlightRadar24API()
+        return self._fr24
 
     async def _request(self, url: str) -> Optional[dict]:
         # --- THE AIRPLANES.LIVE RATE LIMITER ---
