@@ -22,14 +22,19 @@ jobs:
           python-version: "3.12"
 
       - name: Install Dependencies
+        if: hashFiles('ai_engineer/aviation_watcher.py') != ''
         run: pip install requests openai FlightRadarAPI
 
       - name: Run Aviation Feed Watcher
+        if: hashFiles('ai_engineer/aviation_watcher.py') != ''
         id: watcher
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python ai_engineer/aviation_watcher.py
           
+      - name: Skip when ai_engineer/aviation_watcher.py absent
+        if: hashFiles('ai_engineer/aviation_watcher.py') == ''
+        run: echo "ai_engineer/aviation_watcher.py not present in this repo; skipping watcher"
       - name: Create Issue
         if: env.SCHEMA_CHANGED == 'true'
         uses: peter-evans/create-issue-from-file@v6
@@ -39,6 +44,7 @@ jobs:
           labels: bug, upstream-change, ai-detected, ${{ env.API_LABELS }}
 
       - name: Save API Memory Snapshots
+        if: hashFiles('ai_engineer/aviation_watcher.py') != ''
         run: |
           git config --global user.name "AI Staff Engineer"
           git config --global user.email "ai@github.com"
