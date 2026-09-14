@@ -427,15 +427,17 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
 
             overhead_aircraft = []
             for ac in filtered_aircraft:
-                if ac.get("distance_meter", float("inf")) <= fr24_radius_meters:
-                    if (
+                if ac.get("distance_meter", float("inf")) <= fr24_radius_meters and (
+                    (
                         advanced_filters
                         and ac.get("category", "").strip().upper() in advanced_filters
-                    ) or (
+                    )
+                    or (
                         not advanced_filters
                         and ac.get("air_category") in allowed_fr24_cats
-                    ):
-                        overhead_aircraft.append(ac)
+                    )
+                ):
+                    overhead_aircraft.append(ac)
 
             fr24_targets_raw = (
                 tracked_aircraft_data + global_emergencies_data + overhead_aircraft
