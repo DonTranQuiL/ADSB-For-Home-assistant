@@ -3,6 +3,7 @@
 from homeassistant.components.text import TextEntity
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
+
 from .const import DOMAIN
 
 

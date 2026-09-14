@@ -4,7 +4,8 @@ from homeassistant.components.device_tracker import TrackerEntity
 from homeassistant.components.device_tracker.const import SourceType
 from homeassistant.core import callback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .const import DOMAIN, CONF_ENABLE_TRACKER
+
+from .const import CONF_ENABLE_TRACKER, DOMAIN
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):

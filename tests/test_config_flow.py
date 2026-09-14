@@ -1,18 +1,19 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import (
-    DOMAIN,
-    CONF_TRACKING_MODE,
-    CONF_RADIUS,
-    CONF_LATITUDE,
-    CONF_LONGITUDE,
-    CONF_IDENTIFIER_TYPE,
-    CONF_IDENTIFIER,
     CONF_GLOBAL_EMERGENCY,
     CONF_GLOBAL_MILITARY,
+    CONF_IDENTIFIER,
+    CONF_IDENTIFIER_TYPE,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_RADIUS,
+    CONF_TRACKING_MODE,
+    DOMAIN,
     MODE_SINGLE,
     MODE_ZONE,
 )

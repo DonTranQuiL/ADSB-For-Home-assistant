@@ -1,6 +1,7 @@
 import voluptuous as vol
 from homeassistant import config_entries
-from .const import CONF_RADIUS, CONF_LATITUDE, CONF_LONGITUDE
+
+from .const import CONF_LATITUDE, CONF_LONGITUDE, CONF_RADIUS
 
 
 class SkyRadarFusionOptionsFlow(config_entries.OptionsFlow):

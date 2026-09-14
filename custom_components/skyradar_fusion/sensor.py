@@ -1,14 +1,15 @@
 """Sensor platform for SkyRadar Fusion."""
 
-from homeassistant.components.sensor import SensorEntity, RestoreSensor
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.components.sensor import RestoreSensor, SensorEntity
 from homeassistant.const import EntityCategory
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
-    MODE_ZONE,
     CONF_GLOBAL_EMERGENCY,
     CONF_GLOBAL_MILITARY,
+    DOMAIN,
+    MODE_ZONE,
     VERSION,
 )
 

@@ -3,7 +3,7 @@
 import asyncio
 import datetime
 import logging
-from typing import Optional
+
 import aiohttp
 
 try:
@@ -26,7 +26,9 @@ def format_unix_time(unix_ts):
     if not unix_ts:
         return None
     try:
-        return datetime.datetime.fromtimestamp(unix_ts, tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.fromtimestamp(
+            unix_ts, tz=datetime.timezone.utc
+        ).strftime("%Y-%m-%d %H:%M:%S")
     except Exception:
         return str(unix_ts)
 
@@ -38,7 +40,7 @@ class SkyRadarFusionAPI:
         self.hass = hass
         self.fr24 = FlightRadar24API()
 
-    async def _request(self, url: str) -> Optional[dict]:
+    async def _request(self, url: str) -> dict | None:
         # --- THE ADSB.ONE RATE LIMITER ---
         # This queue ensures we NEVER hit adsb.one faster than 1 request per 1.2 seconds.
         async with _adsb_one_semaphore:
@@ -55,9 +57,7 @@ class SkyRadarFusionAPI:
                         await asyncio.sleep(1.2)
                         return data
                     elif response.status == 429:
-                        _LOGGER.warning(
-                            "Rate limited by ADSB.one! Slowing down..."
-                        )
+                        _LOGGER.warning("Rate limited by ADSB.one! Slowing down...")
                         await asyncio.sleep(5.0)
                         return None
                     else:

@@ -1,12 +1,13 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.skyradar_fusion.const import DOMAIN
 from custom_components.skyradar_fusion.sensor import (
+    SkyRadarFusionCategorySensor,
     SkyRadarFusionOverviewSensor,
     SkyRadarFusionStatSensor,
-    SkyRadarFusionCategorySensor,
 )
 
 

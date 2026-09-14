@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from homeassistant.components.device_tracker.const import SourceType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
