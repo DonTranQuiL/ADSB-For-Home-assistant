@@ -29,7 +29,9 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def haversine_distance(lat1, lon1, lat2, lon2):
+    """Calculate the great circle distance between two points in nautical miles."""
     R = 3440.065
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
@@ -40,8 +42,12 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     )
     return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
+
 class SkyRadarFusionCoordinator(DataUpdateCoordinator):
+    """Coordinator to manage fetching ADSB and FlightRadar24 data."""
+
     def __init__(self, hass: HomeAssistant, config_entry):
+        """Initialize the SkyRadar Fusion coordinator."""
         self.config_entry = config_entry
         self.api = SkyRadarFusionAPI(async_get_clientsession(hass), hass)
         self.mode = config_entry.data.get(CONF_TRACKING_MODE, MODE_ZONE)
@@ -86,6 +92,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         )
 
     def add_track(self, identifier):
+        """Add an aircraft identifier to manual tracking."""
         if identifier:
             clean_id = identifier.strip().upper().replace(" ", "")
             self.tracked_list.add(clean_id)
@@ -94,6 +101,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             )
 
     def remove_track(self, identifier):
+        """Remove an aircraft identifier from manual tracking."""
         if identifier:
             clean_id = identifier.strip().upper().replace(" ", "")
             self.tracked_list.discard(clean_id)
@@ -102,9 +110,11 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             )
 
     def clear_tracks(self):
+        """Clear all manually tracked aircraft."""
         self.tracked_list.clear()
 
     def clean_aircraft_data(self, ac):
+        """Filter out unnecessary keys and classify aircraft type."""
         keys_to_keep = [
             "hex",
             "flight",
@@ -142,6 +152,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         return cleaned
 
     def classify_aircraft(self, ac):
+        """Classify aircraft into helicopter, military, commercial, or private."""
         desc = ac.get("desc", "").lower()
         flight = ac.get("flight", "").strip().upper()
         cat = ac.get("category", "").strip().upper()
@@ -188,6 +199,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
         return "private"
 
     async def _fetch_photo_background(self, reg, hex_code, cache_key):
+        """Fetch plane photo asynchronously in the background."""
         photo_url = await self.api.get_planespotters_photo(reg, hex_code)
         if photo_url:
             self.photo_cache[cache_key] = photo_url
@@ -197,6 +209,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
     async def _fetch_fr24_background(
         self, search_id, lat=None, lon=None, hex_code=None
     ):
+        """Fetch FlightRadar24 details asynchronously in the background."""
         try:
             fr24_data = await self.api.get_fr24_enrichment(
                 search_id, lat, lon, hex_code
@@ -209,6 +222,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             self.fr24_cache[search_id] = "None"
 
     async def _async_update_data(self):
+        """Fetch and combine live telemetry from ADSB, FR24, and Planespotters."""
         try:
             if not self._history_loaded:
                 stored_history = await self.store.async_load()
@@ -243,7 +257,12 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 self.config_entry.data.get(CONF_LONGITUDE, self.hass.config.longitude),
             )
 
-            cat_counts = {"helicopter": 0, "military": 0, "commercial": 0, "private": 0}
+            cat_counts = {
+                "helicopter": 0,
+                "military": 0,
+                "commercial": 0,
+                "private": 0,
+            }
             closest_aircraft = None
             closest_distance_meters = float("inf")
             filtered_aircraft = []
@@ -302,7 +321,10 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         if clean_ac.get("lat") and clean_ac.get("lon"):
                             clean_ac["distance_meter"] = round(
                                 haversine_distance(
-                                    home_lat, home_lon, clean_ac["lat"], clean_ac["lon"]
+                                    home_lat,
+                                    home_lon,
+                                    clean_ac["lat"],
+                                    clean_ac["lon"],
                                 )
                                 * 1852.0,
                                 1,
@@ -325,7 +347,10 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         if clean_ac.get("lat") and clean_ac.get("lon"):
                             clean_ac["distance_meter"] = round(
                                 haversine_distance(
-                                    home_lat, home_lon, clean_ac["lat"], clean_ac["lon"]
+                                    home_lat,
+                                    home_lon,
+                                    clean_ac["lat"],
+                                    clean_ac["lon"],
                                 )
                                 * 1852.0,
                                 1,
@@ -403,12 +428,14 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             overhead_aircraft = []
             for ac in filtered_aircraft:
                 if ac.get("distance_meter", float("inf")) <= fr24_radius_meters:
-                    if advanced_filters:
-                        if ac.get("category", "").strip().upper() in advanced_filters:
-                            overhead_aircraft.append(ac)
-                    else:
-                        if ac.get("air_category") in allowed_fr24_cats:
-                            overhead_aircraft.append(ac)
+                    if (
+                        advanced_filters
+                        and ac.get("category", "").strip().upper() in advanced_filters
+                    ) or (
+                        not advanced_filters
+                        and ac.get("air_category") in allowed_fr24_cats
+                    ):
+                        overhead_aircraft.append(ac)
 
             fr24_targets_raw = (
                 tracked_aircraft_data + global_emergencies_data + overhead_aircraft
@@ -436,14 +463,18 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         self._fetch_photo_background(reg, hex_code, cache_key)
                     )
 
-                if enable_fr24 and search_id and search_id != "Unknown":
-                    if search_id not in self.fr24_cache:
-                        self.fr24_cache[search_id] = "Loading"
-                        self.hass.async_create_task(
-                            self._fetch_fr24_background(
-                                search_id, ac_lat, ac_lon, hex_code
-                            )
+                if (
+                    enable_fr24
+                    and search_id
+                    and search_id != "Unknown"
+                    and search_id not in self.fr24_cache
+                ):
+                    self.fr24_cache[search_id] = "Loading"
+                    self.hass.async_create_task(
+                        self._fetch_fr24_background(
+                            search_id, ac_lat, ac_lon, hex_code
                         )
+                    )
 
             current_time = dt_util.now().timestamp()
             formatted_now = dt_util.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -517,7 +548,6 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                     target["gs"] = 0
                     target["baro_rate"] = 0
 
-            # --- START ANTI-FLICKER & LOCAL TELEMETRY MEMORY ---
             for target in filtered_aircraft + list(unique_map_targets):
                 tid = target.get("raw_hex") or target.get("hex")
                 if not tid or tid == "Unknown":
@@ -530,17 +560,24 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         self.tracker_memory[tid] = {
                             "data": {},
                             "local_actual_departure": None,
-                            "local_actual_arrival": None
+                            "local_actual_arrival": None,
                         }
-                        
+
                     self.tracker_memory[tid]["last_seen"] = current_time
-                    
-                    # Log Local Departure if Airborne
-                    if not target.get("on_ground") and not self.tracker_memory[tid]["local_actual_departure"]:
-                        self.tracker_memory[tid]["local_actual_departure"] = formatted_now
-                        
-                    # Log Local Arrival if On Ground
-                    if target.get("on_ground") and self.tracker_memory[tid]["local_actual_departure"] and not self.tracker_memory[tid]["local_actual_arrival"]:
+
+                    if (
+                        not target.get("on_ground")
+                        and not self.tracker_memory[tid]["local_actual_departure"]
+                    ):
+                        self.tracker_memory[tid]["local_actual_departure"] = (
+                            formatted_now
+                        )
+
+                    if (
+                        target.get("on_ground")
+                        and self.tracker_memory[tid]["local_actual_departure"]
+                        and not self.tracker_memory[tid]["local_actual_arrival"]
+                    ):
                         self.tracker_memory[tid]["local_actual_arrival"] = formatted_now
 
                     for k, v in target.items():
@@ -580,18 +617,21 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                                 in ["unknown", "n/a", "none"]
                             ):
                                 target[k] = v
-                                
-                        # Attach Local Telemetry for device_tracker.py
-                        target["local_actual_departure"] = self.tracker_memory[tid]["local_actual_departure"]
-                        target["local_actual_arrival"] = self.tracker_memory[tid]["local_actual_arrival"]
 
-            expired_keys = []
-            for tid, mem in self.tracker_memory.items():
-                if current_time - mem["last_seen"] > 300:
-                    expired_keys.append(tid)
+                        target["local_actual_departure"] = self.tracker_memory[tid][
+                            "local_actual_departure"
+                        ]
+                        target["local_actual_arrival"] = self.tracker_memory[tid][
+                            "local_actual_arrival"
+                        ]
+
+            expired_keys = [
+                tid
+                for tid, mem in self.tracker_memory.items()
+                if current_time - mem["last_seen"] > 300
+            ]
             for tid in expired_keys:
                 del self.tracker_memory[tid]
-            # --- END ANTI-FLICKER & LOCAL TELEMETRY MEMORY ---
 
             for ac in filtered_aircraft:
                 hex_code = ac.get("hex")
