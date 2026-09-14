@@ -1,0 +1,7 @@
+Yo, what’s good fam? 
+
+I just rolled through the code and gave our 'FlightRadarAPI' package a little love, bumpin' it up from version 1.5.1 to 1.6.1. This upgrade's gonna keep our game tight, ensuring we stay fly and connected to the freshest data out there.
+
+Check the manifest and requirements files, and you’ll see that this slick update is all in there. This means we're on point with the latest features and fixes, ready to take our SkyRadar Fusion to new heights.
+
+Let’s keep it smooth and make sure everything's running like a well-oiled machine. Appreciate the hustle, and let’s get this merged! Peace and progress, y’all!
