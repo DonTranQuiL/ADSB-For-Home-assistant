@@ -5,9 +5,16 @@ import datetime
 from openai import OpenAI
 from FlightRadarAPI import FlightRadar24API
 
-# 1. Configuration
+# 1. Configuration — keep in sync with custom_components/skyradar_fusion/const.py
 FR24_API = FlightRadar24API()
-AIRPLANES_LIVE_URL = "https://api.airplanes.live/v2/point/50.86/6.08/25"
+ADSB_FI_BASE_URL = "https://opendata.adsb.fi/api"
+# Sample zone probe matching api.get_aircraft_in_zone (/v3/lat/.../lon/.../dist/...)
+ADSB_FI_LAT = 50.86
+ADSB_FI_LON = 6.08
+ADSB_FI_DIST_NM = 25
+ADSB_FI_URL = (
+    f"{ADSB_FI_BASE_URL}/v3/lat/{ADSB_FI_LAT}/lon/{ADSB_FI_LON}/dist/{ADSB_FI_DIST_NM}"
+)
 MEMORY_DIR = ".memory"
 os.makedirs(MEMORY_DIR, exist_ok=True)
 
@@ -39,19 +46,24 @@ def get_fr24_keys():
     return None
 
 
-def get_airplanes_live_keys():
-    """Fetch live data and aggregate unique keys across ALL aircraft in the payload."""
+def get_adsb_fi_keys():
+    """Fetch live adsb.fi Open Data and aggregate unique keys across aircraft."""
     try:
-        response = requests.get(AIRPLANES_LIVE_URL, timeout=10)
+        headers = {
+            "User-Agent": (
+                "SkyRadarFusion-Watcher/2.0 "
+                "(+https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
+            )
+        }
+        response = requests.get(ADSB_FI_URL, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
 
         aircraft_list = data.get("ac", [])
         if not aircraft_list:
-            print("Airplanes.live warning: No aircraft in payload zone.")
+            print("adsb.fi warning: No aircraft in sample zone payload.")
             return None
 
-        # Loop through EVERY plane in the response and collect all unique keys
         live_fields = set()
         for aircraft in aircraft_list:
             live_fields.update(aircraft.keys())
@@ -59,15 +71,15 @@ def get_airplanes_live_keys():
         return sorted(list(live_fields))
 
     except Exception as e:
-        print(f"Airplanes.live check failed: {e}")
+        print(f"adsb.fi check failed: {e}")
         return None
 
 
 # 2. Monitoring Logic
-sources = {"flightradar24": get_fr24_keys, "airplanes_live": get_airplanes_live_keys}
+sources = {"flightradar24": get_fr24_keys, "adsb_fi": get_adsb_fi_keys}
 
 # Map the internal names to the clean labels you want on GitHub
-LABEL_MAP = {"flightradar24": "FR24", "airplanes_live": "Airplanes Live"}
+LABEL_MAP = {"flightradar24": "FR24", "adsb_fi": "adsb.fi"}
 
 schema_drift_detected = False
 report_details = []
