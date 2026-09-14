@@ -551,14 +551,11 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                         self._fetch_photo_background(reg, hex_code, cache_key)
                     )
 
-                if enable_fr24 and search_id and search_id != "Unknown":
-                    if search_id not in self.fr24_cache:
-                        self.fr24_cache[search_id] = "Loading"
-                        self.hass.async_create_task(
-                            self._fetch_fr24_background(
-                                search_id, ac_lat, ac_lon, hex_code
-                            )
-                        )
+                if enable_fr24 and search_id and search_id != "Unknown" and search_id not in self.fr24_cache:
+                    self.fr24_cache[search_id] = "Loading"
+                    self.hass.async_create_task(
+                        self._fetch_fr24_background(search_id, f_lat, f_lon, f_hex)
+                    )
 
             current_time = dt_util.now().timestamp()
             formatted_now = dt_util.now().strftime("%Y-%m-%d %H:%M:%S")

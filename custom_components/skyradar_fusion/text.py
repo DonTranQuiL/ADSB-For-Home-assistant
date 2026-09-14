@@ -64,12 +64,11 @@ class SkyRadarFusionRemoveText(SkyRadarFusionTextBase):
             registry, self.coordinator.config_entry.entry_id
         )
         for entry in entries:
-            if entry.domain == "device_tracker":
-                if (
-                    clean_val in entry.entity_id.upper()
-                    or clean_val in (entry.original_name or "").upper()
-                ):
-                    registry.async_remove(entry.entity_id)
+            if entry.domain == "device_tracker" and (
+                clean_val in entry.entity_id.upper()
+                or clean_val in (entry.original_name or "").upper()
+            ):
+                registry.async_remove(entry.entity_id)
 
         self.coordinator.remove_track(clean_val)
         self._attr_native_value = ""

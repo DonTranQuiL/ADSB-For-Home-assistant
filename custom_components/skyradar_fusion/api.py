@@ -26,7 +26,7 @@ def format_unix_time(unix_ts):
     if not unix_ts:
         return None
     try:
-        return datetime.datetime.fromtimestamp(unix_ts).strftime("%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.fromtimestamp(unix_ts, tz=datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     except Exception:
         return str(unix_ts)
 
@@ -71,9 +71,9 @@ class SkyRadarFusionAPI:
     def _get_fr24_data_sync(
         self,
         identifier: str,
-        lat: float = None,
-        lon: float = None,
-        hex_code: str = None,
+        lat: float | None = None,
+        lon: float | None = None,
+        hex_code: str | None = None,
     ) -> dict | None:
         try:
             flight_id = None
@@ -215,9 +215,9 @@ class SkyRadarFusionAPI:
     async def get_fr24_enrichment(
         self,
         identifier: str,
-        lat: float = None,
-        lon: float = None,
-        hex_code: str = None,
+        lat: float | None = None,
+        lon: float | None = None,
+        hex_code: str | None = None,
     ):
         if not self.hass:
             return None
@@ -250,8 +250,8 @@ class SkyRadarFusionAPI:
         return res.get("ac", []) if res else []
 
     async def get_planespotters_photo(
-        self, registration: str, hex_code: str = None
-    ) -> Optional[str]:
+        self, registration: str, hex_code: str | None = None
+    ) -> str | None:
 
         async def fetch_photo_from_url(url: str):
             headers = {
