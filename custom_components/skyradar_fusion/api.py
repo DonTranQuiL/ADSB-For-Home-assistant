@@ -1,16 +1,21 @@
 """API Client for SkyRadar Fusion."""
 
-import logging
-import aiohttp
 import asyncio
 import datetime
+import logging
 from typing import Optional
-from FlightRadar24 import FlightRadar24API
+import aiohttp
+
+try:
+    from FlightRadarAPI import FlightRadar24API
+except ImportError:
+    from FlightRadar24 import FlightRadar24API
 
 from .const import API_BASE_URL
 
 _LOGGER = logging.getLogger(__name__)
 logging.getLogger("FlightRadarAPI").setLevel(logging.ERROR)
+logging.getLogger("FlightRadar24").setLevel(logging.ERROR)
 
 # --- TRAFFIC CONTROLLERS (ANTI-RATE LIMIT) ---
 # Enforces a strict 1-by-1 queue for Airplanes.live to prevent IP bans
@@ -117,7 +122,15 @@ class SkyRadarFusionAPI:
             if not flight_id or not dummy_flight:
                 return None
 
-            details = self.fr24.get_flight_details(dummy_flight)
+            details = None
+            try:
+                details = self.fr24.get_flight_details(dummy_flight)
+            except Exception:
+                try:
+                    details = self.fr24.get_flight_details(flight_id)
+                except Exception:
+                    pass
+
             if not details:
                 return None
 
