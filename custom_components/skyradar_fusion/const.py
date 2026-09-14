@@ -4,7 +4,7 @@ DOMAIN = "skyradar_fusion"
 NAME = "SkyRadar Fusion"
 VERSION = "2.0.1"
 
-API_BASE_URL = "https://api.airplanes.live/v2"
+API_BASE_URL = "https://api.adsb.one/v2"
 
 CONF_TRACKING_MODE = "tracking_mode"
 CONF_IDENTIFIER_TYPE = "identifier_type"

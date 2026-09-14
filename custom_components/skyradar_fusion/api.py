@@ -18,8 +18,8 @@ logging.getLogger("FlightRadarAPI").setLevel(logging.ERROR)
 logging.getLogger("FlightRadar24").setLevel(logging.ERROR)
 
 # --- TRAFFIC CONTROLLERS (ANTI-RATE LIMIT) ---
-# Enforces a strict 1-by-1 queue for Airplanes.live to prevent IP bans
-_airplanes_semaphore = asyncio.Semaphore(1)
+# Enforces a strict 1-by-1 queue for ADSB.one to prevent IP bans
+_adsb_one_semaphore = asyncio.Semaphore(1)
 
 
 def format_unix_time(unix_ts):
@@ -39,9 +39,9 @@ class SkyRadarFusionAPI:
         self.fr24 = FlightRadar24API()
 
     async def _request(self, url: str) -> Optional[dict]:
-        # --- THE AIRPLANES.LIVE RATE LIMITER ---
-        # This queue ensures we NEVER hit airplanes.live faster than 1 request per 1.2 seconds.
-        async with _airplanes_semaphore:
+        # --- THE ADSB.ONE RATE LIMITER ---
+        # This queue ensures we NEVER hit adsb.one faster than 1 request per 1.2 seconds.
+        async with _adsb_one_semaphore:
             headers = {
                 "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
             }
@@ -56,7 +56,7 @@ class SkyRadarFusionAPI:
                         return data
                     elif response.status == 429:
                         _LOGGER.warning(
-                            "Rate limited by Airplanes.live! Slowing down..."
+                            "Rate limited by ADSB.one! Slowing down..."
                         )
                         await asyncio.sleep(5.0)
                         return None
@@ -64,7 +64,7 @@ class SkyRadarFusionAPI:
                         await asyncio.sleep(1.2)
                         return None
             except Exception as err:
-                _LOGGER.debug("Error during Airplanes.live request %s: %s", url, err)
+                _LOGGER.debug("Error during ADSB.one request %s: %s", url, err)
                 await asyncio.sleep(1.2)
                 return None
 
