@@ -8,7 +8,7 @@
 **The high-performance, zero-bloat, hybrid ADS-B & FlightRadar24 airspace intelligence monitor for Home Assistant.**
 
 > ⚠️ **MASSIVE OVERHAUL ANNOUNCEMENT:** 
-> We have just released a gigantic core rewrite! This integration (formerly Airplanes.Live Tracker) now features a **Hybrid Engine**, combining the ultra-fast Airplanes.Live radar feed with rich **FlightRadar24 API enrichment** (live routes, high-res photos, and scheduled times). Welcome to the SkyRadar Fusion era!
+> We have just released a gigantic core rewrite! This integration (formerly adsb.one Tracker) now features a **Hybrid Engine**, combining the ultra-fast adsb.one radar feed with rich **FlightRadar24 API enrichment** (live routes, high-res photos, and scheduled times). Welcome to the SkyRadar Fusion era!
 
 [![Latest Release](https://img.shields.io/github/v/release/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/releases)
 [![License](https://img.shields.io/github/license/DonTranQuiL/ADSB-For-Home-assistant?style=for-the-badge&color=007ec6)](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/blob/main/LICENSE)
@@ -203,7 +203,7 @@ entities:
 ##  Credits 
 We need to thank JeanExtreme002 for his hard work to keep the FR24 API going! https://github.com/JeanExtreme002/FlightRadarAPI
 
-It was not possible without the ADS-B data from api.airplanes.live 
+It was not possible without the ADS-B data from api.adsb.one 
 
 If u are interested in non ADS-B data everyone need to check out FR24 Homeassistant integration from AlexandrErohin https://github.com/AlexandrErohin/home-assistant-flightradar24!
 
