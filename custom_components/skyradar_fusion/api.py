@@ -3,7 +3,6 @@
 import asyncio
 import datetime
 import logging
-
 import aiohttp
 
 try:
@@ -18,11 +17,13 @@ logging.getLogger("FlightRadarAPI").setLevel(logging.ERROR)
 logging.getLogger("FlightRadar24").setLevel(logging.ERROR)
 
 # --- TRAFFIC CONTROLLERS (ANTI-RATE LIMIT) ---
-# Enforces a strict 1-by-1 queue for ADSB.one to prevent IP bans
-_adsb_one_semaphore = asyncio.Semaphore(1)
+# adsb.fi public rate limit: 1 request per second.
+# 1.2s sleep ensures we remain safely below their throttle limit.
+_adsb_fi_semaphore = asyncio.Semaphore(1)
 
 
 def format_unix_time(unix_ts):
+    """Format Unix timestamp safely with timezone awareness."""
     if not unix_ts:
         return None
     try:
@@ -34,16 +35,19 @@ def format_unix_time(unix_ts):
 
 
 class SkyRadarFusionAPI:
+    """API client interacting with adsb.fi and FlightRadar24."""
+
     def __init__(self, session: aiohttp.ClientSession, hass=None):
+        """Initialize the API client."""
         self._session = session
         self._lock = asyncio.Lock()
         self.hass = hass
         self.fr24 = FlightRadar24API()
 
     async def _request(self, url: str) -> dict | None:
-        # --- THE ADSB.ONE RATE LIMITER ---
-        # This queue ensures we NEVER hit adsb.one faster than 1 request per 1.2 seconds.
-        async with _adsb_one_semaphore:
+        """Perform throttled GET request to adsb.fi."""
+        # Enforces a strict queue to avoid 429s or IP bans
+        async with _adsb_fi_semaphore:
             headers = {
                 "User-Agent": "SkyRadarFusion/2.0 (Home Assistant; +https://github.com/DonTranQuiL/ADSB-For-Home-assistant)"
             }
@@ -53,18 +57,30 @@ class SkyRadarFusionAPI:
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        # Strictly wait 1.2 seconds before the next call is allowed to fire
+                        ac_count = (
+                            len(data.get("ac", []))
+                            if isinstance(data, dict)
+                            else 0
+                        )
+                        _LOGGER.debug(
+                            "adsb.fi HTTP 200 for %s (received %d aircraft)",
+                            url,
+                            ac_count,
+                        )
                         await asyncio.sleep(1.2)
                         return data
                     elif response.status == 429:
-                        _LOGGER.warning("Rate limited by ADSB.one! Slowing down...")
+                        _LOGGER.warning("Rate limited by adsb.fi! Slowing down...")
                         await asyncio.sleep(5.0)
                         return None
                     else:
+                        _LOGGER.debug(
+                            "adsb.fi returned HTTP %s for %s", response.status, url
+                        )
                         await asyncio.sleep(1.2)
                         return None
             except Exception as err:
-                _LOGGER.debug("Error during ADSB.one request %s: %s", url, err)
+                _LOGGER.debug("Error during adsb.fi request %s: %s", url, err)
                 await asyncio.sleep(1.2)
                 return None
 
@@ -75,6 +91,7 @@ class SkyRadarFusionAPI:
         lon: float | None = None,
         hex_code: str | None = None,
     ) -> dict | None:
+        """Query FlightRadar24 synchronously in an executor thread."""
         try:
             flight_id = None
             dummy_flight = None
@@ -197,7 +214,6 @@ class SkyRadarFusionAPI:
                 "fr24_estimated_arrival_epoch": estimated.get("arrival"),
                 "fr24_flight_number": number_info.get("default") or "Unknown",
                 "fr24_aircraft_code": aircraft_model.get("code") or "Unknown",
-                # --- Dynamic Telemetry & ON GROUND FLAG ---
                 "fr24_lat": getattr(dummy_flight, "latitude", None),
                 "fr24_lon": getattr(dummy_flight, "longitude", None),
                 "fr24_track": getattr(dummy_flight, "heading", None),
@@ -219,6 +235,7 @@ class SkyRadarFusionAPI:
         lon: float | None = None,
         hex_code: str | None = None,
     ):
+        """Dispatch synchronous FR24 lookup to the Home Assistant executor."""
         if not self.hass:
             return None
         return await self.hass.async_add_executor_job(
@@ -226,32 +243,45 @@ class SkyRadarFusionAPI:
         )
 
     async def get_aircraft_by_hex(self, hex_code: str):
-        res = await self._request(f"{API_BASE_URL}/hex/{hex_code.strip().lower()}")
+        """Query adsb.fi for aircraft by ICAO hex code."""
+        res = await self._request(f"{API_BASE_URL}/v2/hex/{hex_code.strip().lower()}")
         return res.get("ac", []) if res else []
 
     async def get_aircraft_by_callsign(self, callsign: str):
-        res = await self._request(f"{API_BASE_URL}/callsign/{callsign.strip().upper()}")
+        """Query adsb.fi for aircraft by flight callsign."""
+        res = await self._request(
+            f"{API_BASE_URL}/v2/callsign/{callsign.strip().upper()}"
+        )
         return res.get("ac", []) if res else []
 
     async def get_aircraft_by_reg(self, registration: str):
-        res = await self._request(f"{API_BASE_URL}/reg/{registration.strip().upper()}")
+        """Query adsb.fi for aircraft by tail registration."""
+        res = await self._request(
+            f"{API_BASE_URL}/v2/registration/{registration.strip().upper()}"
+        )
         return res.get("ac", []) if res else []
 
     async def get_aircraft_in_zone(self, lat: float, lon: float, radius: int):
-        res = await self._request(f"{API_BASE_URL}/point/{lat}/{lon}/{radius}")
+        """Query adsb.fi for aircraft within a nautical mile radius."""
+        res = await self._request(
+            f"{API_BASE_URL}/v3/lat/{lat}/lon/{lon}/dist/{radius}"
+        )
         return res.get("ac", []) if res else []
 
     async def get_global_emergencies(self):
-        res = await self._request(f"{API_BASE_URL}/squawk/7700")
+        """Query adsb.fi for all aircraft squawking 7700 emergency."""
+        res = await self._request(f"{API_BASE_URL}/v2/sqk/7700")
         return res.get("ac", []) if res else []
 
     async def get_global_military(self):
-        res = await self._request(f"{API_BASE_URL}/mil")
+        """Query adsb.fi for all active military aircraft."""
+        res = await self._request(f"{API_BASE_URL}/v2/mil")
         return res.get("ac", []) if res else []
 
     async def get_planespotters_photo(
         self, registration: str, hex_code: str | None = None
     ) -> str | None:
+        """Fetch plane photo asynchronously from Planespotters."""
 
         async def fetch_photo_from_url(url: str):
             headers = {

@@ -1,31 +1,30 @@
 import logging
+from datetime import timedelta
 import math
 import re
-from datetime import timedelta
-
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
 from .api import SkyRadarFusionAPI
 from .const import (
-    CONF_ADVANCED_ADSB_FILTER,
-    CONF_ENABLE_FR24_ENRICHMENT,
-    CONF_FR24_COMMERCIAL,
-    CONF_FR24_HELICOPTER,
-    CONF_FR24_PRIVATE,
-    CONF_FR24_RADIUS,
-    CONF_GLOBAL_EMERGENCY,
-    CONF_GLOBAL_MILITARY,
+    DOMAIN,
+    CONF_TRACKING_MODE,
+    CONF_RADIUS,
     CONF_LATITUDE,
     CONF_LONGITUDE,
-    CONF_RADIUS,
-    CONF_TRACKING_MODE,
-    DEFAULT_SCAN_INTERVAL,
-    DOMAIN,
+    CONF_GLOBAL_EMERGENCY,
+    CONF_GLOBAL_MILITARY,
+    CONF_FR24_RADIUS,
+    CONF_ENABLE_FR24_ENRICHMENT,
+    CONF_FR24_COMMERCIAL,
+    CONF_FR24_PRIVATE,
+    CONF_FR24_HELICOPTER,
+    CONF_ADVANCED_ADSB_FILTER,
     MODE_ZONE,
+    DEFAULT_SCAN_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -175,134 +174,21 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             if re.match(r"^[A-Z]{3}\d", flight):
                 return "commercial"
             commercial_prefixes = (
-                "AAL",
-                "AAR",
-                "ACA",
-                "AEE",
-                "AFR",
-                "AHO",
-                "AIC",
-                "ALK",
-                "AMX",
-                "ANA",
-                "ASA",
-                "AUA",
-                "AVA",
-                "AWC",
-                "BAW",
-                "BCS",
-                "BEL",
-                "BOX",
-                "BTI",
-                "CAL",
-                "CBJ",
-                "CCA",
-                "CCX",
-                "CHH",
-                "CKS",
-                "CLA",
-                "CLX",
-                "CLY",
-                "CMP",
-                "CND",
-                "CPA",
-                "CSH",
-                "CSN",
-                "DAL",
-                "DCS",
-                "DHK",
-                "DHL",
-                "DLH",
-                "EIN",
-                "EJA",
-                "EJM",
-                "ETD",
-                "EVA",
-                "EWE",
-                "EWG",
-                "EWL",
-                "EXS",
-                "EZS",
-                "EZY",
-                "FBA",
-                "FDX",
-                "FFT",
-                "FIN",
-                "FLX",
-                "FLY",
-                "FYG",
-                "GAC",
-                "GFA",
-                "GTI",
-                "HAL",
-                "HFY",
-                "HVN",
-                "IBE",
-                "ICE",
-                "IGO",
-                "ITY",
-                "JAL",
-                "JAS",
-                "JBU",
-                "JFA",
-                "JSX",
-                "KAL",
-                "KLM",
-                "KMM",
-                "KQA",
-                "KZR",
-                "LAN",
-                "LOG",
-                "LOT",
-                "LUX",
-                "LXJ",
-                "LYX",
-                "LZB",
-                "MAS",
-                "MPH",
-                "MXY",
-                "NJE",
-                "NKS",
-                "OMA",
-                "PAC",
-                "PH",
-                "PIA",
-                "QFA",
-                "QQE",
-                "QTR",
-                "QXE",
-                "RJA",
-                "RYA",
-                "SAS",
-                "SCW",
-                "SCX",
-                "SIA",
-                "SKW",
-                "SLR",
-                "SRU",
-                "SVA",
-                "SVW",
-                "SWA",
-                "SWR",
-                "TAG",
-                "TAP",
-                "TAY",
-                "THA",
-                "THY",
-                "TOM",
-                "TRA",
-                "TUI",
-                "TVS",
-                "UAE",
-                "UAL",
-                "UPS",
-                "VIR",
-                "VIV",
-                "VJT",
-                "VOI",
-                "WJA",
-                "WUP",
-                "XGO",
+                "AAL", "AAR", "ACA", "AEE", "AFR", "AHO", "AIC", "ALK", "AMX",
+                "ANA", "ASA", "AUA", "AVA", "AWC", "BAW", "BCS", "BEL", "BOX",
+                "BTI", "CAL", "CBJ", "CCA", "CCX", "CHH", "CKS", "CLA", "CLX",
+                "CLY", "CMP", "CND", "CPA", "CSH", "CSN", "DAL", "DCS", "DHK",
+                "DHL", "DLH", "EIN", "EJA", "EJM", "ETD", "EVA", "EWE", "EWG",
+                "EWL", "EXS", "EZS", "EZY", "FBA", "FDX", "FFT", "FIN", "FLX",
+                "FLY", "FYG", "GAC", "GFA", "GTI", "HAL", "HFY", "HVN", "IBE",
+                "ICE", "IGO", "ITY", "JAL", "JAS", "JBU", "JFA", "JSX", "KAL",
+                "KLM", "KMM", "KQA", "KZR", "LAN", "LOG", "LOT", "LUX", "LXJ",
+                "LYX", "LZB", "MAS", "MPH", "MXY", "NJE", "NKS", "OMA", "PAC",
+                "PH", "PIA", "QFA", "QQE", "QTR", "QXE", "RJA", "RYA", "SAS",
+                "SCW", "SCX", "SIA", "SKW", "SLR", "SRU", "SVA", "SVW", "SWA",
+                "SWR", "TAG", "TAP", "TAY", "THA", "THY", "TOM", "TRA", "TUI",
+                "TVS", "UAE", "UAL", "UPS", "VIR", "VIV", "VJT", "VOI", "WJA",
+                "WUP", "XGO",
             )
             if flight.startswith(commercial_prefixes):
                 return "commercial"
@@ -386,6 +272,13 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
 
             if self.mode == MODE_ZONE:
                 radius_nm = max(1, math.ceil(radius_meters / 1852.0))
+                _LOGGER.debug(
+                    "Scanning adsb.fi zone at (%s, %s) with radius %d NM (%d m)",
+                    home_lat,
+                    home_lon,
+                    radius_nm,
+                    radius_meters,
+                )
                 aircraft_list = await self.api.get_aircraft_in_zone(
                     home_lat, home_lon, radius_nm
                 )
@@ -417,6 +310,24 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                             if dist_meters < closest_distance_meters:
                                 closest_distance_meters = dist_meters
                                 closest_aircraft = clean_ac
+
+                    if filtered_aircraft:
+                        plane_summary = ", ".join(
+                            f"{ac.get('flight') or ac.get('r') or ac.get('hex')} ({ac.get('distance_meter')}m, {ac.get('air_category')})"
+                            for ac in filtered_aircraft
+                        )
+                        _LOGGER.info(
+                            "SkyRadar Fusion: %d aircraft detected overhead: %s",
+                            len(filtered_aircraft),
+                            plane_summary,
+                        )
+                    elif aircraft_list:
+                        _LOGGER.debug(
+                            "SkyRadar Fusion: %d aircraft in wider %d NM radius, but 0 within your %d m zone",
+                            len(aircraft_list),
+                            radius_nm,
+                            radius_meters,
+                        )
 
             if enable_emergencies:
                 em_raw = await self.api.get_global_emergencies()
@@ -587,7 +498,9 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
                 ):
                     self.fr24_cache[search_id] = "Loading"
                     self.hass.async_create_task(
-                        self._fetch_fr24_background(search_id, ac_lat, ac_lon, hex_code)
+                        self._fetch_fr24_background(
+                            search_id, ac_lat, ac_lon, hex_code
+                        )
                     )
 
             current_time = dt_util.now().timestamp()

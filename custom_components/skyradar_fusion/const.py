@@ -2,9 +2,10 @@
 
 DOMAIN = "skyradar_fusion"
 NAME = "SkyRadar Fusion"
-VERSION = "2.0.1"
+VERSION = "2.0.10"
 
-API_BASE_URL = "https://api.adsb.one/v2"
+# adsb.fi Open Data API base URL (without trailing slash to prevent double-slash path routing)
+API_BASE_URL = "https://opendata.adsb.fi/api"
 
 CONF_TRACKING_MODE = "tracking_mode"
 CONF_IDENTIFIER_TYPE = "identifier_type"
