@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import logging
+
 import aiohttp
 
 try:
@@ -58,9 +59,7 @@ class SkyRadarFusionAPI:
                     if response.status == 200:
                         data = await response.json()
                         ac_count = (
-                            len(data.get("ac", []))
-                            if isinstance(data, dict)
-                            else 0
+                            len(data.get("ac", [])) if isinstance(data, dict) else 0
                         )
                         _LOGGER.debug(
                             "adsb.fi HTTP 200 for %s (received %d aircraft)",
