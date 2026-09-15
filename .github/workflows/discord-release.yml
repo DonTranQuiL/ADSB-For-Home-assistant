@@ -1,0 +1,22 @@
+name: Discord release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Post to #p2000
+        uses: SethCohen/github-releases-to-discord@v1
+        with:
+          webhook_url: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          username: "DonTranQuiL · SkyRadar Fusion"
+          color: "2123412"
+          footer_title: "github.com/DonTranQuiL"
+          reduce_headings: true
+          content: "1549354424986767412"
