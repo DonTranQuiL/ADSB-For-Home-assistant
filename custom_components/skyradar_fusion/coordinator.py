@@ -128,6 +128,7 @@ class SkyRadarFusionCoordinator(DataUpdateCoordinator):
             "tas",
             "mach",
             "track",
+            "calc_track",
             "roll",
             "mag_heading",
             "true_heading",
