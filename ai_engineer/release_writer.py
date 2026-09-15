@@ -21,27 +21,48 @@ project_name = "SkyRadar Fusion"
 if "grocy" in repo_env.lower():
     project_name = "Grocy"
 elif repo_env:
-    # E.g. "ADSB-For-Home-assistant" -> "ADSB For Home Assistant"
     project_name = repo_env.split("/")[-1].replace("-", " ").replace("_", " ").title()
 
-# Anti-markdown-break trick
+# Extract metadata
+tag_name = os.getenv("RELEASE_TAG", "v1.0.0")
+release_title = os.getenv("RELEASE_NAME", "")
+
 BACKTICKS = "`" * 3
 
 prompt = f"""
-You are the AI Release Manager for 'YOUR REPONAME'. Your persona is Snoop Dogg.
-We are dropping a brand new release, and your job is to write the official GitHub Release Notes based on the commit history.
+You are the Lead Release Engineer and technical storyteller for {project_name}.
+Write the official GitHub Release Notes for version {tag_name} using the commit history and code diffs below.
 
-Here are the commit titles and extended descriptions since the last release:
+Commit Log & Diffs:
 {changelog}
 
-CRITICAL INSTRUCTIONS:
-1. Even if there is only ONE tiny commit (e.g., "Enhance README"), you must expand it into a full, hype, professional release note.
-2. Organize the markdown clearly with these categories (use them even if you have to creatively explain the small changes):
-   - 🚀 What's New & Fly (The main features or updates)
-   - 🛠️ Changed & Fixed (Bug fixes, tweaks)
-   - ⚙️ Under the Hood (Backend, docs, chores)
-3. Explain the updates in a smooth, engaging way (Snoop Dogg style, but keep it highly professional).
-4. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks ({BACKTICKS}) or a code block. Just output the raw text directly.
+STRICT OUTPUT FORMAT RULES:
+1. Title Header:
+   Generate an energetic, thematic header in this exact format:
+   ## 🚀 {project_name} {tag_name} - <Punchy Theme Name> <Matching Emojis>
+   (Example: "## 🚀 SkyRadar Fusion v2.0.11 - Unstoppable Radar Edition ✈️📡")
+
+2. Hook Paragraph:
+   Write a bold 2-3 sentence executive summary explaining the core value of this update, addressing stability, performance, or major architectural leaps directly.
+
+3. Main Sections (use these exact H2/H3 markers):
+   ### 🚀 What's New & Fly
+   - Group major user-facing additions or integrations.
+   - Format each entry with bold topic tags: "**Feature Name:** Clear, energetic explanation of what it improves."
+
+   ## 🛠️ Changed & Fixed
+   - Format items as "**Target Area/Fix:** Concrete explanation of what broke, what changed, and the result."
+
+   ## ⚙️ Under the Hood
+   - Document refactors, lint sweeps (Ruff), typing, telemetry guards, or dependencies.
+
+4. Sign-off Line:
+   End with a warm community closing sentence and thematic emojis (e.g., "Thank you to the community and everyone running an open feeder to keep the skies transparent! ✈️🌍").
+
+TONE AND CONTENT GUIDELINES:
+- Professional, technical, yet highly enthusiastic and confident.
+- Do not make generic bullet points. Detail the actual modules changed (e.g., mention file targets like api.py, coordinator.py, or explicit endpoints if visible in the diff).
+- DO NOT wrap the output in triple backticks or markdown fences. Output raw markdown only.
 """
 
 
@@ -64,7 +85,6 @@ def send_request_with_retry(method, url, headers, json_data, timeout, max_retrie
             else:
                 raise ValueError(f"Unsupported method: {method}")
 
-            # Check for success status codes
             if response.status_code in [200, 201]:
                 return response
             else:
@@ -85,20 +105,18 @@ def send_request_with_retry(method, url, headers, json_data, timeout, max_retrie
 
 
 try:
-    # Direct requests call bypasses any OpenAI library proxy/connection pool bugs
     openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
     openrouter_headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
-        "X-Title": "SkyRadar Release Notes Bot",
+        "HTTP-Referer": f"https://github.com/{repo_env}",
+        "X-Title": f"{project_name} Release Notes Bot",
     }
     openrouter_payload = {
         "model": "gpt-4o-mini",
         "messages": [{"role": "user", "content": prompt}],
     }
 
-    # Connect to OpenRouter to write the release notes
     api_response = send_request_with_retry(
         method="POST",
         url=openrouter_url,
@@ -114,9 +132,9 @@ try:
 
     release_notes = result["choices"][0]["message"]["content"].strip()
 
-    # Clean up any accidental code block wrappers without breaking Ruff/Markdown
-    pattern = rf"^{BACKTICKS}(?:markdown)?\n|\n{BACKTICKS}$"
-    release_notes = re.sub(pattern, "", release_notes).strip()
+    # Strip accidental wrapping markdown code fences (```markdown ... ```)
+    release_notes = re.sub(r"^```(?:markdown)?\s*\n", "", release_notes)
+    release_notes = re.sub(r"\n```\s*$", "", release_notes).strip()
 
     # Update GitHub Release
     repo = os.getenv("REPO")
@@ -130,7 +148,6 @@ try:
         "Content-Type": "application/json",
     }
 
-    # Patch the release notes directly onto your GitHub Release page
     github_response = send_request_with_retry(
         method="PATCH",
         url=github_url,
