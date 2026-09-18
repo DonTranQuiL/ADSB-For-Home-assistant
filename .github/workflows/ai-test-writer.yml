@@ -7,7 +7,7 @@ on:
 jobs:
   generate-tests:
     # Only run this if the PR was actually merged, not just closed
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -38,7 +38,20 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python ai_engineer/test_writer.py
 
+      - name: Drop the diff scratch file
+        run: rm -f merged_diff.txt
+
+      - name: Skip when the writer changed nothing
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Pull Request with New Tests
+        if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           title: "?? AI Auto-Test: Expanded Coverage"
