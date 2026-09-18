@@ -9,14 +9,117 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Post the release embed
+        env:
+          DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          REPO: ${{ github.event.repository.full_name }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PUBLISHED: ${{ github.event.release.published_at }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+          AUTHOR_LOGIN: ${{ github.event.release.author.login }}
+        run: |
+          if [ -z "$DISCORD_RELEASE_WEBHOOK" ]; then
+            echo "DISCORD_RELEASE_WEBHOOK is not set on this repository."
+            exit 1
+          fi
+          python3 << 'PY'
+          import json
+          import os
+          import re
+          import urllib.error
+          import urllib.request
 
-      - name: Post to #p2000
-        uses: SethCohen/github-releases-to-discord@v1
-        with:
-          webhook_url: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
-          username: "DonTranQuiL · SkyRadar Fusion"
-          color: "2123412"
-          footer_title: "github.com/DonTranQuiL"
-          reduce_headings: true
-          content: "1549354424986767412"
+          webhook = os.environ["DISCORD_RELEASE_WEBHOOK"]
+          tag = (os.environ.get("RELEASE_TAG") or "release").strip()
+          name = (os.environ.get("RELEASE_NAME") or "").strip()
+          body = os.environ.get("RELEASE_BODY") or ""
+          url = (os.environ.get("RELEASE_URL") or "").strip()
+          repo = (os.environ.get("REPO") or "").strip()
+          repo_name = (os.environ.get("REPO_NAME") or repo or "DonTranQuiL").strip()
+          published = (os.environ.get("PUBLISHED") or "").strip()
+          prerelease = (os.environ.get("PRERELEASE") or "").lower() == "true"
+          author = (os.environ.get("AUTHOR_LOGIN") or "DonTranQuiL").strip() or "DonTranQuiL"
+          avatar = f"https://github.com/{author}.png?size=128"
+          brand = "https://github.com/DonTranQuiL.png?size=128"
+
+          def clean(text: str) -> str:
+              text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+              lines = []
+              for line in text.replace("\r\n", "\n").split("\n"):
+                  stripped = line.strip()
+                  if stripped.lower().startswith("green on this commit"):
+                      continue
+                  heading = re.match(r"^#{1,6}\s+(.*)$", stripped)
+                  if heading:
+                      lines.append(f"**{heading.group(1).strip()}**")
+                      continue
+                  lines.append(line.rstrip())
+              notes = re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+              if len(notes) > 1800:
+                  notes = notes[:1800].rsplit(" ", 1)[0].rstrip() + "…"
+              return notes
+
+          notes = clean(body) or "The notes are on the release page."
+          title = name or f"{repo_name} {tag}"
+          if len(title) > 250:
+              title = title[:247] + "…"
+
+          embed = {
+              "title": title,
+              "description": notes,
+              "color": 0xC47A14 if prerelease else 0x206444,
+              "author": {
+                  "name": repo_name,
+                  "url": f"https://github.com/{repo}" if repo else "https://github.com/DonTranQuiL",
+                  "icon_url": avatar,
+              },
+              "fields": [
+                  {"name": "Version", "value": f"`{tag}`", "inline": True},
+                  {
+                      "name": "Type",
+                      "value": "Pre-release" if prerelease else "Release",
+                      "inline": True,
+                  },
+                  {
+                      "name": "GitHub",
+                      "value": f"[Open release]({url})" if url else repo or "DonTranQuiL",
+                      "inline": True,
+                  },
+              ],
+              "footer": {"text": "DonTranQuiL", "icon_url": brand},
+          }
+          if url:
+              embed["url"] = url
+          if published:
+              embed["timestamp"] = published
+
+          payload = {
+              "username": "DonTranQuiL",
+              "avatar_url": brand,
+              "content": f"**{repo_name}** `{tag}` is published.",
+              "embeds": [embed],
+              "allowed_mentions": {"parse": []},
+          }
+          request = urllib.request.Request(
+              webhook,
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "DonTranQuiL-release",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  status = response.status
+          except urllib.error.HTTPError as err:
+              detail = err.read(300).decode("utf-8", "replace")
+              raise SystemExit(f"Discord returned {err.code}: {detail[:200]}") from None
+          if status >= 300:
+              raise SystemExit(f"Discord returned {status}")
+          print(f"Posted {repo_name} {tag}")
+          PY
