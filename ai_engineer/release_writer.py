@@ -94,7 +94,7 @@ try:
         "X-Title": "SkyRadar Release Notes Bot",
     }
     openrouter_payload = {
-        "model": "gpt-4o-mini",
+        "model": "deepseek/deepseek-v4.1-flash",
         "messages": [{"role": "user", "content": prompt}],
     }
 
