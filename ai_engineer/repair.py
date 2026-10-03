@@ -58,7 +58,7 @@ Then output the fixed code exactly starting with CODE: and then the ```python bl
 # 6. Request Fix
 try:
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="deepseek/deepseek-v4.1-flash",
         messages=[{"role": "user", "content": prompt}],
     )
 
