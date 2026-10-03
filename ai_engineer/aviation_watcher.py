@@ -202,7 +202,7 @@ Keep it strictly raw Markdown text without enclosing triple backtick wrappers.
 """
         try:
             completion = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="deepseek/deepseek-v4.1-flash",
                 messages=[{"role": "user", "content": pr_prompt}],
             )
             pr_body = completion.choices[0].message.content.strip()

@@ -74,7 +74,7 @@ DO NOT use triple backticks or code blocks. Just output the raw text directly.
 
 try:
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="deepseek/deepseek-v4.1-flash",
         messages=[{"role": "user", "content": prompt}],
     )
     pr_body = completion.choices[0].message.content.strip()
