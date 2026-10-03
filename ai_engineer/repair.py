@@ -1,40 +1,172 @@
-import os
-import re
-from openai import OpenAI
+#!/usr/bin/env python3
+"""AI self-healing: reads failed_logs.txt and proposes a whole-file fix for the
+broken file (integration, tests, ai_engineer or requirements only).
 
-# 1. Get the error logs
+Generic DonTranQuiL template script, synced from ai-home-assistant-template.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+# --- shared helpers (kept inline so every synced script is self-contained) ---
+DRY_RUN = "--dry-run" in sys.argv or os.getenv("AI_DRY_RUN") == "1"
+if "--help" in sys.argv or "-h" in sys.argv:
+    print(__doc__)
+    print("Options: --dry-run (or AI_DRY_RUN=1) builds the prompt, calls no LLM,")
+    print("writes nothing. AI_COMPONENT_DIR overrides integration auto-detection.")
+    raise SystemExit(0)
+
+
+def _component() -> Path | None:
+    """Return the integration folder under custom_components/ (auto-detected)."""
+    override = os.getenv("AI_COMPONENT_DIR")
+    if override:
+        path = Path(override)
+        return path if path.is_dir() else None
+    root = Path("custom_components")
+    if not root.is_dir():
+        return None
+    found = sorted(p for p in root.iterdir() if (p / "manifest.json").is_file())
+    if not found:
+        return None
+    if len(found) > 1:
+        print(f"Several integrations found, using {found[0]}: {found}")
+    return found[0]
+
+
+def _manifest() -> dict:
+    comp = _component()
+    if comp is None:
+        return {}
+    try:
+        return json.loads((comp / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _project_name() -> str:
+    name = _manifest().get("name")
+    if name:
+        return str(name)
+    repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("REPO") or Path.cwd().name
+    return repo.split("/")[-1].replace("-", " ").replace("_", " ").title()
+
+
+def _llm_client():
+    """xAI first (grok-4), then OpenRouter (deepseek/deepseek-v4.1-flash)."""
+    from openai import OpenAI
+
+    xai = os.getenv("XAI_API_KEY")
+    if xai:
+        return OpenAI(base_url="https://api.x.ai/v1", api_key=xai), "grok-4"
+    or_key = os.getenv("OPENROUTER_API_KEY")
+    if or_key:
+        return (
+            OpenAI(base_url="https://openrouter.ai/api/v1", api_key=or_key),
+            "deepseek/deepseek-v4.1-flash",
+        )
+    print("No XAI_API_KEY or OPENROUTER_API_KEY — exiting cleanly.")
+    raise SystemExit(0)
+
+
+def _ask(prompt: str) -> str:
+    if DRY_RUN:
+        print(f"[dry-run] component={_component()} project={_project_name()!r}")
+        print(f"[dry-run] prompt has {len(prompt)} chars; no LLM call made.")
+        raise SystemExit(0)
+    client, model = _llm_client()
+    print(f"Using model {model}")
+    completion = client.chat.completions.create(
+        model=model, messages=[{"role": "user", "content": prompt}]
+    )
+    return (completion.choices[0].message.content or "").strip()
+
+
+def _safe_path(raw: str, allowed: tuple[str, ...]) -> Path | None:
+    """Accept only repo-relative paths under one of the allowed prefixes."""
+    raw = raw.strip().strip("`").strip()
+    if not raw:
+        return None
+    path = Path(raw)
+    if path.is_absolute() or ".." in path.parts:
+        print(f"Refusing unsafe path: {raw}")
+        return None
+    norm = path.as_posix()
+    if not any(norm == a.rstrip("/") or norm.startswith(a) for a in allowed):
+        print(f"Refusing path outside {allowed}: {raw}")
+        return None
+    return path
+
+
+def _parse_files(text: str) -> list[tuple[str, str]]:
+    """Parse FILEPATH: <path> ... CODE: ```lang ... ``` blocks."""
+    fence = "`" * 3
+    results: list[tuple[str, str]] = []
+    target, code, in_code = None, [], False
+    for line in text.splitlines():
+        if line.startswith("FILEPATH:"):
+            if target and code:
+                results.append((target, "\n".join(code)))
+            target, code, in_code = line.split(":", 1)[1].strip(), [], False
+        elif not in_code and (line.startswith("CODE:") or line.startswith(fence)):
+            in_code = True
+        elif in_code and line.startswith(fence):
+            if not code:
+                continue  # opening fence right after CODE:
+            in_code = False
+            if target and code:
+                results.append((target, "\n".join(code)))
+                target, code = None, []
+        elif in_code:
+            code.append(line)
+    if target and code:
+        results.append((target, "\n".join(code)))
+    return results
+
+
+def _write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content.rstrip("\n") + "\n", encoding="utf-8")
+    print(f"Wrote {path}")
+
+
+# --- end shared helpers ---
+
+
+import re  # noqa: E402
+
 try:
-    with open("failed_logs.txt", "r") as f:
-        logs = f.read()[-3000:]
+    with open("failed_logs.txt", encoding="utf-8", errors="replace") as fh:
+        logs = fh.read()[-4000:]
 except FileNotFoundError:
     print("No failed_logs.txt found. Exiting.")
-    exit(0)
+    raise SystemExit(0) from None
 
-# 2. Extract the broken file path from the Ruff/Pytest logs using Regex
-# This looks for lines like "--> ai_engineer/repair.py:21:6"
-match = re.search(r"-->\s+([a-zA-Z0-9_/\.]+):", logs)
-file_path = match.group(1) if match else None
+comp = _component()
+project = _project_name()
+
+# Find the first existing file mentioned in the logs (ruff "--> path:", pytest
+# "path.py:12", tracebacks 'File "path"'), preferring the integration/tests.
+file_path = None
+for cand in re.findall(r"([A-Za-z0-9_./\-]+\.(?:py|json|yaml|yml))", logs):
+    cand = cand.lstrip("./")
+    if "/github/workspace/" in cand:
+        cand = cand.split("/github/workspace/", 1)[1]
+    if os.path.isfile(cand) and not cand.startswith((".github/", ".git/")):
+        file_path = cand
+        break
+
 file_content = "File content could not be loaded."
-
-# 3. Read the broken code so the AI can actually see it
 if file_path:
-    try:
-        with open(file_path, "r") as f:
-            file_content = f.read()
-    except FileNotFoundError:
-        print(f"Could not open extracted file path: {file_path}")
+    with open(file_path, encoding="utf-8") as fh:
+        file_content = fh.read()
 
-# 4. Initialize AI
-api_key = os.getenv("OPENROUTER_API_KEY")
-if not api_key:
-    print("No OPENROUTER_API_KEY found.")
-    exit(0)
-
-client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=api_key)
-
-# 5. Snoop Dogg Prompt
 prompt = f"""
-You are the AI Self-Healing Mechanic for 'SkyRadar Fusion'. Your persona is Snoop Dogg.
+You are the AI Self-Healing Mechanic for '{project}'. Your persona is Snoop Dogg.
 The CI pipeline just tripped up, but you stay relaxed and fix the engine while it's running.
 
 The error occurred in this file: {file_path}
@@ -45,55 +177,32 @@ Here is the broken code:
 Here is the error log:
 {logs}
 
-1. Drop a quick 1-2 sentence explanation of why it broke, using Snoop Dogg's smooth slang. Keep it cool.
-2. Provide the COMPLETELY FIXED Python code.
-3. The fixed code MUST be inside a standard ```python code block. Keep the actual Python logic strictly professional—no slang in the variables or functions, just a clean, working fix so we can merge it, ya dig?
+1. Drop a quick 1-2 sentence explanation of why it broke, in Snoop Dogg's smooth slang.
+2. Provide the COMPLETELY FIXED file. Keep the code strictly professional.
 
-IMPORTANT: You must start your response with the exact line:
+IMPORTANT: Start your response with the exact line:
 FILEPATH: {file_path}
-Then write your Snoop intro.
-Then output the fixed code exactly starting with CODE: and then the ```python block.
+Then your short explanation.
+Then output the fixed file starting with CODE: and then a ```python block.
 """
 
-# 6. Request Fix
 try:
-    completion = client.chat.completions.create(
-        model="deepseek/deepseek-v4.1-flash",
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    response_text = completion.choices[0].message.content.strip()
-
-    # 7. Print Snoop's explanation to the GitHub Actions terminal so you can read it!
+    response_text = _ask(prompt)
     print("\n--- AI MECHANIC REPORT ---")
     print(response_text)
     print("--------------------------\n")
-
-    # 8. Parse the code out of the response
-    lines = response_text.splitlines()
-    target_file = None
-    code_lines = []
-    is_code = False
-
-    for line in lines:
-        if line.startswith("FILEPATH:"):
-            target_file = line.replace("FILEPATH:", "").strip()
-        elif line.startswith("CODE:") or line.startswith("```python"):
-            is_code = True
-            continue  # skip the marker line
-        elif is_code:
-            if line.startswith("```"):
-                is_code = False  # End of block
-            else:
-                code_lines.append(line)
-
-    # 9. Apply the fix
-    if target_file and code_lines:
-        with open(target_file, "w") as f:
-            f.write("\n".join(code_lines))
-        print(f"Patched {target_file} successfully.")
-    else:
+    allowed = ["tests/", "ai_engineer/", "requirements"]
+    if comp is not None:
+        allowed.insert(0, f"{comp.as_posix()}/")
+    patched = False
+    for raw, content in _parse_files(response_text)[:1]:
+        target = _safe_path(raw, tuple(allowed))
+        if target:
+            _write(target, content)
+            patched = True
+    if not patched:
         print("Failed to parse the patched code from the AI response.")
-
-except Exception as e:
-    print(f"Repair failed: {e}")
+except SystemExit:
+    raise
+except Exception as exc:
+    print(f"Repair failed: {exc}")

@@ -1,146 +1,195 @@
+#!/usr/bin/env python3
+"""AI release notes writer: turns changelog.txt into release notes and, when
+REPO/RELEASE_ID/GITHUB_TOKEN are set, updates the GitHub release.
+
+Generic DonTranQuiL template script, synced from ai-home-assistant-template.
+"""
+
+from __future__ import annotations
+
+import json
 import os
-import re
-import time
-import requests
+import sys
+from pathlib import Path
+
+# --- shared helpers (kept inline so every synced script is self-contained) ---
+DRY_RUN = "--dry-run" in sys.argv or os.getenv("AI_DRY_RUN") == "1"
+if "--help" in sys.argv or "-h" in sys.argv:
+    print(__doc__)
+    print("Options: --dry-run (or AI_DRY_RUN=1) builds the prompt, calls no LLM,")
+    print("writes nothing. AI_COMPONENT_DIR overrides integration auto-detection.")
+    raise SystemExit(0)
+
+
+def _component() -> Path | None:
+    """Return the integration folder under custom_components/ (auto-detected)."""
+    override = os.getenv("AI_COMPONENT_DIR")
+    if override:
+        path = Path(override)
+        return path if path.is_dir() else None
+    root = Path("custom_components")
+    if not root.is_dir():
+        return None
+    found = sorted(p for p in root.iterdir() if (p / "manifest.json").is_file())
+    if not found:
+        return None
+    if len(found) > 1:
+        print(f"Several integrations found, using {found[0]}: {found}")
+    return found[0]
+
+
+def _manifest() -> dict:
+    comp = _component()
+    if comp is None:
+        return {}
+    try:
+        return json.loads((comp / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _project_name() -> str:
+    name = _manifest().get("name")
+    if name:
+        return str(name)
+    repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("REPO") or Path.cwd().name
+    return repo.split("/")[-1].replace("-", " ").replace("_", " ").title()
+
+
+def _llm_client():
+    """xAI first (grok-4), then OpenRouter (deepseek/deepseek-v4.1-flash)."""
+    from openai import OpenAI
+
+    xai = os.getenv("XAI_API_KEY")
+    if xai:
+        return OpenAI(base_url="https://api.x.ai/v1", api_key=xai), "grok-4"
+    or_key = os.getenv("OPENROUTER_API_KEY")
+    if or_key:
+        return (
+            OpenAI(base_url="https://openrouter.ai/api/v1", api_key=or_key),
+            "deepseek/deepseek-v4.1-flash",
+        )
+    print("No XAI_API_KEY or OPENROUTER_API_KEY — exiting cleanly.")
+    raise SystemExit(0)
+
+
+def _ask(prompt: str) -> str:
+    if DRY_RUN:
+        print(f"[dry-run] component={_component()} project={_project_name()!r}")
+        print(f"[dry-run] prompt has {len(prompt)} chars; no LLM call made.")
+        raise SystemExit(0)
+    client, model = _llm_client()
+    print(f"Using model {model}")
+    completion = client.chat.completions.create(
+        model=model, messages=[{"role": "user", "content": prompt}]
+    )
+    return (completion.choices[0].message.content or "").strip()
+
+
+def _safe_path(raw: str, allowed: tuple[str, ...]) -> Path | None:
+    """Accept only repo-relative paths under one of the allowed prefixes."""
+    raw = raw.strip().strip("`").strip()
+    if not raw:
+        return None
+    path = Path(raw)
+    if path.is_absolute() or ".." in path.parts:
+        print(f"Refusing unsafe path: {raw}")
+        return None
+    norm = path.as_posix()
+    if not any(norm == a.rstrip("/") or norm.startswith(a) for a in allowed):
+        print(f"Refusing path outside {allowed}: {raw}")
+        return None
+    return path
+
+
+def _parse_files(text: str) -> list[tuple[str, str]]:
+    """Parse FILEPATH: <path> ... CODE: ```lang ... ``` blocks."""
+    fence = "`" * 3
+    results: list[tuple[str, str]] = []
+    target, code, in_code = None, [], False
+    for line in text.splitlines():
+        if line.startswith("FILEPATH:"):
+            if target and code:
+                results.append((target, "\n".join(code)))
+            target, code, in_code = line.split(":", 1)[1].strip(), [], False
+        elif not in_code and (line.startswith("CODE:") or line.startswith(fence)):
+            in_code = True
+        elif in_code and line.startswith(fence):
+            if not code:
+                continue  # opening fence right after CODE:
+            in_code = False
+            if target and code:
+                results.append((target, "\n".join(code)))
+                target, code = None, []
+        elif in_code:
+            code.append(line)
+    if target and code:
+        results.append((target, "\n".join(code)))
+    return results
+
+
+def _write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content.rstrip("\n") + "\n", encoding="utf-8")
+    print(f"Wrote {path}")
+
+
+# --- end shared helpers ---
+
+
+import re  # noqa: E402
 
 try:
-    with open("changelog.txt", "r") as f:
-        changelog = f.read()
+    with open("changelog.txt", encoding="utf-8", errors="replace") as fh:
+        changelog = fh.read()[-30000:]
 except FileNotFoundError:
     print("Could not find changelog.txt. Exiting.")
-    exit(0)
+    raise SystemExit(0) from None
 
-api_key = os.getenv("OPENROUTER_API_KEY")
-if not api_key:
-    print("No API key found. Exiting.")
-    exit(0)
-
-# Detect the project name automatically from the repo path
-repo_env = os.getenv("REPO", "")
-project_name = "SkyRadar Fusion"
-if "grocy" in repo_env.lower():
-    project_name = "Grocy"
-elif repo_env:
-    # E.g. "ADSB-For-Home-assistant" -> "ADSB For Home Assistant"
-    project_name = repo_env.split("/")[-1].replace("-", " ").replace("_", " ").title()
-
-# Anti-markdown-break trick
-BACKTICKS = "`" * 3
-
+project = _project_name()
+fence = "`" * 3
 prompt = f"""
-You are the AI Release Manager for 'YOUR REPONAME'. Your persona is Snoop Dogg.
-We are dropping a brand new release, and your job is to write the official GitHub Release Notes based on the commit history.
+You are the AI Release Manager for '{project}'. Your persona is Snoop Dogg.
+We are dropping a brand new release; write the official GitHub Release Notes.
 
-Here are the commit titles and extended descriptions since the last release:
+Commit titles, descriptions and code changes since the last release:
 {changelog}
 
 CRITICAL INSTRUCTIONS:
-1. Even if there is only ONE tiny commit (e.g., "Enhance README"), you must expand it into a full, hype, professional release note.
-2. Organize the markdown clearly with these categories (use them even if you have to creatively explain the small changes):
-   - 🚀 What's New & Fly (The main features or updates)
-   - 🛠️ Changed & Fixed (Bug fixes, tweaks)
-   - ⚙️ Under the Hood (Backend, docs, chores)
-3. Explain the updates in a smooth, engaging way (Snoop Dogg style, but keep it highly professional).
-4. ONLY output the raw Markdown text. DO NOT wrap your response in triple backticks ({BACKTICKS}) or a code block. Just output the raw text directly.
+1. Even if there is only ONE tiny commit, expand it into a full, professional note.
+2. Use these markdown categories:
+   - 🚀 What's New & Fly
+   - 🛠️ Changed & Fixed
+   - ⚙️ Under the Hood
+3. Snoop Dogg style, but keep it highly professional.
+4. ONLY output raw Markdown. Do NOT wrap it in {fence} or a code block.
 """
 
-
-def send_request_with_retry(method, url, headers, json_data, timeout, max_retries=5):
-    """Performs HTTP requests with exponential backoff retries and detailed logs."""
-    delay = 1
-    for attempt in range(max_retries):
-        try:
-            print(
-                f"Sending {method} request to {url} (Attempt {attempt + 1}/{max_retries})..."
-            )
-            if method == "POST":
-                response = requests.post(
-                    url, headers=headers, json=json_data, timeout=timeout
-                )
-            elif method == "PATCH":
-                response = requests.patch(
-                    url, headers=headers, json=json_data, timeout=timeout
-                )
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-
-            # Check for success status codes
-            if response.status_code in [200, 201]:
-                return response
-            else:
-                print(
-                    f"Server returned status code {response.status_code}: {response.text}"
-                )
-        except Exception as e:
-            print(f"Attempt {attempt + 1} failed with error: {e}")
-
-        if attempt < max_retries - 1:
-            print(f"Retrying in {delay} seconds...")
-            time.sleep(delay)
-            delay *= 2
-
-    raise Exception(
-        f"Failed to complete {method} request to {url} after {max_retries} attempts."
-    )
-
-
 try:
-    # Direct requests call bypasses any OpenAI library proxy/connection pool bugs
-    openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
-    openrouter_headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
-        "X-Title": "SkyRadar Release Notes Bot",
-    }
-    openrouter_payload = {
-        "model": "deepseek/deepseek-v4.1-flash",
-        "messages": [{"role": "user", "content": prompt}],
-    }
-
-    # Connect to OpenRouter to write the release notes
-    api_response = send_request_with_retry(
-        method="POST",
-        url=openrouter_url,
-        headers=openrouter_headers,
-        json_data=openrouter_payload,
-        timeout=45.0,
-        max_retries=5,
-    )
-
-    result = api_response.json()
-    if "choices" not in result or not result["choices"]:
-        raise Exception(f"Invalid API response structure: {result}")
-
-    release_notes = result["choices"][0]["message"]["content"].strip()
-
-    # Clean up any accidental code block wrappers without breaking Ruff/Markdown
-    pattern = rf"^{BACKTICKS}(?:markdown)?\n|\n{BACKTICKS}$"
-    release_notes = re.sub(pattern, "", release_notes).strip()
-
-    # Update GitHub Release
-    repo = os.getenv("REPO")
+    notes = _ask(prompt)
+    notes = re.sub(rf"^{fence}(?:markdown)?\n|\n{fence}$", "", notes).strip()
+    with open("release_notes.md", "w", encoding="utf-8") as fh:
+        fh.write(notes + "\n")
+    repo = os.getenv("REPO") or os.getenv("GITHUB_REPOSITORY")
     release_id = os.getenv("RELEASE_ID")
     token = os.getenv("GITHUB_TOKEN")
+    if repo and release_id and token:
+        import requests
 
-    github_url = f"https://api.github.com/repos/{repo}/releases/{release_id}"
-    github_headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-    }
-
-    # Patch the release notes directly onto your GitHub Release page
-    github_response = send_request_with_retry(
-        method="PATCH",
-        url=github_url,
-        headers=github_headers,
-        json_data={"body": release_notes},
-        timeout=20.0,
-        max_retries=3,
-    )
-
-    print(f"Successfully dropped the new release notes for {project_name}!")
-
-except Exception as e:
-    print(f"Release generation failed: {e}")
+        resp = requests.patch(
+            f"https://api.github.com/repos/{repo}/releases/{release_id}",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github.v3+json",
+            },
+            json={"body": notes},
+            timeout=30,
+        )
+        print(f"Release update HTTP {resp.status_code}")
+    else:
+        print(notes)
+    print(f"Release notes ready for {project}.")
+except SystemExit:
+    raise
+except Exception as exc:
+    print(f"Release generation failed: {exc}")

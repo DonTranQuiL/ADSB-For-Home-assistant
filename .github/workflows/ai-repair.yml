@@ -19,10 +19,10 @@ jobs:
     
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -41,8 +41,11 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python ai_engineer/repair.py
 
+      - name: Drop the log scratch file
+        run: rm -f failed_logs.txt
+
       - name: Create Pull Request with Fix
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.REPO_PAT }}
           title: "🤖 AI Auto-Fix: CI Test Failure"

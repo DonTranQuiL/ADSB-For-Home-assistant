@@ -13,10 +13,10 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -43,4 +43,4 @@ jobs:
       - name: Output PR Link
         run: |
           echo "AI has pushed the code! Manually create the PR here:"
-          echo "https://github.com/DonTranQuiL/ADSB-For-Home-assistant/compare/main...ai/feature-${{ github.event.issue.number }}"
+          echo "https://github.com/${{ github.repository }}/compare/main...ai/feature-${{ github.event.issue.number }}"
