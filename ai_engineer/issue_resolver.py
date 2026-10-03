@@ -55,7 +55,7 @@ followed immediately by the python code block using triple backticks.
 
 try:
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="deepseek/deepseek-v4.1-flash",
         messages=[{"role": "user", "content": prompt}],
     )
 
