@@ -28,9 +28,9 @@ def format_unix_time(unix_ts):
     if not unix_ts:
         return None
     try:
-        return datetime.datetime.fromtimestamp(
-            unix_ts, tz=datetime.timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.fromtimestamp(unix_ts, tz=datetime.UTC).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
     except Exception:
         return str(unix_ts)
 
