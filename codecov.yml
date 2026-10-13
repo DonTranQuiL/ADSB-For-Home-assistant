@@ -1,0 +1,12 @@
+# Coverage is reported for information only; it must not turn main red on
+# dependency/manifest-only commits that touch no Python lines.
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
+comment:
+  require_changes: true
