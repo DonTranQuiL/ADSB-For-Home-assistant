@@ -8,10 +8,10 @@
   "dependencies": [
     "http"
   ],
-  "documentation": "https://github.com/DonTranQuiL/airplanes_live",
+  "documentation": "https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/DonTranQuiL/airplanes_live/issues",
+  "issue_tracker": "https://github.com/DonTranQuiL/ADSB-For-Home-assistant/issues",
   "requirements": [
     "FlightRadarAPI>=1.6.3"
   ],
