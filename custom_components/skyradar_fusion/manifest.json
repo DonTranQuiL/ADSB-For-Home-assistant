@@ -1,6 +1,9 @@
 {
   "domain": "skyradar_fusion",
   "name": "SkyRadar Fusion",
+  "categories": [
+    "vehicles_transport.flights"
+  ],
   "codeowners": [
     "@DonTranQuiL"
   ],
