@@ -38,10 +38,13 @@ class SkyRadarFusionCard extends HTMLElement {
     }
 
     if (!stateObj) {
+      this._lastState = undefined;
       this.card.querySelector('.skyradar-list').innerHTML = `<div style="padding:16px">Entity not found</div>`;
       return;
     }
 
+    if (stateObj === this._lastState) return;
+    this._lastState = stateObj;
     this._aircraftData = stateObj.attributes.recent_aircraft || [];
 
     this._updateAirlinesDropdown();
@@ -287,6 +290,10 @@ class SkyRadarFusionCard extends HTMLElement {
 
     this.appendChild(this.card);
 
+    this.card.querySelector('#aircraft-list').addEventListener('click', (e) => {
+      const row = e.target.closest('.data-row[data-hex]');
+      if (row) this._toggleRow(row.dataset.hex);
+    });
     this.card.querySelector('#filter-dist').addEventListener('input', (e) => {
       this._filters.distance = e.target.value;
       this.card.querySelector('#dist-val').innerText = e.target.value;
@@ -322,10 +329,10 @@ class SkyRadarFusionCard extends HTMLElement {
     const select = this.card.querySelector('#filter-airline');
     const currentVal = this._filters.airline;
     
-    const airlines = [...new Set(this._aircraftData.map(a => this._cleanString(a.airline) || 'Private'))].sort();
+    const airlines = [...new Set(this._aircraftData.map(a => this._rawString(a.airline) || 'Private'))].sort();
     
     let options = `<option value="All">All</option>`;
-    airlines.forEach(a => { options += `<option value="${a}" ${a === currentVal ? 'selected' : ''}>${a}</option>`; });
+    airlines.forEach(a => { options += `<option value="${this._esc(a)}" ${a === currentVal ? 'selected' : ''}>${this._esc(a)}</option>`; });
     
     if (select.innerHTML !== options) { select.innerHTML = options; }
   }
@@ -345,15 +352,28 @@ class SkyRadarFusionCard extends HTMLElement {
     return 'mdi:airplane';
   }
 
+  _esc(val) {
+    return String(val ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  _rawString(val) {
+    if (val === null || val === undefined) return null;
+    const s = String(val).replace(/[\?]/g, '').trim();
+    return s.length > 0 ? s : null;
+  }
+
+  // Returns an HTML-escaped string (or null), safe to place in markup.
   _cleanString(val) {
     if (val === null || val === undefined) return null;
-    let s = String(val).replace(/[\?]/g, '').trim();
-    return s.length > 0 ? s : null;
+    const s = String(val).replace(/[\?]/g, '').trim();
+    return s.length > 0 ? this._esc(s) : null;
   }
 
   _cleanNumber(val) {
     if (val === null || val === undefined) return null;
-    let num = String(val).replace(/[^0-9.-]/g, '');
+    const num = String(val).replace(/[^0-9.-]/g, '');
     return num.length > 0 ? num : null;
   }
 
@@ -364,7 +384,7 @@ class SkyRadarFusionCard extends HTMLElement {
     let filtered = this._aircraftData.filter(a => {
       const distKm = a.distance_meter ? a.distance_meter / 1000 : 0;
       if (distKm > this._filters.distance) return false;
-      const airline = this._cleanString(a.airline) || 'Private';
+      const airline = this._rawString(a.airline) || 'Private';
       if (this._filters.airline !== 'All' && airline !== this._filters.airline) return false;
       const emergencySqks = ["7500","7600","7700"];
       if (this._filters.emergency && !emergencySqks.includes(String(a.squawk))) return false;
@@ -388,11 +408,9 @@ class SkyRadarFusionCard extends HTMLElement {
       return 0;
     });
 
-    window._skyRadarToggle = (hex) => this._toggleRow(hex);
-
     // Apply the 50 max limit dynamically
-    const html = filtered.slice(0, 50).map(a => {
-      const hex = a.hex || Math.random().toString();
+    const html = filtered.slice(0, 50).map((a, idx) => {
+      const hex = this._esc(a.hex || `row-${idx}`);
       const isExpanded = this._expandedRows.has(hex);
 
       const altMeters = a.alt_baro ? Math.round(a.alt_baro * 0.3048) : 0;
@@ -412,10 +430,10 @@ class SkyRadarFusionCard extends HTMLElement {
 
       return `
       <div class="row-wrapper ${isExpanded ? 'expanded' : ''}">
-        <div class="grid-row data-row ${emergency ? 'emergency' : ''}" onclick="window._skyRadarToggle('${hex}')">
+        <div class="grid-row data-row ${emergency ? 'emergency' : ''}" data-hex="${hex}">
           
           <div class="photo-col">
-            ${a.api_photo_url ? `<img src="${a.api_photo_url}" loading="lazy">` : `<div class="fallback"><ha-icon icon="${iconType}"></ha-icon></div>`}
+            ${a.api_photo_url ? `<img src="${this._esc(a.api_photo_url)}" loading="lazy" alt="">` : `<div class="fallback"><ha-icon icon="${iconType}"></ha-icon></div>`}
           </div>
 
           <div class="flight-col">
@@ -452,7 +470,7 @@ class SkyRadarFusionCard extends HTMLElement {
             ${a.baro_rate ? `
               <div class="${a.baro_rate > 0 ? 'status-good' : 'status-danger'}">
                 <ha-icon icon="${a.baro_rate > 0 ? 'mdi:chevron-double-up' : 'mdi:chevron-double-down'}" class="tiny-icon" style="color: inherit;"></ha-icon>
-                ${Math.abs(a.baro_rate)}
+                ${Math.abs(Number(a.baro_rate) || 0)}
               </div>
               <div class="sub">fpm</div>
             ` : "-"}
@@ -488,11 +506,13 @@ class SkyRadarFusionCard extends HTMLElement {
   getCardSize() { return 12; }
 }
 
-customElements.define("skyradar-fusion-card", SkyRadarFusionCard);
-
-window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "skyradar-fusion-card",
-  name: "SkyRadar Fusion Card",
-  description: "FR24 style aircraft dashboard with Filtering and Sorting"
-});
+if (!customElements.get("skyradar-fusion-card")) {
+  customElements.define("skyradar-fusion-card", SkyRadarFusionCard);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: "skyradar-fusion-card",
+    name: "SkyRadar Fusion Card",
+    description: "FR24 style aircraft dashboard with Filtering and Sorting",
+    documentationURL: "https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
+  });
+}

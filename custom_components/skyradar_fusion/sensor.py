@@ -155,6 +155,10 @@ class SkyRadarFusionStatSensor(SkyRadarFusionSensorBase):
 
 
 class SkyRadarFusionOverviewSensor(SkyRadarFusionSensorBase):
+    # The live list and the 50-entry history exceed the recorder's 16 KB
+    # attribute limit; keep them in the state but out of the database.
+    _unrecorded_attributes = frozenset({"flights_list", "recent_aircraft"})
+
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_name = "Current in area"

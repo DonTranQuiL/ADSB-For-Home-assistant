@@ -48,17 +48,6 @@ The most efficient deployment method is through **HACS** (Home Assistant Communi
 7. Navigate to **Settings > Devices & Services > Add Integration**, lookup **SkyRadar Fusion**, and configure your primary boundary coordinates.
 
 ---
-### 🛠️ Important Configuration Step
-SkyRadar Fusion uses a highly efficient "Zero-Bloat Memory Buffer" to store your last 50 overhead aircraft. To prevent Home Assistant from trying to stuff this massive array into your SQL database (which causes 16KB limit errors), you **must** exclude the main sensor from the recorder in your `configuration.yaml` Don't worry your data is saved! u can still use it!:
-```yaml
-recorder:
-  exclude:
-    entities:
-      - sensor.skyradar_fusion_current_in_area
-```
-Note: Your historical data will still survive reboots, as the integration safely backs it up to the hidden .storage folder!
-
----
 
 ## ✈️ The Hybrid Engine: FlightRadar24 Enrichment
 Because the FR24 Enrichment makes additional API calls on your behalf, it is highly customizable to protect your IP from rate limits. When enabled, your explicitly tracked targets and overhead flights will populate with **Flight Intelligence Data**:
@@ -100,19 +89,17 @@ Standard aviation integrations spin up permanent entities for every flying hull,
 Tracking lists are stored dynamically in memory for maximum speed. On server reboots or system crashes, the specialized **`RestoreSensor` (`sensor.additional_tracked`)** reads the encrypted historical database arrays and instantly rebuilds your watchlist on startup.
 
 ---
-## JS Dashboard card 
-Check the video below its in the wiki 
-https://github.com/DonTranQuiL/ADSB-For-Home-assistant/wiki/Lovelace-Examples
+## JS Dashboard card
+The dashboard card ships with the integration and is loaded automatically, so there is nothing to download, copy or add as a resource. After installing (or updating) the integration and restarting Home Assistant, do a hard refresh of your browser and add it to a dashboard:
 
-1. Download it from the root folder of this repo and put it into www folder then see video below 
-<img width="1877" height="921" alt="addcard" src="https://github.com/user-attachments/assets/f311e84d-36b7-4868-a461-697a96d81f40" />
+```yaml
+type: custom:skyradar-fusion-card
+entity: sensor.skyradar_fusion_current_in_area
+```
 
-2. Go to your dashboard and add a custom card, go to yaml mode and copy this code and you good to go 
-<img width="582" height="262" alt="{18BF4530-35C4-424A-BC3C-02FDF2C2A3E9}" src="https://github.com/user-attachments/assets/73f541db-9c7a-448e-9185-214d6e4811e3" />
+If you added `skyradar-fusion-card.js` as a dashboard resource by hand before (for example `/local/skyradar-fusion-card.js`), remove that resource under **Settings > Dashboards > Resources** and delete the old file from your `www` folder.
 
-
-
-
+More examples are in the [wiki](https://github.com/DonTranQuiL/ADSB-For-Home-assistant/wiki/Lovelace-Examples).
 
 ## 📍 Tracking features and live maps
 

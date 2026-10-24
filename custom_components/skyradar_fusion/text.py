@@ -59,16 +59,14 @@ class SkyRadarFusionRemoveText(SkyRadarFusionTextBase):
         if not clean_val:
             return
 
-        # KICK FOR STANDALONE TRACKERS
+        # Remove only the tracker that belongs to this exact target.
         registry = er.async_get(self.hass)
+        target_unique_id = f"skyradar_fusion_{clean_val}"
         entries = er.async_entries_for_config_entry(
             registry, self.coordinator.config_entry.entry_id
         )
         for entry in entries:
-            if entry.domain == "device_tracker" and (
-                clean_val in entry.entity_id.upper()
-                or clean_val in (entry.original_name or "").upper()
-            ):
+            if entry.domain == "device_tracker" and entry.unique_id == target_unique_id:
                 registry.async_remove(entry.entity_id)
 
         self.coordinator.remove_track(clean_val)

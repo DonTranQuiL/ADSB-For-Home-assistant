@@ -11,7 +11,15 @@ from .const import CONF_ENABLE_TRACKER, DOMAIN
 async def async_setup_entry(hass, config_entry, async_add_entities):
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
-    tracked_hexes = set()
+    # Trackers that currently exist. An entity drops out of this mapping as
+    # soon as it is removed (registry removal, clear button), so the same
+    # target is recreated when it shows up again.
+    current: dict[str, SkyRadarFusionTracker] = {}
+
+    @callback
+    def _forget(hex_id: str, entity: SkyRadarFusionTracker) -> None:
+        if current.get(hex_id) is entity:
+            current.pop(hex_id, None)
 
     @callback
     def _update():
@@ -20,23 +28,25 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
         new_entities = []
 
-        for ac in coordinator.data.get("tracked_aircraft", []):
+        for ac in (coordinator.data or {}).get("tracked_aircraft", []):
             hex_id = ac.get("hex")
-            if hex_id and hex_id not in tracked_hexes:
-                tracked_hexes.add(hex_id)
-                new_entities.append(SkyRadarFusionTracker(coordinator, hex_id))
+            if hex_id and hex_id not in current:
+                entity = SkyRadarFusionTracker(coordinator, hex_id, _forget)
+                current[hex_id] = entity
+                new_entities.append(entity)
 
         if new_entities:
             async_add_entities(new_entities)
 
-    coordinator.async_add_listener(_update)
+    config_entry.async_on_unload(coordinator.async_add_listener(_update))
     _update()
 
 
 class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
-    def __init__(self, coordinator, hex_id):
+    def __init__(self, coordinator, hex_id, on_remove=None):
         super().__init__(coordinator)
         self._hex_id = hex_id
+        self._on_remove = on_remove
 
         ac_data = self._ac_live_or_offline()
         callsign = ac_data.get("flight", "").strip() or self._hex_id
@@ -44,6 +54,12 @@ class SkyRadarFusionTracker(CoordinatorEntity, TrackerEntity):
         self._attr_has_entity_name = False
         self._attr_name = f"skyradar_fusion_{callsign}"
         self._attr_unique_id = f"skyradar_fusion_{self._hex_id}"
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Let the platform know this tracker no longer exists."""
+        await super().async_will_remove_from_hass()
+        if self._on_remove is not None:
+            self._on_remove(self._hex_id, self)
 
     def _ac_live_or_offline(self):
         current_ac = next(
