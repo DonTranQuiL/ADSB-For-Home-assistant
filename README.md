@@ -37,15 +37,23 @@ Bring ultra-fast, live aviation telemetric streams directly into Home Assistant 
 
 ## 📥 How to Install (via HACS)
 
-The most efficient deployment method is through **HACS** (Home Assistant Community Store):
+SkyRadar Fusion is in the **HACS default list**, so no custom repository is needed:
 
-1. Open **HACS** in your sidebar and navigate into the **Integrations** panel.
-2. Click the three dots (`...`) located in the upper right quadrant and select **Custom repositories**.
-3. Input the repository web link: `https://github.com/DonTranQuiL/ADSB-For-Home-assistant`
-4. Set the Category selector dropdown to **Integration** and hit **Add**.
-5. Locate the newly added **SkyRadar Fusion** repository card and hit **Download**.
-6. ⚠️ **Restart your Home Assistant instance**.
-7. Navigate to **Settings > Devices & Services > Add Integration**, lookup **SkyRadar Fusion**, and configure your primary boundary coordinates.
+1. Open **HACS** in your sidebar and search for **SkyRadar Fusion**.
+2. Open it and hit **Download**.
+3. ⚠️ **Restart your Home Assistant instance**.
+4. Navigate to **Settings > Devices & Services > Add Integration**, lookup **SkyRadar Fusion**, and configure your primary boundary coordinates.
+
+<details>
+<summary>Fallback: add as a custom repository</summary>
+
+If SkyRadar Fusion does not show up in the HACS search yet (older HACS cache), add it manually:
+
+1. In **HACS**, click the three dots (`...`) in the upper right corner and select **Custom repositories**.
+2. Input the repository link: `https://github.com/DonTranQuiL/ADSB-For-Home-assistant`
+3. Set the Category to **Integration** and hit **Add**, then continue with step 2 above.
+
+</details>
 
 ---
 
