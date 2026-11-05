@@ -287,24 +287,35 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Installation & Setup</h2>
-                <p class="text-slate-400 max-w-2xl mx-auto">Get your airspace monitored in minutes via HACS.</p>
+                <p class="text-slate-400 max-w-2xl mx-auto">Get your airspace monitored in minutes via the Marketplace, or HACS on older versions.</p>
             </div>
 
             <div class="grid lg:grid-cols-2 gap-12">
                 <div class="fade-in opacity-0 -translate-x-8 transition-all duration-[800ms] ease-out">
-                    <div class="bg-slate-800/30 rounded-2xl border border-slate-700/50 p-8 h-full">
-                        <h3 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                            <i data-lucide="database" class="text-blue-400 w-6 h-6"></i> Step-by-Step HACS Install
+                    <div class="bg-slate-800/30 rounded-2xl border border-slate-700/50 p-8 h-full space-y-10">
+                        <div>
+                        <h3 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                            <i data-lucide="store" class="text-blue-400 w-6 h-6"></i> Marketplace (Home Assistant 2026.11+)
                         </h3>
+                        <p class="text-sm text-slate-400 mb-6">Recommended. SkyRadar Fusion is in the HACS default list, so it shows up in the Marketplace search.</p>
                         <ol class="space-y-5">
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">1</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Open HACS in your sidebar and navigate to the Integrations panel.</span></li>
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">2</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Click the three dots (...) in the upper right corner and select Custom repositories.</span></li>
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">3</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Input the repository web link (GitHub URL).</span></li>
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">4</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Set the Category selector dropdown to Integration and hit Add.</span></li>
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">5</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Locate the SkyRadar Fusion repository card and hit Download.</span></li>
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">6</div><span class="text-slate-300 text-sm leading-relaxed pt-1">⚠️ Restart your Home Assistant instance. (Crucial for loading new Python modules).</span></li>
-                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">7</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Navigate to Settings > Devices & Services > Add Integration and search for SkyRadar Fusion.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">1</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Go to Settings &gt; Marketplace and search for SkyRadar Fusion.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">2</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Open it and hit Install. The setup starts right away, no restart needed.</span></li>
                         </ol>
+                        <a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=DonTranQuiL&amp;repository=ADSB-For-Home-assistant&amp;category=integration" class="mt-6 px-6 py-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg hover:shadow-blue-500/25 inline-flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Open in Marketplace</a>
+                        </div>
+                        <div>
+                        <h3 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                            <i data-lucide="database" class="text-blue-400 w-6 h-6"></i> HACS (before 2026.11)
+                        </h3>
+                        <p class="text-sm text-slate-400 mb-6">In the HACS default list, no custom repository needed. <a class="text-blue-400 hover:underline" href="https://my.home-assistant.io/redirect/hacs_repository/?owner=DonTranQuiL&amp;repository=ADSB-For-Home-assistant&amp;category=integration">Open in HACS</a></p>
+                        <ol class="space-y-5">
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">1</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Open HACS in your sidebar and search for SkyRadar Fusion.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">2</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Open it and hit Download.</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">3</div><span class="text-slate-300 text-sm leading-relaxed pt-1">⚠️ Restart your Home Assistant instance. (Crucial for loading new Python modules).</span></li>
+                            <li class="flex items-start gap-4"><div class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-lg shadow-blue-500/20">4</div><span class="text-slate-300 text-sm leading-relaxed pt-1">Navigate to Settings &gt; Devices &amp; Services &gt; Add Integration and search for SkyRadar Fusion.</span></li>
+                        </ol>
+                        </div>
                     </div>
                 </div>
 
